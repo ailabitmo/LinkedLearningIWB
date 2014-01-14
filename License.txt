@@ -1,0 +1,28 @@
+
+Information Workbench Community Edition License Agreement
+=========================================================
+Copyright (C) 2008-2013, fluid Operations AG
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+
+Please note that this library contains accompanying libraries that are not under open source. 
+However, all of them allow non-commercial use free of charge. 
+ 
+ 
+fajax, fbase License Agreement
+==============================
+Copyright (C) 2008-2013, fluid Operations AG
+
+fajax, fbase are licensed for non-commercial use free of charge as an integral part of the Information Workbench. 
+Re-distribution of fajax, fbase in any form, except as part of the original Information Workbench distribution package, is strictly forbidden. 
+Any form of modification or reverse-engineering of fajax, fbase is forbidden. 
+fajax, fbase are distributed together with the Information Workbench without any warranty.
+
+
+3rd Party Licenses
+==================
+Please refer to 3rdparty.html in the release file for detailed information.  

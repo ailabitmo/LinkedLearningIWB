@@ -1,0 +1,358 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Readme Information Workbench</title>
+	</head>
+<body>
+	<div style="width: 800px">
+		<h1 align="center">fluidOps Information Workbench Readme</h1>
+
+		<br />
+		<ol>
+			<li><a href="#compatibility">Installation Requirements</a></li>
+			<li><a href="#installation">Installation</a></li>
+			<ol>
+				<li><a href="#installation_windows">Windows</a></li>
+				<li><a href="#installation_linux">Linux</a></li>
+				<li><a href="#installation_osx">Mac OS X</a></li>
+			</ol>
+			<li><a href="#getting_started">Getting Started</a></li>
+			<li><a href="#help">Getting Help</a></li>
+			<li><a href="#trouble_shooting">Troubleshooting</a></li>
+			<li><a href="#features">New Features</a></li>
+			<li><a href="#issues">Known Issues</a></li>
+		</ol>
+
+		<a name="compatibility"><h2>Installation Requirements</h2></a>
+		<h3>Server</h3>
+		<p>Operating System</p>
+		<ul>
+			<li>Windows (64-bit only): Windows 7, Windows Server 2008</li>
+			<li>Linux (64-bit only): openSUSE 12.1</li>
+		</ul>
+		<p>Java Runtime Environment</p>
+		<ul>
+			<li>JRE &gt;=1.7.0_25 64 bit</li>
+		</ul>
+		<p>32-bit systems, other Linux Distributions, different versions of Windows or OS X systems may also work, 
+		however have not been tested extensively.</p> 
+		<h3>Client</h3>
+		<p>Browsers</p>
+		<ul>
+			<li>Firefox &gt;=17.x (ESR)</li>
+			<li>Internet Explorer &gt;=8</li>
+			<li>Safari &gt;=5.1.7</li>
+		</ul>
+		<p>Other browsers may also work, however have not been tested extensively.</p>
+		
+		<a name="installation"><h2>Installation</h2></a>
+		
+		<p>The Information Workbench supports both Windows and Linux based
+			operating systems.</p>
+				
+		<a name="installation_windows"><h3>Windows</h3></a>
+		
+		<h4>Installation with the Windows Installer</h4>
+		
+		<p>Installing the Information Workbench on Windows can be done easily 
+		using the Windows installer.</p> 
+		<p>
+			You can start/stop the application using the
+			Windows <i>services</i> configuration tool (i.e.
+			Start-&gt;Run-&gt;services.msc). The Information Workbench service is
+			called <i>fluid Operations Information Workbench</i>.
+		</p>
+		
+		<h4>Installation from the zip-distribution</h4>
+		
+		<p>
+			It is recommended to use a 64bit Windows operating system with a
+			64Bit Java SE Runtime Environment in version 1.7 (taken from the
+			JDK). The reference version shipped with the installer is JRE SE <i>1.7.0_25
+				64bit</i>. This is also the version used in steps a) and b) below.
+		</p>
+		<p>Unpack the distribution into a directory of your choice  
+		(e.g. C:\IWB). In the following, we will refer to the absolute
+		pathname of this directory by &lt;IWB_HOME_DIRECTORY&gt;.</p>
+		<ul>
+			<li><b>Running the Information Workbench as executable</b></li>
+			<p>Execute <code>&lt;IWB_HOME_DIRECTORY&gt;/start.cmd</code></p>
+
+			<li><b>Running the Information Workbench on a 32bit Windows
+				operating system</b></li>
+			<p>The Information Workbench can be run on a 32bit Windows
+			operating system by following the steps below:</p>
+
+			<ul>
+				<li>Download and install Java SE 32-Bit JDK version 1.7 (<a
+				href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">http://www.oracle.com/technetwork/java/javase/downloads/index.html</a>)</li>
+				<li>Set the path of java.exe in the file
+				&lt;IWB_HOME_DIRECTORY&gt;/fiwb/backend.conf, examples:</li>
+				<ul>
+					<li><i>wrapper.java.command=C:\Program
+							Files\Java\jdk1.7.0_25\bin\java.exe</i> (absolute path)</li>
+					<li><i>wrapper.java.command=java</i> (if the java command is
+						in the Path environment)</li>
+				</ul>
+				<li>Execute the Information Workbench as described above.
+			</ul>
+		</ul>
+
+		<a name="installation_linux"><h3>Linux</h3></a>
+
+		<p>To run the Information Workbench under Linux a Java SE Runtime
+			Environment version 1.7 (taken from the JDK) must be installed. Note
+			that the Information Workbench does not ship a reference version
+			bundled with the release.</p>
+		<p>Unpack the distribution into a directory of your choice  
+		(e.g. /opt/fluidOps/IWB). In the following, we will refer to the absolute
+		pathname of this directory by &lt;IWB_HOME_DIRECTORY&gt;.</p>
+
+		<ul>
+			<li>Download and install Java SE 32-Bit or 64-Bit JDK version 1.7
+				(<a
+				href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">http://www.oracle.com/technetwork/java/javase/downloads/index.html</a>).</li>
+			<li>Make sure the java command is added to the command-path of the user root.</li>
+		</ul>
+		<p>
+			<b>a) Running as service</b>
+		</p>
+		<ul>
+			<li>Create a user under which the iwb shall run, e.g. "fluid" (in the following we will refer to this user as &lt;IWB_USER&gt;).</li>
+			<li>If you did not choose "fluid" as user, the script &lt;IWB_HOME_DIRECTORY&gt;/fiwb/iwb.sh has to be adapted accordingly:
+				<ul>
+					<li>Search for "RUN_AS_USER=fluid" and replace fluid by &lt;IWB_USER&gt;</li>
+				</ul>
+			</li>
+			<li>Exceute the script linux-install.sh in &lt;IWB_HOME_DIRECTORY&gt; as user root, like follows: 
+			<br><code>bash -eu linux-install.sh &lt;IWB_USER&gt;</code>
+			</li> 
+		</ul>
+		
+		<p>This installs an init-script as <code>/etc/init.d/iwb</code> and starts the application. 
+		To make sure this script is executed on reboot create corresponding links in the run-level specific directories.
+		Depending on your distribution, this can be done with: 
+		<code>chkconfig -a iwb</code> or with <code>insserv iwb</code>
+		<p>
+			<b>b) Running the Information Workbench as executable</b>
+		</p>
+		<ul>
+			<li>Make sure all script are executable by executing in &lt;IWB_HOME_DIRECTORY&gt;:
+			<br><code>chmod +x *.sh fiwb/*.sh fiwb/wrapper-linux*</code>
+			<li>If you do not want to run the Information Workbench as user "fluid", the script &lt;IWB_HOME_DIRECTORY&gt;/fiwb/iwb.sh has to be adapted accordingly:
+				<ul>
+					<li>Search for "RUN_AS_USER=fluid" and replace fluid by your preferred user (this user must exist on your system)</li>
+				</ul>
+			</li>
+			<li>Execute <code>start.sh</code> in &lt;IWB_HOME_DIRECTORY&gt;.
+		</ul>
+
+		<a name="installation_osx"><h3>Mac OS X</h3></a>
+		<p>Please note that, while we have successfully installed and run the Information Workbench on Mac OS X,
+		this platform is not officially supported.
+		</p>
+		
+		<p>
+		To run the Information Workbench on Mac OS X you need
+		<ul>
+		<li>a compatible version of the Java runtime  (ideally, version 1.7).
+		OS X may ask you whether to install a Java runtime automatically if it detects that one is needed but missing.</li>
+		<li>the Information Workbench distribution (.zip file).</li>
+		</ul>
+		</p>
+		
+		<p>
+		To get started, proceed as follows:
+		<ul>
+		<li>Unpack the Information Workbench zip distribution.
+		<li>Open the terminal application and cd into the unpacked distribution (e.g. 'cd Desktop/IWB' [ENTER])</li>
+		<li>Make scripts executable by typing 'chmod +x *.sh fiwb/*.sh fiwb/wrapper*' [ENTER])</li>
+		<li>In the file, 'fiwb/iwb.sh', modify the value for RUN_AS_USER=fluid to the user name that is intended to run the Information Workbench. (Alternatively, create a user account with the name 'fluid'.)
+		<li>To start the Information Workbench, now type './start.sh' [ENTER]</li>
+		<li>After a few seconds, you should be able to access the Information Workbench in you browser locally
+		under the address <a href="http://localhost:8888">http://localhost:8888</a></li>
+		</ul>
+		</p>
+		
+		<a name="getting_started"><h2>Opening the Information Workbench</h2></a>
+
+		<p>
+			Once the Information Workbench is running (startup may take up to a few minutes), it can be accessed at <b><a
+				href="http://localhost:8888">http://localhost:8888</a>
+			</b>. On the default start page you can find a tutorial with some first
+			steps as well as links to important pages (such as the detailed user
+			documentation).
+		</p>
+
+		<p>
+			By default, an administrator account with credentials <b>admin/iwb</b>
+			is created. It is highly recommended to change the password in the
+			Admin area after the first login.
+		</p>
+
+		<h3>Shutting down the Information Workbench</h3>
+		<ul>
+			<li><b>Windows Service:</b> Go to the Services configuration
+				tool and stop the service</li>
+			<li><b>Linux Daemon:</b> Invoke /etc/init.d/iwb stop</li>
+			<li><b>Commandline:</b> Exit the Information Workbench by
+				clicking in the command line window and pressing Ctrl + c.</li>
+			<li><b>IMPORTANT:</b> Never exit the Information Workbench by
+				closing the command line window without proper shutdown. This can
+				result in corrupting the data store and loss of data.</li>
+		</ul>
+
+		<h3>Using the Information Workbench SDK in Eclipse</h3>
+
+		<p>For the following steps we assume the reader to be familiar with the 
+		development platform Eclipse. Please refer to the user documentation for details.</p>
+
+		<p>This tutorial assumes that you have the fluidOps platform
+			(i.e., the eCloudManager or the Information Workbench) installed
+			into the directory &lt;APPLICATION-WORKINGDIR&gt;, and that it has
+			already been started once. Furthermore, we assume that the IDE
+			Eclipse is available. On Windows make sure to install the platform 
+			in a directory, where write access is enabled (i.e. other than C:\Program Files). </p>
+
+	 	<ol>
+			<li> Run the SDK setup script setup.cmd/sh contained in the distribution in the application working directory (i.e., fiwb/sdk/* or fecm/sdk/*). This script creates a pre-configured Eclipse project for your solution in the selected workspace.</li>			
+			<li>Follow the instructions and enter a project location of your choice (called &lt;SOLUTION-PATH&gt; in the following)</li>
+   			<li>Run Eclipse and import the just created project into your workspace</li>
+    		<li>(Optional) Import the contents of the sample solution (&lt;APPLICATION-WORKINGDIR&gt;/{fiwb|fecm}/sdk/DemoSolution.zip) into this project</li>
+    		<li>Run the launch configuration &lt;SOLUTION-PATH&gt;/Start_%ProjectName%.launch (Right-Click => Run-As)</li>
+    	</ol> 
+    
+		<p>You can see the automatically deployed solution in your local instance by navigating to the 
+		instance (i.e., http://localhost:8888 for the Information Workbench).</p>
+		
+		<p>To create a solution artifact, please use the launch configuration Build Solution Artifact available 
+		in &lt;SOLUTION-PATH&gt;/build/launch. </p>
+    
+    	<p>Details about the fluidOps SDK can be found on the <i>Help:PlatformSDK</i> page in a running system.</p>
+
+		<a name="help"><h2>Getting Help</h2></a>
+		<ul>
+			<li>Information Workbench home page: <a
+				href="http://www.fluidops.com/information-workbench/">http://www.fluidops.com/information-workbench/</a>
+			</li>
+			<li>Information Workbench mailing list: iwb-discussion (at)
+				googlegroups.com (<a
+				href="https://groups.google.com/group/iwb-discussion">https://groups.google.com/group/iwb-discussion</a>)
+			</li>
+			<li>Help: <a href="http://localhost:8888/resource/Help:Help">http://localhost:8888/resource/Help:Help</a>
+				(accessible once the Information Workbench has been started)</li>
+		</ul>
+		
+		<a name="trouble_shooting"><h2>Troubleshooting</h2></a>
+				
+		<p>	<b>Where can I find additional information</b> </p>
+		
+		<p>The Information Workbench is configured to write logging output to <i>&lt;IWB_HOME_DIRECTORY&gt;/fiwb/logs/</i>. 
+		Runtime logs of the Information Workbench can be found in service.log, while output
+		of the wrapper is written to <i>wrapper.log</i>. Please consider these files as a first source
+		for further information. Note that the logging level can be configured in <i>&lt;IWB_HOME_DIRECTORY&gt;/fiwb/etc/log4j.properties</i>.</p>
+
+		<p>If you have any questions, please do not hesitate to contact
+			us.</p>
+			
+		<h2><a name="features">New Features</a></h2>
+		<ul>
+			<li>Version 5.1</li>
+			<ul>
+				<li>Enhancements to the fluidOps Platform SDK (Solution Development Kit), in particular documentation (e.g. how to build solutions, SDK components)</li>
+				<li>Editor for SPARQL queries with auto-suggestion support for properties and classes (also available in the configuration form)</li>
+				<li>Support for parametrized wiki templates</li>
+				<li>Support for common MediaWiki parser functions (#show, #if, #ask, #foreach)</li>
+				<li>Workflow functionality with the CodeExecutionWidget and ActionableResultWidget, including simple form-based workflows</li>
+				<li>Enhanced TreeResultWidget for representation of tree-like data</li>
+				<li>UI customization hooks and documentation</li>
+				<li>Integration of ontology editors</li>
+				<li>Enhancements in the usability, including</li>
+				<ul>
+					<li>Unified and redesigned configuration forms (widget configuration and provider configuration)</li>
+					<li>Progress during file upload</li>
+					<li>Configurable column width in table result</li>
+					<li>Overview page for Templates as well as registered SPARQL functions</li>
+				</ul>
+				<li>Important framework upgrades</li>
+				<ul>
+					<li>Upgrade to Sesame 2.7</li>
+					<li>Upgrade to Java 1.7</li>
+				</ul>
+			</ul>
+			<li><i>Version numbering aligned with fluidOps Platform</i></li>
+			<li>Version 2.5.1</li>
+			<ul>
+				<li>Information Workbench 2.5.1 is a bug fix release</li>
+				<li>Lucene Index performance issues with large data have been resolved</li>
+				<li>Improvements to chart and graph engine</li>
+				<li>Improvements to TableResultWidget configuration for displaying column names</li>
+			</ul>
+		
+			<li>Version 2.5</li>
+			<ul>
+				<li>Triple Editor Enhancements, including</li>
+				<ul>
+					<li>Ontology driven editor</li>
+					<li>Customizable triple editor in wiki templates</li>
+					<li>Validation against XML Schema datatypes</li>
+					<li>New input components for special datatypes, including a date picker</li>
+					<li>Cardinality support for properties</li>
+				</ul>
+				<li>Templates for ontology editing</li>
+				<li>Configurable auto-completion for search and editing</li>
+				<li>Triple Store support for Systap Bigdata</li>
+				<li>Widget-based query result visualization</li>
+				<ul>
+					<li>automated widget suggestion based on query results</li>
+					<li>persisting visualizations on wiki pages</li>
+				</ul>
+				</li>
+				<li>SPARQL Editor with syntax highlighting</li>
+				<li>Search enhancements</li>
+				<ul>
+					<li>Query persistence (visualization of structured query results in form of dashboards)</li>
+					<li>Hybrid Search enhancements</li>
+				</ul>
+				<li>Extended documentation including PDF handbook</li>
+				<li>Integrated support for Basic Authentication in the SPARQL endpoint</li>
+				<li>Diagnostics for errors in wiki pages</li>
+			</ul>
+ 
+		
+			<li>Version 2.4</li>
+			<ul>
+				<li>New and improved triple editor that</li>
+				<ul>
+					<li>allows submitting changes in a transactional manner</li>
+					<li>nicely displays properties in a clustered manner</li>
+				</ul>
+				<li>Form based search, including free definition of search-input fields</li>
+				<li>Support of Oracle RDBMS as triple store</li>
+				<li>Integration of <a href="http://www4.wiwiss.fu-berlin.de/bizer/silk/">Silk</a> framework for resource reconciliation.</li>
+				<li>Integration of new chart-widgets that require Javascript only and no longer require flash</li>
+				<li>Improved configuration of widgets that allows to define preconditions for when 
+				widgets shall be rendered</li>
+				<li>Restructered and improved help- and admin-pages</li>
+				<li>Possibility to install customization artifacts at runtime through a remote interface</li>
+			</ul>
+		</ul>
+
+		
+		<h2><a name="issues">Known Issues</a></h2>
+		<ul>
+			<li>Version 5.1</li>
+			<ul>
+				<li>Bug 11521: Advanced SPARQL editor does not work in IE8, fallback to simple version</li>
+				<li>Bug 9252: Links in Pivot View do not work in Safari under Windows</li>
+				<li>Bug 5307: Widgets with query evaluation not working if query contains || in Filter, workaround using {{Pipe}} including UI support</li>
+				<li>Bug 6270: It is impossible to log out from a user session if ACLs are improperly configured</li>
+				<li>Bug 7511: WikiFileStorage maps URI containing * to those containing _ potentially overwriting existing wiki pages</li>
+				<li>Bug 7548: WikiExport and Bootstrap cannot deal with different capitalization in a wiki page</li>
+				<li>Bug 9335: TripleEditor: delete operation deletes duplicate statements, if they occur in different contexts</li>
+				<li>Bug 8265: Input fields occasionally disappear in Triple Editor in IE8</li>   
+			</ul>
+		</ul>
+	</div>
+</body>
