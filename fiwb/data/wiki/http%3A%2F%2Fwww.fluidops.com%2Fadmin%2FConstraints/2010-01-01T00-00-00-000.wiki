@@ -1,0 +1,32 @@
+= Constraint Validation <sup>[[Help:Constraints |<img width="19" src="../images/navigation/help_start.png" />]]</sup>=
+
+<br/>
+'''Note: ad-hoc constraint validation is an experimental feature. It is an expensive operation on the underlying database.'''
+
+'''Depending on the size of the underlying database this feature might not scale and run into query evaluation timeouts.'''
+<br/>
+
+== Triples not conforming to the domain restriction of the predicate ==
+{{#widget: TableResult |
+query = '
+SELECT DISTINCT ?subject ?predicate ?object  WHERE { 
+  ?subject ?predicate ?object .
+  ?predicate rdfs:domain ?domain . 
+  OPTIONAL { ?predicate rdfs:domain ?type  . ?subject rdf:type ?type } . 
+  FILTER (!( bound(?type) ))
+}'
+| asynch = true
+}}
+
+
+== Triples not conforming to the range restriction of the predicate ==
+{{#widget: TableResult |
+query = '
+SELECT DISTINCT ?subject ?predicate ?object  WHERE { 
+  ?subject ?predicate ?object .
+  ?predicate rdfs:range ?range . 
+  OPTIONAL { ?predicate rdfs:range ?type  . ?object rdf:type ?type } . 
+  FILTER (!( bound(?type) ))
+}' |
+asynch = true
+}}

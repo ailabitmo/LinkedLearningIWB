@@ -1,0 +1,16 @@
+== Workflow & Actions ==
+
+In this section you will learn about the <b>workflow</b> and <b>action</b> widgets, a class of widgets that are dedicated for performing user driven actions.  The set of widgets we consider are listed in the table below.
+{|class="wikitable"
+|-
+! Name
+! Description
+|-
+| [[ Help:CodeExecution | CodeExecution ]]
+| Action
+| Can be used to trigger user-defined actions
+|-
+| [[ Help:ActionableResult | ActionableResult ]]
+| Action
+| A special table result widget allowing to trigger user-defined actions using row data as input
+|}

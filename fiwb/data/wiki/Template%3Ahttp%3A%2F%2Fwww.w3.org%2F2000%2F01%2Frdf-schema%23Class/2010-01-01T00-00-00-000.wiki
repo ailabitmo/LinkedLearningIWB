@@ -1,0 +1,87 @@
+__NOTOC__
+
+= RDFS Class: '{{#show: {{this}} | rdfs:label}}' =
+
+'''URI''': ''{{#show: {{this}} }}''
+
+== Annotations == 
+
+<div style="width:650px; padding-top:10px">
+{{#widget: TripleEditor
+  | editMode = 'GROUPWISE'
+  | clusterByDomain = false
+  | propertyConfiguration = {{
+   {{ property = 'rdfs:label'}} |
+   {{ property = 'rdfs:comment' | componentType = 'TEXTAREA'}} }}
+  | showUnfilledProperties = true
+}}
+</div>
+
+== Taxonomy ==
+
+<div style="width:650px; padding-top:10px">
+{{#widget: TripleEditor
+  | editMode = 'GROUPWISE'
+  | clusterByDomain = false
+  | propertyConfiguration = {{
+   {{ property = 'rdfs:subClassOf' | datatype = 'rdfs:Resource'}} }}
+  | showUnfilledProperties = true
+}}
+</div>
+
+
+=== Subclasses of {{#show: {{this}} | rdfs:label}} ===
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{#widget: TableResult |
+query = '
+SELECT ?subclass WHERE { 
+  ?subclass rdfs:subClassOf ??.  
+}'
+}}
+</div>
+
+=== Superclasses of {{#show: {{this}} | rdfs:label}} ===
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{#widget: TableResult |
+query = '
+SELECT ?superclass WHERE { 
+  ?? rdfs:subClassOf ?superclass.  
+}'
+}}
+</div>
+
+== Properties with domain {{#show: {{this}} | rdfs:label}} ==
+
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{#widget: TableResult |
+query = '
+SELECT ?domainOf WHERE { 
+  ?domainOf rdfs:domain ?? .  
+}'
+}}
+</div>
+
+== Properties with range {{#show: {{this}} | rdfs:label}} ==
+
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{#widget: TableResult |
+query = '
+SELECT ?rangeOf WHERE { 
+  ?rangeOf rdfs:range ??.  
+}'
+}}
+</div>
+
+== Instances of class {{#show: {{this}} | rdfs:label}} ==
+
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{#widget: TableResult |
+query = '
+SELECT ?Instance WHERE { 
+  ?Instance rdf:type ??.  
+}'
+}}
+</div>
+
+{{#widget: NewInstance }}
+

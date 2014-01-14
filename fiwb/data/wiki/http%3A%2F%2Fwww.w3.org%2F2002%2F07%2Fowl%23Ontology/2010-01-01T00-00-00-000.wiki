@@ -1,0 +1,7 @@
+== Ontologies in the repository ==
+
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{ #widget: TableResult
+| query = 'SELECT ?Ontology WHERE { ?Ontology rdf:type owl:Ontology }'
+}}
+</div>

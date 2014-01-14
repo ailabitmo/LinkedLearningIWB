@@ -1,0 +1,134 @@
+== Building solutions ==
+
+The fluidOps Platform SDK defines best practices and guides in a ''Solution Development Process'', which is presented in detail in the following. This process includes 
+
+* setting up a solution project in Eclipse
+* the general solution structure
+* development of the solution
+* to build and deploy the solution
+* options for collaboration
+
+=== Setting up a solution project in Eclipse ===
+
+The following guide assumes that 
+
+
+a) you have a locally installed version of the fluidOps platform (i.e., the {{PRODUCT}}),<br/>
+b) it has already been started at least once<br/>
+c) the development IDE Eclipse is available in a recent version<br/>
+d) the installed application is only used for a single solution project<br/>
+
+
+<br/>
+1) Run the SDK setup script ''setup.cmd/sh'' contained in the distribution in the application working directory (i.e., fiwb/sdk/* or fecm/sdk/*)
+
+<img src="../images/help/SDK/SDK-setup.png" />
+
+Once you have entered a valid solution path in your workspace (e.g., ''c:\path\to\workspace\MyProject''), the following actions are performed:
+
+* A backup of the existing application configuration and data is created to ''backup-workingset'' in the application working directory
+* An Eclipse solution project is created, containing the predefined solution structure, build scripts and launch configurations
+
+2) Run your local Eclipse, and import the just created project into your workspace (File => Import => General => Existing Projects into Workspace).
+
+<br/>
+
+<img src="../images/help/SDK/SDK-Eclipse-Import.png" />
+
+<br/>
+
+<img src="../images/help/SDK/SDK-Eclipse-Import2.png" />
+
+3) The project is imported and a project structure as illustrated below is shown
+
+<img src="../images/help/SDK/SDK-Eclipse-ProjectStructure.png" />
+
+The project contains the basic solution structure, a pre-configured classpath using the resources from the actual installation, a launch configuration to start the application from Eclipse (with the solution), as well as scripts for performing certain actions (build, clean, ...). The actual actions are explained in more details below.
+
+Please find further details about the solution structure in section ''Solution Structure'' below.
+
+
+=== Solution structure ===
+
+The general solution structure is as follows.
+
+* '''resources''': additional non-compiled resources on the classpath (e.g. string templates)
+* '''src''': additional Java sources, e.g. custom widgets or providers
+*''' test''': JUnit tests for sources in src folder
+* '''config''': general system configuration, including images, widgets, namespaces, providers
+* '''data''': custom data and wiki pages for bootstrap
+** '''dbBootstrap''': RDF files that are loaded at startup
+** '''ontologies''': use-case specific ontologies (*.owl in RDF/XML format)
+** '''wikiBootstrap''': wiki pages in plain text, one file for every page (URL encoded URI of the resource)
+* '''lib'''
+** '''extensions''': contains additional libraries
+* '''scripts''': location for groovy scripts
+
+Please see e.g. [[Help:SDK-Bootstrap]], [[Help:WidgetSDK]] or [[Help:ProviderSDK]] for details.
+
+
+=== Development of the solution ===
+
+Having performed the previous steps, the actual solution development can start. In the following we give some general hints for the solution development process, and the point to the respective detail pages.
+
+==== Wiki pages and templates ====
+
+[[Help:Wiki|Wiki pages]] (and wiki page templates) are key elements to form the user interface of the application. For solution development, we recommend the following best practices:
+
+# Start the application from Eclipse (Start_%ProjName%.launch)
+# In the browser, navigate to the applications page (e.g., <nowiki>http://localhost:8888/</nowiki> for the {{PRODUCT}})
+# Create or modify the desired wiki pages (see [[Help:Wiki]] for details)
+# Stop the application from Eclipse
+# Run the ''Copy Modified Wiki Pages To Workspace'' launch configuration
+# The workspace is refreshed, and all user edited pages are copied to ''data/wikiBootstrap'' in your solution project
+# Optionally, run the ''Remove User-Edited Wiki Pages From System'' launch configuration, which removes all user edits from the system. Note: at next startup of the solution the pages are boostrapped from the solution project again.
+
+Please refer to [[Help:SDK-Bootstrap]] for further details.
+
+Hint: the [[Help:WikiManagement| wiki management]] facility can be used to see all user edited pages in a running system.
+
+<img src="../images/help/SDK/SDK-editedWikiPages.png" />
+
+==== Bootstrapping data and ontologies ====
+Solutions can be bootstrapped with ontologies and data.
+
+For creating and editing the ontologies, we recommend using a dedicated ontology editor such as [http://protege.stanford.edu Protege].
+It is best practice to directly edit the ontologies in the '''data/ontologies''' folder of the solution.
+
+From a running application/solution, you can also export the deployed ontologies for editing with external tools.
+Under [[owl:Ontology]] you find a list of ontologies currently deployed in the system.
+When selecting a specific ontology, you will find a link ''Export ontology'' that provides a URL to the ontology in the system.
+Using this URL, you can directly open the ontology from tools such as Protege via the ''Open from URL...'' dialog.
+
+Please refer to [[Help:SDK-Bootstrap]] for further details.
+
+==== System configuration ====
+
+It is possible to define system configuration parameters (namespaces, configuration settings, ACLs, ...) in a solution. These are applied at installation time. 
+
+For the development process it is recommended to perform all system configuration settings of a solution directly in the Eclipse solution project.
+
+Please refer to [[Help:SDK-SystemConfiguration]] for further details.
+
+==== Java Source and Scripts ====
+
+The solution infrastructure allows to provide custom source as part of the solution. This can either be Java source code (placed in ''src'' folder) or Groovy scripts (placed in ''scripts'' folder). Both, additional Java source and the scripts are automatically on the classpath, when running the application from Eclipse. Note: although changes to the source may be hot-swapped into the JVM, we recommend a restart of the application for changes to take effect.
+
+See the following additional items for typical source extension points:
+
+* [[Help:WidgetSDK]]
+* [[Help:ProviderSDK]]
+* [[Help:APIExtensions]]
+* [[Help:ValueResolverExtensions]]
+* [[Help:CodeExecution]]
+
+
+=== Build and deployment ===
+
+The development process brings a predefined ANT build scripts, which can run to create a reusable artifact for your solution. The build process can be triggered with the ''Build Solution Artifact'' launch configuration. Once, the build is done, the ''artifacts'' folder contains a file ''MySolution.zip''.
+
+This solution artifact can be installed into any compatible version of the fluidOps Platform using the deployment process as described in [[Help:Solutions]].
+
+=== Options for collaboration ===
+
+Solution development can be done collaboratively by using SVN (or other concepts) as version control system for the solution project. Our solution development process also provides mechanisms for staging environments. Please contact our partner manager for details.

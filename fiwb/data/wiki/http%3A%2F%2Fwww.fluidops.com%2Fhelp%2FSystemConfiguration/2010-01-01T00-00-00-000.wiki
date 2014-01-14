@@ -1,0 +1,47 @@
+== System Configuration ==
+
+The {{PRODUCT}} can be configured by changing the config.prop file or, alternatively, using the [[Admin:Config]] page.  
+
+This page allows you to easily configure your installation, giving explanations on the page to help you achieve the effects you are looking for.
+The available config parameters are grouped in several categories: CORE, DATABASE, CMS, PIVOT, APPEARANCE, DEBUG and UNDEF. We highlight some important configuration parameters in the following.
+
+<br/>
+
+
+<img src="../images/help/config.png" />
+
+<br/>
+<br/>
+
+=== Adjustment of the Start Page ===
+
+The {{PRODUCT}} allows to adjust the entry wiki page by setting the ''startPage'' configuration option. The value must correspond to the abbreviated URI (either prefixed or the local name of the URI in the default namespace) of an existing wiki page. Examples: ''Help:Start'', ''Home'', ''myPrefix:Start'' .
+
+
+=== Authentication Scheme ===
+
+The ''iwbAuthenticationScheme'' parameter allows you to configure whether a login into the system is required in order to access any page. Choosing ''auth'' requires a successful login; ''noauth'' allows every anonymous user to display the pages (taking into account the user's [[Help:UserManagement| access levels]]).
+
+
+=== Keyword Search Skeleton ===
+
+The {{PRODUCT}} keyword search skeleton parameters define how keyword queries are transformed into SPARQL queries. This means that all search operations are translated internally into SPARQL queries. There are two parameters available:
+* ''keywordQuerySkeleton'' for keyword search in the RDF repository,
+* ''wikiQuerySkeleton'' for keyword search in wiki pages.
+
+
+=== Repository Configuration ===
+
+The parameters ''repositoryName'', ''repositoryServer'', and ''repositoryType'' determine the configuration of the underlying RDF triple store. For details please refer to [[Help:RepositoryConfiguration]].
+
+
+=== Query Timeouts ===
+The parameter ''queryTimeout'' determines the query execution timeout. By default this is set to 30 seconds.
+
+
+=== Labels ===
+
+The parameter ''labelProperties'' determines which properties are used to display user-friendly names for resources. A comma-separated list of property names is expected here. Additionally, we can set a preferred language using the parameter ''preferredLanguage'', which decides what literals are displayed in case a text is available in several languages. By default this option is set to English (denoted by ''en'').
+Changing this property requires invalidating the system cache (see [[Help:Cache|Help:Cache]]) or restarting the system. 
+
+ 

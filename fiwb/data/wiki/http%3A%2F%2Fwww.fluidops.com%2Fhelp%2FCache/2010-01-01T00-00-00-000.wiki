@@ -1,0 +1,14 @@
+== Manual Cache Invalidation ==
+
+The {{PRODUCT}} uses multiple caches to improve the system performance at runtime. 
+
+[[Admin:Cache|Admin:Cache]] provides a UI to manually invalidate the caches. You may either clear individual caches or all of them at once. Currently, the following caches exist:
+
+*contexts
+*images
+*instances
+*inverse properties
+*labels
+*properties
+*types
+*auto suggestion

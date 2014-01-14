@@ -1,0 +1,82 @@
+== UI Customization ==
+
+In this section we describe the possibilities for UI customization of the platform. We divide the section in two parts, namely Content UI customization (providing pointers to the sections describing how to customize views, wiki pages, etc.) and general UI customization (including topics such as disabling views and buttons, providing a corporate identity look & feel by replacing logos etc.).
+
+
+=== Content UI Customization ===
+
+==== Customizing Wiki Pages ====
+Wiki pages are the central way to build rich, domain-specific User Interfaces. Typically, these Wiki pages contain widgets facilitating user interaction with the underlying data corpus, such as tables and charts for interactive visualization, data input forms for collaborative authoring, etc. Following a Semantic Wiki approach, the wiki pages are tightly coupled to both the ontology and the underlying data graph, and - based on a sophisticated template concept - it becomes possible to rapidly develop holistic, domain-specific UIs. The following links provide the most important entry points to the development of Wiki pages and sketches how they can be added to custom solutions.
+
+# The [[Help:Wiki|Wiki]] and [[Help:AdvancedWikiSyntax|Advanced Wiki]] help sections describe the concept behind and features of the platform's Semantic Wiki, including the template concept.
+# A detailed description of [[Help:Widgets|Widgets]] explains the basic concepts of the widget mechanism and contains documentation for all type of widgets that are available in the platform. The [[Help:WidgetSDK|Widget SDK]] section contains developer documentation explaining how to write new, custom widgets.
+# The [[Help:WikiManagement|Wiki Management]] documentation explains how to export Wiki pages from a running system, which can then be included into a custom solution.
+# The section on [[Help:SDK-Bootstrap| Wiki pages and Data bootstrap]] describes how and where to include Wiki pages into solutions. 
+
+==== Customizing Views & Widgets ====
+The platform comes with a couple of predefined [[Help:Views|Views]], which can be further customized to fit the application's needs. For instance, the [[Help:Views#Graph_View|Graph View]] by default displays the graph neighborhood of the current resource, while typically it may be desired to display a custom subgraph instead. Technically, these views are implemented as widgets that are linked to (possibly a set of) resources. Details about how to set customize these widgets are described in the [[Help:Widgets#Linking_Widgets_to_Semantic_Resources|Linking Widgets to Semantic Resources]] section.
+
+In order to add customize the default views for a solution, just follow the steps described in the help page linked before, customizing your views using the [[Admin:Widgets|Widget Configuration]] UI. Once you have set up your custom views, you need to open the file ''config/widgets-user.xml'', where the configuration is stored. Copy over the relevant configuration from this file to a new file ''config/widgets.xml'', which you can then simply add to your solution (cf. [[Help:SDK-SystemConfiguration| System configuration]]).
+
+
+=== General UI Customization ===
+
+==== Customization using ACLs ====
+The enterprise edition of the fluidOps Platform allows the customization of the UI via ALCs, i.e., the appearance of the UI depends on the particular user's role. While the ACL concept is described in detail on [[Help:UserManagement]], we point out the most important options here.
+
+===== a) Adjusting the available views =====
+The available [[Help:Views| views]] can be controlled with the ''Functional-level UI AC Rules'' as illustrated in the following example (which only show the wiki view):
+
+<source>
+allow|ui|nav_wiki
+deny|ui|nav_table
+deny|ui|nav_table
+deny|ui|nav_graph
+deny|ui|nav_pivot
+</source>
+
+
+===== b) Adjusting the wiki view =====
+
+By means of ACLs it can be controlled whether the edit and revision buttons are visible for a particular user role. This can be done with the ''Resource-level Resource-based AC Rules'' as illustrated in the following example:
+
+<source>
+allow|resource|regexp(http:\/\/www\.example\.org\/resource\/.*)|read
+</source>
+
+Here, the user is only granted read access to all wiki pages in the ''<nowiki>http://www.example.org/resource/</nowiki>'' namespace.
+
+Note that the ''View'' tab button is hidden, if there are no edit rights granted.
+
+==== Customization via string templates ====
+
+The platform allows the customization of the UI via string templates that are located in the ''resources'' folder of a solution.
+
+The following string templates are available for customization:
+
+{|class="wikitable sortable"
+! String template !! Description
+|-
+| ''com.fluidops.iwb.ui.templates.TopMenuBar.st''
+| The string template for the top menu bar
+|-
+| ''com.fluidops.iwb.ui.templates.LowerMenuBar.st''
+| The string template for the lower menu bar
+|-
+| ''com.fluidops.iwb.ui.templates.SemWikiView.st''
+| View tab of the wiki mode
+|-
+| ''com.fluidops.iwb.ui.templates.SemWikiEdit.st'' 
+| Edit tab of the wiki mode
+|-
+| ''com.fluidops.iwb.server.PDFServletHeader.st'' 
+| PDF rendering header
+|-
+| ''com.fluidops.iwb.server.PDFServletFooter.st'' 
+| PDF rendering footer
+|}
+
+Note that in both ''TopMenuBar.st'' and ''LowerMenuBar.st'' all parameters from ''PageParameters'' (see attached Javadoc) can be used.
+
+We refer the developer to the default implementation provided in the SDK for further documentation.
+

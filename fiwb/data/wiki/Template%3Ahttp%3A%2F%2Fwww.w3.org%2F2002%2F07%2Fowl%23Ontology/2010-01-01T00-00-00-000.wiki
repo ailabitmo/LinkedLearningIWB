@@ -1,0 +1,41 @@
+= $this$ =
+
+To export the ontology or open it in external tools (such as Protege for editing) use this link:
+
+{{#widget: com.fluidops.iwb.widget.system.ExportOntologyWidget
+| label = 'Export Ontology'
+| ontologyURI = $this$
+}}
+
+== Classes  ==
+
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{ #widget: TableResult
+| query = 'SELECT ?class WHERE { GRAPH ?g { ?class rdf:type owl:Class . ?? rdf:type owl:Ontology } }'
+}}
+</div>
+
+
+== Object Properties  ==
+
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{ #widget: TableResult
+| query = 'SELECT ?ObjectProperty WHERE { GRAPH ?g { ?ObjectProperty rdf:type owl:ObjectProperty . ?? rdf:type owl:Ontology } }'
+}}
+</div>
+
+== Datatype Properties  ==
+
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{ #widget: TableResult
+| query = 'SELECT ?DatatypeProperty WHERE { GRAPH ?g { ?DatatypeProperty rdf:type owl:DatatypeProperty . ?? rdf:type owl:Ontology } }'
+}}
+</div>
+
+== Individuals  ==
+
+<div style="width:650px; padding-top:10px; padding-bottom:10px">
+{{ #widget: TableResult
+| query = 'SELECT ?Individual ?Class WHERE { GRAPH ?g { ?Individual rdf:type ?Class . ?Class rdf:type owl:Class . ?? rdf:type owl:Ontology } }'
+}}
+</div>

@@ -1,0 +1,219 @@
+== Advanced Wiki Syntax ==
+
+The {{PRODUCT}} wiki closely follows the [http://www.mediawiki.org/wiki/Help:Contents Media Wiki] syntax and enriches available concepts for semantic technologies. In the following, the advanced syntax is described in detail.
+
+=== Magic Words ===
+
+Magic words are strings that are associated to a certain value by the wiki engine. They can be used to access system data such as for instance the name of the current page from within wiki pages. In addition to the magic words as defined in [http://www.mediawiki.org/wiki/Help:Magic_words Media Wiki], the {{PRODUCT}} provides the following extensions:
+
+{| class="wikitable"
+!Magic Word
+!Description
+|-
+|<nowiki>{{this}}</nowiki>
+|The full URI of the current resource denoted as <http://example.org/localName>
+|-
+|<nowiki>{{PAGENAME}}</nowiki>
+|The title of the current page
+|-
+|<nowiki>{{FULLPAGENAME}}</nowiki>
+|The full page name, i.e. either an abbreviated URI or the full URI denoted as <http://example.org/localName>
+|-
+|<nowiki>{{USERNAME}}</nowiki>
+|The name of the currently logged-in user 
+|-
+|<nowiki>{{USERURI}}</nowiki>
+|The URI of the current user (either abbreviated or as full URI)
+|-
+|<nowiki>{{STARTPAGE}}</nowiki>
+|The currently configured start page for this installation
+|-
+|<nowiki>{{PRODUCT}}</nowiki>
+|The product name of this installation
+|}
+
+* these magic words can be used within wiki pages, however, not within the #widget definition
+* to access the user URI within SPARQL queries, you may use the special ''?:useruri'' parameter 
+
+=== Parser Functions ===
+
+Parser functions are quite similar to magic words, however, they may take one or more optional arguments. The general syntax of a parser function is
+
+<source>
+{{#functionName: OPTION1 | OPTION2 | ... | OPTION_N}}
+</source>
+
+In addition to the parser functions defined in [http://www.mediawiki.org/wiki/Help:Extension:ParserFunctions Media Wiki], we provide some useful enhancements for semantic contexts.
+
+==== <nowiki>#show</nowiki> ====
+
+The #show parser function allows to access values from the RDF database associated to a specified resource. Consider for example a resource that has the semantic information ''relatedTo''. This information could be accessed in the wiki page as <nowiki>{{#show: {{this}} | relatedTo}}</nowiki>.
+
+General syntax:
+
+<source>
+{{#show: RESOURCE | PROPERTY | OPTIONS}}
+
+WHERE
+
+RESOURCE := URI
+PROPERTY := URI | '^' URI
+OPTIONS  := "see table below for available options"
+URI      := {{this}} | "abbreviated URI" | "full URI"
+</source>
+
+The #show parser function is best explained by the following examples:
+
+<source>
+a) Showing a value of 'myProperty':  {{#show: {{this}} | :myProperty}}
+b) Showing the inverse for 'myProperty' (i.e., the subject of the incoming link): {{#show: {{this}} | ^:myProperty}}
+c) Showing the current resource:  {{#show: {{this}}}}
+d) Using FULLPAGENAME alias: {{#show: {{FULLPAGENAME}} | :myProperty}}
+e) Using a fully qualified URI: {{#show: <http://www.example.org/someResource> | :someProperty}}
+f) Using an abbreviated URI: {{#show: ex:someResource | :someProperty}}
+g) Using a property from some known namespace: {{#show: ex:someResource | ex:someProperty}}
+</source>
+
+Notes:
+* the <nowiki>{{this}}</nowiki> magic word resolves to the current resource
+* <nowiki>:myProperty</nowiki> and myProperty are resolved to 'myProperty' in the system's default namespace
+* the token ''^'' in front of a property indicates an inverse property (adapted from [http://www.w3.org/TR/sparql11-property-paths/ SPARQL 1.1 property paths])
+* prefixes used must be known to the system (see [[Help:NamespaceConfig]])
+* the #show function takes a random value if there are more values associated to a given property
+
+The following options are available to be used in any order (separated by the | symbol):
+
+{| class="wikitable"
+!Option
+!Description
+|-
+|noDataMessage
+|can be used to specify the output if there is no value for the given property
+|-
+|valueResolver
+|can be used to specify a [[Help:ValueResolvers | value resolver]] (e.g. DATETIME)
+|}
+
+Examples:
+
+<source>
+a) With no data message: {{#show: {{this}} | :notExist | noDataMessage=No data}}
+b) With value resolver DATETIME: {{#show: {{this}} | :dateTime | valueResolver=DATETIME}}
+c) Multiple options: {{#show: {{this}} | :dateTime | noDataMessage=No data| valueResolver=DATETIME}}
+</source>
+
+
+
+==== <nowiki>#sparql</nowiki> ====
+
+The #sparql parser function is a useful construct to access the RDF database from within wiki pages. It can be used to render the result of SPARQL SELECT queries using some wiki template for each tuple, or in conjunction with the #ifexpr to allow for conditional wiki content.
+
+'''a) Using the result of a SELECT query as input for a template page'''
+
+The #sparql parser function allows to apply a wiki page template for each result tuple. In the template wiki page, variables from the query can be accessed with the {{{variableName}}} notation (similarly to the named variables in [http://www.mediawiki.org/wiki/Help:Templates Media Wiki templates]). 
+
+Consider the following example rendering all instances of ''owl:Class'' as an ordered list.
+
+<source>
+{{#sparql: SELECT ?class WHERE { ?class rdf:type owl:Class } 
+ | format=template
+ | template=Template:ClassTemplate
+}}
+</source>
+
+Content of the ''Template:ClassTemplate'' wiki page:
+
+<source>
+* {{{class}}}
+</source>
+
+'''b) Using no options for the #sparql function'''
+
+When using no arguments for the #sparql function, the query types SELECT, CONSTRUCT and ASK can be evaluated. The result of this function call is the size of the result set (SELECT and CONSTRUCT) or 0|1 corresponding to false|true (ASK).
+
+<source>
+a) ASK query resulting in "0" (=false): {{#sparql: ASK { ?? :notExist ?o } }}
+b) ASK query resulting in "1" (=true): {{#sparql: ASK { ?s ?p ?o } }}
+c) SELECT query resulting in 10 (=size of result set with limit): {{#sparql: SELECT * WHERE { ?s ?p ?o } LIMIT 10 }}
+</source>
+
+This method becomes handy to be used as nested input for the #ifexpr function, e.g. to check for the presence of some particular data item for conditional wiki page rendering. See below for examples.
+
+==== <nowiki>#ifexpr</nowiki> ====
+
+The #ifexpr function can be used to evaluate simple boolean and arithmetic expression as defined in <a href="http://www.mediawiki.org/wiki/Help:Extension:ParserFunctions#.23ifexpr">Media Wiki</a>.
+
+The general syntax for the #ifexpr is as follows:
+
+<source>
+{{#ifexpr: EXPRESSION | TRUE-BRANCH | FALSE-BRANCH}}
+</source>
+
+The ''TRUE-BRANCH'' is evaluated if ''EXPRESSION'' evaluates to any integer not equal to 0, while the ''FALSE-BRANCH'' is evaluated when the expression evaluates to 0.
+
+Examples:
+
+<source>
+a) evaluating to "true branch": {#ifexpr: 1 | true branch | false branch}}
+b) evaluating to "false branch": {{#ifexpr: 0 | true branch | false branch}}
+</source>
+
+Now you might notice why the #sparql functions is handy: Depending on the data, the following snippet can be used to print the wiki content.
+
+<source>
+{{#ifexpr: {{#sparql: ASK { {{this}} :notExist ?o } }} 
+ | property :notExist is available
+ | property :notExist is not available
+}}
+</source>
+
+==== <nowiki>#widget</nowiki> ====
+
+The #widget definition is an extension of the {{PRODUCT}} to embed UI components, so-called widgets, into wiki pages. The {{PRODUCT}} ships with a rich set of such widgets, see [[Help:Widgets]] for an overview. Please note that parser functions cannot be used within widget definitions.
+
+==== <nowiki>#urlget</nowiki> ====
+
+Similar to the [http://www.mediawiki.org/wiki/Extension:UrlGetParameters UrlGetParameters extension] of MediaWiki, the #urlget function of the {{PRODUCT}} allows to access HTTP request parameters from the wiki. The function renders the corresponding value into the wiki page. 
+<source>
+{{#urlget:parameter-name}}
+{{#urlget:parameter-name|default-value}}
+</source>
+
+* If ''parameter-name'' is not specified in the request, the ''default-value'' is rendered
+* If no ''default-value'' is specified the empty string is rendered.
+
+=== Conditional Widgets ===
+
+Using the #ifexpr parser function together with #widget it is possible to conditionally influence the rendering process. Consider as an example a scenario in which you want to embed a widget only if a certain data item is present in the data base.
+
+This can be easily achieved as illustrated in the following snippet:
+
+<source>
+{{#ifexpr: {{#sparql: ASK { ?? :youtube ?o } }} 
+ | {{#widget: Youtube  | searchString = Queen }}
+ | No youtube ID specified
+}}
+</source>
+
+=== Parameterized Templates ===
+
+It is possible to parametrize templates in order to use them in different settings. Template parameters are either anonymous or named. Anonymous parameters can be accessed via the notation <nowiki>{{{1}}}</nowiki> and named parameters via the notation <nowiki>{{{parameterName}}}</nowiki>.
+For example, Template:ParameterizedTemplate has two named parameters to pass the current resource and a greeting message:
+
+<source>
+{{{greeting}}}
+
+{{#show: {{{resource}}} }}
+</source>
+
+The following snippet shows how this parametrized template can be included:
+
+<source>
+{{Template:ParameterizedTemplate|resource={{FULLPAGENAME}}|greeting=Hello World}}
+</source>
+
+The include can also contain parser functions, e.g., to parameterize the template with the value of '':someObjectProperty'':
+
+<source>
+{{Template:ParameterizedTemplate|resource={{#show: {{this}} | :someObjectProperty}}|greeting=Hello World}}
+</source>

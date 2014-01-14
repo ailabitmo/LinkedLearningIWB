@@ -1,0 +1,5 @@
+= Wiki Template Page Overview <sup>[[Help:TemplatePages| <img width="19" src="../images/navigation/help_start.png" />]]</sup>=
+
+This page provides an overview of all available wiki template pages deployed in the underlying system and allows to create backups or to delete revisions.
+
+{{#widget: com.fluidops.iwb.widget.admin.WikiManagementWidget | filter='TEMPLATE' | visibleFilters={{}} | asynch = true }}

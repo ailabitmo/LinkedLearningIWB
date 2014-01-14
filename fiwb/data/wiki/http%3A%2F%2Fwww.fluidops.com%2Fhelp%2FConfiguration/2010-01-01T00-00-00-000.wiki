@@ -1,0 +1,9 @@
+= Configuration =
+
+# [[Help:SystemConfiguration | System Configuration]]
+# [[Help:ConfigurationForm | Configuration Form]]
+# [[Help:WidgetConfiguration | Widget Configuration]]
+# [[Help:NamespaceConfig | Namespace Configuration Guide]]
+# [[Help:RepositoryConfiguration | Repository Configuration]]
+# [[Help:SearchConfiguration | Search Configuration]]
+# [[Help:FedX | FedX]]

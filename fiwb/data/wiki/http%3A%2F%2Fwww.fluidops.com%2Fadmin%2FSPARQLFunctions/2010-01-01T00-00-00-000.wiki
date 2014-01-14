@@ -1,0 +1,5 @@
+= SPARQL Functions Overview<sup>[[Help:SPARQLFunctions| <img width="19" src="../images/navigation/help_start.png" />]]</sup>=
+
+This page lists all registered SPARQL functions. 
+
+{{ #widget: com.fluidops.iwb.widget.admin.SPARQLFunctionsWidget }}
