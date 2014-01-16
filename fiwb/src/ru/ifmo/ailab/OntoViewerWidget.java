@@ -51,12 +51,10 @@ public class OntoViewerWidget extends AbstractWidget<OntoViewerWidget.OntoViewer
         String cp = EndpointImpl.api().getRequestMapper().getContextPath();
         return Lists.newArrayList (
                 cp+"/oeditor/js/libs/d3.v3.js",
-//                cp+"/oeditor/js/libs/jquery-2.0.2.js",
-//                cp+"/oeditor/js/libs/jquery.treeview.js",
-//                cp+"/oeditor/js/libs/jquery.cookie.js",
-                cp+"/oeditor/js/libs/primitives.js?" + Rand.getIncrementalFluidUUID(),
                 cp+"/oeditor/js/libs/indicator.js?" + Rand.getIncrementalFluidUUID(),
+                cp+"/oeditor/js/libs/primitives.js?" + Rand.getIncrementalFluidUUID(),
                 cp+"/oeditor/js/libs/klib.js?" + Rand.getIncrementalFluidUUID(),
+                cp+"/oeditor/js/ontoGraph.js?" + Rand.getIncrementalFluidUUID(),
                 cp+"/oeditor/js/sparql.js?" + Rand.getIncrementalFluidUUID(),
                 cp+"/oeditor/js/mainProcessorSimple.js?" + Rand.getIncrementalFluidUUID()
         );

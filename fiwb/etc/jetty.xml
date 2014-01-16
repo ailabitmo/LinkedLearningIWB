@@ -159,6 +159,7 @@
 					<Set name="monitoredDirName"><Property name="jetty.home" default="." />/webapps</Set>
 					<Set name="defaultsDescriptor"><Property name="jetty.home" default="." />/etc/webdefault.xml</Set>
 					<Set name="scanInterval">0</Set>
+                    <Set name="extractWars">true</Set>
 				</New>
 			</Arg>
 		</Call>

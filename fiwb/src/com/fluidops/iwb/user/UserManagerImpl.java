@@ -125,13 +125,20 @@ public class UserManagerImpl implements UserManager
 	@Override
     public boolean hasValueAccess(Value v, ValueAccessLevel al)
     {
-		return true;
+        UserContext c = UserContext.get();
+
+        //reject admin for non-admin
+        if (!v.stringValue().contains("/admin") || c != null && c.roles.contains(ADMIN_ROLE)) return true;
+        else return false;
     }
     
 	@Override
     public ValueAccessLevel getValueAccessLevel(Value v)
     {
-		return ValueAccessLevel.WRITE; // full access
+        UserContext c = UserContext.get();
+
+        if (c != null && c.roles.contains(ADMIN_ROLE)) return ValueAccessLevel.WRITE;
+        else return ValueAccessLevel.READ;
     }
 
     

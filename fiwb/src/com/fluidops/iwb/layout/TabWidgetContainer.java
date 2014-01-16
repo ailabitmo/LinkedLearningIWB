@@ -36,6 +36,7 @@ import com.fluidops.iwb.widget.Widget;
 import com.fluidops.util.Rand;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import ru.ifmo.ailab.OntoViewerWidget;
 
 /**
  * The standard container for the platforms UI. This container shows the four
@@ -93,9 +94,11 @@ public class TabWidgetContainer implements WidgetContainer
 			// jsURLs correctly. So the jsURLs can only be computed by the real component SemWiki.
 			tabPane.addView(TAB_WIKI_VIEW, tabWidgets.get(SemWikiWidget.class).getComponentUAE(Rand.getIncrementalFluidUUID()), "nav_wiki");
 		if(tabWidgets.containsKey(TripleEditorWidget.class))
-			tabPane.addLazyView(TAB_TABLE_VIEW, tabWidgets.get(TripleEditorWidget.class),	"nav_table");
+			tabPane.addLazyView(TAB_TABLE_VIEW, tabWidgets.get(TripleEditorWidget.class), "nav_table");
 		if(tabWidgets.containsKey(GraphWidget.class))
 			tabPane.addLazyView(TAB_GRAPH_VIEW, tabWidgets.get(GraphWidget.class), "nav_graph");
+        if(tabWidgets.containsKey(OntoViewerWidget.class))
+                    tabPane.addLazyView(TAB_GRAPH_VIEW, tabWidgets.get(OntoViewerWidget.class), "nav_graph");
 		if(tabWidgets.containsKey(PivotWidget.class))
 			tabPane.addLazyView(TAB_PIVOT_VIEW, tabWidgets.get(PivotWidget.class), "nav_pivot");
 		

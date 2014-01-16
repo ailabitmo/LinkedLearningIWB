@@ -2,68 +2,45 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="06c880ca-ca94-4a20-9487-0366cd7238c1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/ajax-loader.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/file.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/folder-closed.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/folder.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/minus.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/oed.war" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/plus.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-black-line.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-black.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-default-line.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-default.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-famfamfam-line.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-famfamfam.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-gray-line.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-gray.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-red-line.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/images/treeview-red.gif" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/d3.v3.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/fisheye.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/css/general.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/html/index.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/indicator.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/jquery-2.0.2.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/jquery.cookie.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/jquery.treeview.async.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/css/libs/jquery.treeview.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/jquery.treeview.edit.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/jquery.treeview.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/jquery.treeview.sortable.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/klib.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/mainprocessor.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/mainprocessor_tree.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/html/ontographonly.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlybig.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/html/ontographonlybig.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlybig_old.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlydbpedia.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinkedlearning.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/primitives.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/css/smap.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/smap.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/sparql.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/sparql.txt" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/html/strategicmap.html" />
+      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\data\luceneindex\segments_1" afterPath="" />
+      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\data\wikiindex\segments_5d" afterPath="" />
+      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\ROOT\oeditor\html\ontographonlybig.html" afterPath="" />
+      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\ROOT\oeditor\html\ontographonlybig_old.html" afterPath="" />
+      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\ROOT\oeditor\html\ontographonlydbpedia.html" afterPath="" />
+      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\ROOT\oeditor\html\ontographonlylinkedlearning.html" afterPath="" />
+      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\oed.war" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/fiwb.jar" afterPath="$PROJECT_DIR$/lib/fiwb.jar" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/luceneindex/segments.gen" afterPath="$PROJECT_DIR$/data/luceneindex/segments.gen" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/wikiindex/segments.gen" afterPath="$PROJECT_DIR$/data/wikiindex/segments.gen" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples-psoc.alloc" afterPath="$PROJECT_DIR$/data/dbmodel/triples-psoc.alloc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples-psoc.dat" afterPath="$PROJECT_DIR$/data/dbmodel/triples-psoc.dat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples-spoc.alloc" afterPath="$PROJECT_DIR$/data/dbmodel/triples-spoc.alloc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples-spoc.dat" afterPath="$PROJECT_DIR$/data/dbmodel/triples-spoc.dat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/values.dat" afterPath="$PROJECT_DIR$/data/dbmodel/values.dat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/values.hash" afterPath="$PROJECT_DIR$/data/dbmodel/values.hash" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/values.id" afterPath="$PROJECT_DIR$/data/dbmodel/values.id" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java" afterPath="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java" afterPath="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/server/Servlet.st" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/server/Servlet.st" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/user/UserManagerImpl.java" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/user/UserManagerImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/extensions.css" afterPath="$PROJECT_DIR$/webapps/ROOT/extensions.css" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fiwb.iml" afterPath="$PROJECT_DIR$/fiwb.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/css/general.css" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/css/general.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/gradle.xml" afterPath="$PROJECT_DIR$/.idea/gradle.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/index.html" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/index.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/jetty.xml" afterPath="$PROJECT_DIR$/.idea/libraries/jetty.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/etc/jetty.xml" afterPath="$PROJECT_DIR$/etc/jetty.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/mainProcessorSimple.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/mainProcessorSimple.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/mainprocessor_tree.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/mainprocessor_tree.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/namespaces.dat" afterPath="$PROJECT_DIR$/data/dbmodel/namespaces.dat" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/primitives.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/primitives.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/logs/service.log" afterPath="$PROJECT_DIR$/logs/service.log" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/smap.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/smap.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/sparql.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/sparql.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples.prop" afterPath="$PROJECT_DIR$/data/dbmodel/triples.prop" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/widgets.prop" afterPath="$PROJECT_DIR$/config/widgets.prop" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/widgets.xml" afterPath="$PROJECT_DIR$/config/widgets.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/mainProcessorSimple.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/mainProcessorSimple.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/logs/wrapper.log" afterPath="$PROJECT_DIR$/logs/wrapper.log" />
     </list>
     <ignored path="fiwb-mod.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -159,10 +136,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="ontographonly.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html">
+      <file leaf-file-name="OntoViewer.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="28" column="36" selection-start="1029" selection-end="1041" vertical-scroll-proportion="0.0" vertical-offset="476" max-vertical-offset="986">
+            <state line="36" column="51" selection-start="971" selection-end="971" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="833">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ontographonlylinked.html" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinked.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="28" column="13" selection-start="1018" selection-end="1018" vertical-scroll-proportion="-18.307692" vertical-offset="0" max-vertical-offset="1003">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="extensions.css" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/webapps/ROOT/extensions.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="1" column="34" selection-start="86" selection-end="86" vertical-scroll-proportion="0.037527595" vertical-offset="0" max-vertical-offset="453">
               <folding />
             </state>
           </provider>
@@ -171,62 +166,42 @@
       <file leaf-file-name="OntoViewerWidget.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="36" column="5" selection-start="1099" selection-end="1099" vertical-scroll-proportion="0.0" vertical-offset="612" max-vertical-offset="1190">
+            <state line="24" column="22" selection-start="638" selection-end="638" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1020">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="OntoViewer.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
+      <file leaf-file-name="LayouterImpl.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="50" column="0" selection-start="1898" selection-end="1898" vertical-scroll-proportion="0.0" vertical-offset="850" max-vertical-offset="986">
+            <state line="84" column="43" selection-start="3450" selection-end="3450" vertical-scroll-proportion="0.0" vertical-offset="355" max-vertical-offset="1870">
+              <folding>
+                <element signature="e#0#5417#0" expanded="false" />
+                <element signature="imports" expanded="false" />
+                <element signature="e#4269#4281#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EntityPageWidgetContainer.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="101" column="32" selection-start="3364" selection-end="3364" vertical-scroll-proportion="0.0" vertical-offset="887" max-vertical-offset="1870">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ontographonlylinkedlearning.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinkedlearning.html">
+      <file leaf-file-name="WebAppClassLoader.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://F:/tmp/jetty.bundles.repo/target/site/plugins/org.eclipse.jetty.webapp.source_8.1.3.v20120416.jar!/org/eclipse/jetty/webapp/WebAppClassLoader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="19" selection-start="909" selection-end="909" vertical-scroll-proportion="0.0" vertical-offset="425" max-vertical-offset="986">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="klib.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="257" column="0" selection-start="8453" selection-end="8453" vertical-scroll-proportion="0.0" vertical-offset="4369" max-vertical-offset="37366">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="jetty.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/etc/jetty.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="151" column="16" selection-start="6921" selection-end="6921" vertical-scroll-proportion="0.0" vertical-offset="2165" max-vertical-offset="3128">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="primitives.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/primitives.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="272" column="1" selection-start="10412" selection-end="10412" vertical-scroll-proportion="0.0" vertical-offset="4522" max-vertical-offset="14977">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="mainProcessorSimple.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/mainProcessorSimple.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="40" column="33" selection-start="1594" selection-end="1600" vertical-scroll-proportion="0.0" vertical-offset="680" max-vertical-offset="1173">
-              <folding />
+            <state line="226" column="16" selection-start="8530" selection-end="8530" vertical-scroll-proportion="0.0" vertical-offset="2886" max-vertical-offset="7038">
+              <folding>
+                <element signature="e#7027#7028#0" expanded="true" />
+                <element signature="e#7058#7059#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -239,7 +214,7 @@
     </FindUsagesManager>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="GitLogSettings">
     <option name="myDateState">
@@ -259,20 +234,21 @@
         <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/js/sparql.js" />
         <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/indexbig.html" />
         <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlybig.html" />
-        <option value="$PROJECT_DIR$/etc/jetty.xml" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html" />
         <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinkedlearning.html" />
-        <option value="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java" />
-        <option value="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java" />
         <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js" />
+        <option value="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java" />
+        <option value="$PROJECT_DIR$/etc/jetty.xml" />
+        <option value="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java" />
+        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinked.html" />
+        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1912" />
-    <option name="y" value="-238" />
-    <option name="width" value="1216" />
-    <option name="height" value="1616" />
+    <option name="x" value="54" />
+    <option name="y" value="-8" />
+    <option name="width" value="1874" />
+    <option name="height" value="1096" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -344,9 +320,6 @@
     </navigator>
     <panes>
       <pane id="Scope" />
-      <pane id="PackagesPane">
-        <subPane />
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -355,7 +328,84 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="webapps" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="webapps" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ROOT" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ailab" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
+      </pane>
+      <pane id="PackagesPane">
+        <subPane />
       </pane>
     </panes>
   </component>
@@ -365,10 +415,10 @@
     <property name="OverrideImplement.combined" value="true" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="options.lastSelected" value="appearance" />
+    <property name="options.lastSelected" value="project.propVCSSupport.Mappings" />
     <property name="MemberChooser.sorted" value="false" />
     <property name="recentsLimit" value="5" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../github/AilabOntologyReport" />
+    <property name="last_opened_file_path" value="F:/tmp/jetty.bundles.repo/target/site/plugins/org.eclipse.jetty.webapp.source_8.1.3.v20120416.jar!/" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
@@ -379,13 +429,13 @@
     <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="FullScreen" value="false" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="69" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="64" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="69" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="64" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="69" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="65" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="670" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="684" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="70" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder0" value="0" />
@@ -395,6 +445,7 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder2" value="2" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="682" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -404,6 +455,16 @@
     </key>
   </component>
   <component name="RunManager" selected="Application.IwbStart">
+    <configuration default="true" type="GrailsRunConfigurationType" factoryName="Grails" singleton="true">
+      <module name="" />
+      <setting name="vmparams" value="" />
+      <setting name="cmdLine" value="run-app" />
+      <setting name="depsClasspath" value="false" />
+      <setting name="passParentEnv" value="true" />
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <setting name="launchBrowser" value="false" />
+      <method />
+    </configuration>
     <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin" singleton="true">
       <module name="" />
       <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m" />
@@ -430,6 +491,42 @@
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
       <method />
     </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true">
+      <method />
+    </configuration>
+    <configuration default="true" type="FlexUnitRunConfigurationType" factoryName="FlexUnit" appDescriptorForEmulator="Android" class_name="" emulatorAdlOptions="" method_name="" output_log_level="null" package_name="" scope="Class">
+      <option name="BCName" value="" />
+      <option name="launcherParameters">
+        <LauncherParameters>
+          <option name="browserFamily" value="FIREFOX" />
+          <option name="launcherType" value="OSDefault" />
+          <option name="newPlayerInstance" value="false" />
+          <option name="playerPath" value="FlashPlayerDebugger.exe" />
+        </LauncherParameters>
+      </option>
+      <option name="moduleName" value="" />
+      <option name="trusted" value="true" />
+      <method />
+    </configuration>
+    <configuration default="true" type="CucumberJavaRunConfigurationType" factoryName="Cucumber java">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="myFilePath" />
+      <option name="GLUE" />
+      <option name="myNameFilter" />
+      <option name="myGeneratedName" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
     <configuration default="true" type="Applet" factoryName="Applet">
       <module name="" />
       <option name="MAIN_CLASS_NAME" />
@@ -444,6 +541,7 @@
       <method />
     </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -471,6 +569,7 @@
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" />
       <option name="VM_PARAMETERS" />
       <option name="PROGRAM_PARAMETERS" />
@@ -485,6 +584,7 @@
       <method />
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -502,6 +602,41 @@
       </option>
       <envs />
       <patterns />
+      <method />
+    </configuration>
+    <configuration default="true" type="FlashRunConfigurationType" factoryName="Flash App">
+      <option name="BCName" value="" />
+      <option name="IOSSimulatorSdkPath" value="" />
+      <option name="adlOptions" value="" />
+      <option name="airProgramParameters" value="" />
+      <option name="appDescriptorForEmulator" value="Android" />
+      <option name="debugTransport" value="USB" />
+      <option name="debuggerSdkRaw" value="BC SDK" />
+      <option name="emulator" value="NexusOne" />
+      <option name="emulatorAdlOptions" value="" />
+      <option name="fastPackaging" value="true" />
+      <option name="fullScreenHeight" value="0" />
+      <option name="fullScreenWidth" value="0" />
+      <option name="launchUrl" value="false" />
+      <option name="launcherParameters">
+        <LauncherParameters>
+          <option name="browserFamily" value="FIREFOX" />
+          <option name="launcherType" value="OSDefault" />
+          <option name="newPlayerInstance" value="false" />
+          <option name="playerPath" value="FlashPlayerDebugger.exe" />
+        </LauncherParameters>
+      </option>
+      <option name="mobileRunTarget" value="Emulator" />
+      <option name="moduleName" value="" />
+      <option name="overriddenMainClass" value="" />
+      <option name="overriddenOutputFileName" value="" />
+      <option name="overrideMainClass" value="false" />
+      <option name="runTrusted" value="true" />
+      <option name="screenDpi" value="0" />
+      <option name="screenHeight" value="0" />
+      <option name="screenWidth" value="0" />
+      <option name="url" value="http://" />
+      <option name="usbDebugPort" value="7936" />
       <method />
     </configuration>
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
@@ -524,6 +659,7 @@
       <method />
     </configuration>
     <configuration default="false" name="IwbStart" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="com.fluidops.iwb.IwbStart" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -579,6 +715,7 @@
       <changelist id="06c880ca-ca94-4a20-9487-0366cd7238c1" name="Default" comment="" />
       <created>1384245229404</created>
       <updated>1384245229404</updated>
+      <workItem from="1389853233623" duration="4980000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit, already modified fiwb">
       <created>1387286520099</created>
@@ -587,8 +724,11 @@
     <option name="localTasksCounter" value="2" />
     <servers />
   </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="4980000" />
+  </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-238" width="1216" height="1616" extended-state="6" />
+    <frame x="54" y="-8" width="1874" height="1096" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -596,23 +736,28 @@
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3271523" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3234701" sideWeight="0.8031088" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3234701" sideWeight="0.19689119" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Java Enterprise" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.5046536" sideWeight="0.8023128" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.5046536" sideWeight="0.19768722" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32988626" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980132" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980132" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.249694" sideWeight="0.5874587" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28411055" sideWeight="0.9116081" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18722467" sideWeight="0.9116081" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3277141" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32988626" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
@@ -642,6 +787,41 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="36" selection-start="1029" selection-end="1041" vertical-scroll-proportion="0.0" vertical-offset="476" max-vertical-offset="986">
+          <folding>
+            <element signature="n#style#0;n#span#1;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="36" column="5" selection-start="1099" selection-end="1099" vertical-scroll-proportion="0.0" vertical-offset="612" max-vertical-offset="1190">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="50" column="0" selection-start="1898" selection-end="1898" vertical-scroll-proportion="0.0" vertical-offset="850" max-vertical-offset="986">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="257" column="0" selection-start="8453" selection-end="8453" vertical-scroll-proportion="0.0" vertical-offset="4369" max-vertical-offset="37366" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/etc/jetty.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="151" column="16" selection-start="6921" selection-end="6921" vertical-scroll-proportion="0.0" vertical-offset="2567" max-vertical-offset="3111">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="31" column="24" selection-start="1015" selection-end="1015" vertical-scroll-proportion="0.0" vertical-offset="527" max-vertical-offset="1343">
@@ -772,11 +952,6 @@
         <state line="4" column="0" selection-start="144" selection-end="169" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/extensions.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="48" selection-start="86" selection-end="86" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config/widgets.prop">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
@@ -814,11 +989,6 @@
         <state line="49" column="34" selection-start="2304" selection-end="2304" vertical-scroll-proportion="0.0" vertical-offset="532" max-vertical-offset="1496" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/smap.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="21" selection-start="332" selection-end="332" vertical-scroll-proportion="0.5472837" vertical-offset="0" max-vertical-offset="6613" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="100" column="93" selection-start="3963" selection-end="3985" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
@@ -839,89 +1009,87 @@
         <state line="342" column="18" selection-start="12000" selection-end="12000" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java">
+    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="86" column="59" selection-start="2951" selection-end="2951" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
+        <state line="270" column="0" selection-start="8989" selection-end="8989" vertical-scroll-proportion="0.36288998" vertical-offset="4369" max-vertical-offset="37366" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java">
+    <entry file="jar://$PROJECT_DIR$/lib/jetty/jetty-webapp-8.1.3.v20120416.jar!/org/eclipse/jetty/webapp/WebAppClassLoader.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="99" column="84" selection-start="4020" selection-end="4020" vertical-scroll-proportion="0.0" vertical-offset="903" max-vertical-offset="1870" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/mainProcessorSimple.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="40" column="33" selection-start="1594" selection-end="1600" vertical-scroll-proportion="0.0" vertical-offset="236" max-vertical-offset="1173">
+        <state line="20" column="0" selection-start="957" selection-end="957" vertical-scroll-proportion="0.0" vertical-offset="88" max-vertical-offset="1071">
           <folding />
         </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/html/ontographonlybig.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="34" selection-start="828" selection-end="828" vertical-scroll-proportion="0.50384194" vertical-offset="0" max-vertical-offset="911" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/etc/jetty.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="151" column="16" selection-start="6921" selection-end="6921" vertical-scroll-proportion="0.0" vertical-offset="2165" max-vertical-offset="3128">
+        <state line="161" column="48" selection-start="7569" selection-end="7569" vertical-scroll-proportion="0.63682604" vertical-offset="2111" max-vertical-offset="3128">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinkedlearning.html">
+    <entry file="jar://F:/tmp/jetty.bundles.repo/target/site/plugins/org.eclipse.jetty.webapp.source_8.1.3.v20120416.jar!/org/eclipse/jetty/webapp/WebAppClassLoader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="19" selection-start="909" selection-end="909" vertical-scroll-proportion="0.0" vertical-offset="425" max-vertical-offset="986">
-          <folding />
+        <state line="226" column="16" selection-start="8530" selection-end="8530" vertical-scroll-proportion="0.0" vertical-offset="2886" max-vertical-offset="7038">
+          <folding>
+            <element signature="e#7027#7028#0" expanded="true" />
+            <element signature="e#7058#7059#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html">
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="36" selection-start="1029" selection-end="1041" vertical-scroll-proportion="0.0" vertical-offset="476" max-vertical-offset="986">
-          <folding />
+        <state line="84" column="43" selection-start="3450" selection-end="3450" vertical-scroll-proportion="0.0" vertical-offset="355" max-vertical-offset="1870">
+          <folding>
+            <element signature="e#0#5417#0" expanded="false" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#4269#4281#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/mainprocessor_tree.js">
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="36" selection-start="471" selection-end="471" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2448" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/sparql.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="140" column="51" selection-start="7245" selection-end="7253" vertical-scroll-proportion="0.10147992" vertical-offset="2284" max-vertical-offset="3230" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/klib.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="502" column="23" selection-start="18077" selection-end="18077" vertical-scroll-proportion="-0.017970402" vertical-offset="8551" max-vertical-offset="27251" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor_bak2/js/libs/primitives.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="272" column="1" selection-start="10412" selection-end="10412" vertical-scroll-proportion="0.0" vertical-offset="4522" max-vertical-offset="14977">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="50" column="0" selection-start="1898" selection-end="1898" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="884">
+        <state line="101" column="32" selection-start="3364" selection-end="3364" vertical-scroll-proportion="0.0" vertical-offset="887" max-vertical-offset="1870">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="5" selection-start="1099" selection-end="1099" vertical-scroll-proportion="0.0" vertical-offset="68" max-vertical-offset="1054">
+        <state line="24" column="22" selection-start="638" selection-end="638" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1020">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js">
+    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="257" column="0" selection-start="8453" selection-end="8453" vertical-scroll-proportion="0.0" vertical-offset="4369" max-vertical-offset="37366">
+        <state line="36" column="51" selection-start="971" selection-end="971" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="833">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinked.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="13" selection-start="1018" selection-end="1018" vertical-scroll-proportion="-18.307692" vertical-offset="0" max-vertical-offset="1003">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapps/ROOT/extensions.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="34" selection-start="86" selection-end="86" vertical-scroll-proportion="0.037527595" vertical-offset="0" max-vertical-offset="453">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="45" column="37" selection-start="2076" selection-end="2076" vertical-scroll-proportion="0.75443786" vertical-offset="0" max-vertical-offset="1014">
+          <folding>
+            <element signature="n#style#0;n#span#1;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -944,7 +1112,7 @@
       </state>
       <state key="FacetStructureConfigurable.UI">
         <settings>
-          <last-edited>No facets are configured</last-edited>
+          <last-edited>Web</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -967,7 +1135,7 @@
       </state>
       <state key="JdkListConfigurable.UI">
         <settings>
-          <last-edited>1.6</last-edited>
+          <last-edited>1.7</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

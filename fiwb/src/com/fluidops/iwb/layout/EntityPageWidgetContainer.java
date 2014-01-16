@@ -31,6 +31,7 @@ import com.fluidops.iwb.widget.TripleEditorWidget;
 import com.fluidops.util.Rand;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import ru.ifmo.ailab.OntoViewerWidget;
 
 
 /**
@@ -113,7 +114,7 @@ public class EntityPageWidgetContainer extends TabWidgetContainer {
 	protected boolean isViewTab(AbstractWidget<?> widget) {
 		Class<?> widgetClass = widget.getClass();
 		return widgetClass.equals(SemWikiWidget.class) || widgetClass.equals(TripleEditorWidget.class)
-				|| widgetClass.equals(GraphWidget.class) || widgetClass.equals(PivotWidget.class);
+				|| widgetClass.equals(GraphWidget.class) || widgetClass.equals(PivotWidget.class) || widgetClass.equals(OntoViewerWidget.class);
 	}
 
 	@Override

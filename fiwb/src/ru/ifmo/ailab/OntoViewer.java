@@ -33,19 +33,16 @@ public class OntoViewer extends FComponent {
             e.printStackTrace();
         }
         String spaqlUrl = "http://" + url.getHost() + ":" + url.getPort() + "/sparql";
-        addClientUpdate(new FClientUpdate(FClientUpdate.Prio.VERYEND, "startIt('" + contID + "', '/oed/oed/rootviewer/', '" + spaqlUrl + "', '" + path + "')"));
+
+        String clientCode = "startIt('" + contID + "', '/aov/aov/rootviewer/', '" + spaqlUrl + "', '" + path + "')";
+        addClientUpdate(new FClientUpdate(FClientUpdate.Prio.VERYEND, clientCode));
         StringBuilder html = new StringBuilder();
         html.append(
-                "<input style=\"visibility: collapse;\" type=\"text\" id='prefixList' value=\"http://www.semanticweb.org/k0shk/ontologies/2013/5/learning, http://purl.org/vocab/aiiso/schema\"/>"+
                 "<div id='middle'>\n" +
                 "    <div id='container'>\n" +
                 "        <div id='" + contID + "'></div>\n" +
                 "    </div>\n" +
                 "</div>");
-//        for ( String head : jsURLs() )
-//            html.append( "<script type='text/javascript' src='" ).append( head ).append( "'></script>\n" );
-//        for ( String head : cssURLs() )
-//            html.append( "<link rel='stylesheet' type='text/css' href='" ).append( head ).append( "'/>\n" );
         return html.toString();
     }
 

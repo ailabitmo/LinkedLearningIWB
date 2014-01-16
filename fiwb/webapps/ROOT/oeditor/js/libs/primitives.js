@@ -1,11 +1,8 @@
 /**
- * Created with IntelliJ IDEA.
- * User: Kivan
- * Date: 16.06.13
- * Time: 19:41
- * To change this template use File | Settings | File Templates.
+ * Created by Khodyrev Ivan
+ * Licensed under Apache 2.0
+ * Repository: https://github.com/kivan-mih/JSHelpers
  */
-
 //-----------------------------------------------------------------------------------------
 //-----------------------------------------D3 helper functions
 //-----------------------------------------------------------------------------------------
@@ -256,7 +253,6 @@ function addRectWithText(dataElement, width, vertMargin, horMargin, fill, fillOu
     dataElement['_$_uirect_$_'].push(addRectWithText);
     return addRectWithText;
 }
-
 //function razeText(element, text, maxWidth, textProps, tooltiper)
 function razeText(element, text, suffix, maxWidth, textProps, sufProps, tooltiper) {
     if(sufProps==null) sufProps = {'width': 0, 'height': 0, 'baseLineHeight': 0};
@@ -271,8 +267,6 @@ function razeText(element, text, suffix, maxWidth, textProps, sufProps, tooltipe
     }
     return element;
 }
-
-
 function addRectWithFullText(dataElement, width, vertMargin, horMargin, fill, text, textClass, parent, x, y, rx, ry,
                              tooltiper) {
     //1 Поделить текст на список строк:
@@ -327,7 +321,6 @@ function addRectWithFullText(dataElement, width, vertMargin, horMargin, fill, te
 
     return a;
 }
-
 function SmartText(width, text, textClass) {
     //Возвращает список строк, каждая из которых состоит из определенного количества слов
     //Делим текст на слова. Перевод на новую строку: \\# - должно отделяться от слов пробелами!!!
@@ -351,7 +344,6 @@ function SmartText(width, text, textClass) {
     listOfStrings.push(currentString);
     return listOfStrings;
 }
-
 /**
  * @param target родительский элемент,контейнер для элементов (g)
  * @param id идентификатор группы этой линии
@@ -510,11 +502,9 @@ function clearLog() {
 //-----------------------------------------------------------------------------------------
 //-----------------------------------------/LOG
 //-----------------------------------------------------------------------------------------
-
 //-----------------------------------------------------------------------------------------
 //-----------------------------------------Useful util functions
 //-----------------------------------------------------------------------------------------
-
 /**
  * Формирует удобный для работы объект из результата спаркловского запроса.
  * В запросе одно поле должно присутствовать в каждой строке - это идентификатор
@@ -543,7 +533,6 @@ function sparqlJSONToObject(spJSObj, nameOfIdField) {
     }
     return finalObjects;
 }
-
 function objToArrayValues(obj) {
     var tempArr = [];
     for (var o in obj)  tempArr.push(obj[o]);
@@ -587,7 +576,6 @@ function sumarray(array, start, end) {
         return sum;
     }
 }
-
 /**
  * Добавляет все свойства от второго объекта к первому. Если в первом встречается такое-же свойство
  * то не переносит значение. Удобно при задании параметров. Если юзер передает объект параметров
@@ -601,7 +589,6 @@ function mergeProperties(toObject, fromObject) {
     }
     return toObject;
 }
-
 /**
  *
  * @param xy1_1 {x: number, y: number} линия 1 точка 1
@@ -683,7 +670,6 @@ function lineSegIntersection(x1, y1, /* First line segment */
     return {'x': x, 'y': y};
 }
 /* lines_intersect */
-
 function floatEquals(f1, f2, e) {
     if (Math.abs(f1 - f2) > e) return false;
     return true;
@@ -724,7 +710,6 @@ function lineRectIntersection(x1, y1, width, height, x2, y2) {
     }
     return null;
 }
-
 /**
  * Разврапить массив пар {имя,значение} в один объект
  * @param objArray
@@ -740,7 +725,6 @@ function unWrapNameValArray(objArray) {
     }
     return toRet;
 }
-
 /**
  * Узнать характеристики текста: длину и ширину
  Размер текста и фонт задаются в классе по желанию
@@ -790,11 +774,9 @@ function textInfo(stringOfText, textElementClass) {
         textDifMap.set([stringOfText, textElementClass],res);
     }
 }
-
 function sign(x) {
     return x ? x < 0 ? -1 : 1 : 0;
 }
-
 /**
  * Отправить запрос в спаркл эндпоинт.
  * @param queryStr - запрос
@@ -878,7 +860,6 @@ function sparqlQueryJsonThroughService(queryStr, endpoint , serviceUrl, callback
     };
     xmlhttp.send(querypart);
 }
-
 /**
  * Отправить запрос в спаркл эндпоинт через промежуточный сервис.
  * @param queryStr - запрос
