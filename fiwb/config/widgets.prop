@@ -28,3 +28,4 @@ IFrame=com.fluidops.iwb.widget.IFrameWidget
 CodeExecution=com.fluidops.iwb.widget.CodeExecutionWidget
 ActionableResult=com.fluidops.iwb.widget.ActionableResultWidget
 InstanceCreation=com.fluidops.iwb.widget.InstanceCreationWidget
+OntoViewerWidget=ru.ifmo.ailab.OntoViewerWidget

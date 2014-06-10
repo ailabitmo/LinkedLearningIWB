@@ -190,4 +190,11 @@
     <input>$this$</input>
     <applyToInstances>true</applyToInstances>
   </WidgetConfig>
+    <WidgetConfig>
+       <value class="uri">http://www.w3.org/2000/01/rdf-schema#Resource</value>
+        <widget>ru.ifmo.ailab.OntoViewerWidget</widget>
+        <preCondition></preCondition>
+        <input class="ConfigInput">{{}}</input>
+        <applyToInstances>true</applyToInstances>
+    </WidgetConfig>
 </list>

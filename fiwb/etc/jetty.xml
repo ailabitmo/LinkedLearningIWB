@@ -166,6 +166,7 @@
 					<Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="." />/etc/webdefault.xml</Set>
 					<Set name="parentLoaderPriority">false</Set>
 					<Set name="scanInterval">0</Set>
+                    <Set name="extractWars">true</Set>
 				</New>
 			</Arg>
 		</Call>
@@ -220,5 +221,6 @@
     <Set name="gracefulShutdown">1000</Set>
     <Set name="dumpAfterStart">false</Set>
     <Set name="dumpBeforeStop">false</Set>
+
 
 </Configure>

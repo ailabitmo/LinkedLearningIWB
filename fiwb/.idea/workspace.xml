@@ -1,48 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="06c880ca-ca94-4a20-9487-0366cd7238c1" name="Default" comment="">
-      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\data\luceneindex\segments_1" afterPath="" />
-      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\data\wikiindex\segments_5d" afterPath="" />
-      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\ROOT\oeditor\html\ontographonlybig.html" afterPath="" />
-      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\ROOT\oeditor\html\ontographonlybig_old.html" afterPath="" />
-      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\ROOT\oeditor\html\ontographonlydbpedia.html" afterPath="" />
-      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\ROOT\oeditor\html\ontographonlylinkedlearning.html" afterPath="" />
-      <change type="DELETED" beforePath="D:\projects\github\LinkedLearningIWB\fiwb\webapps\oed.war" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/fiwb.jar" afterPath="$PROJECT_DIR$/lib/fiwb.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/luceneindex/segments.gen" afterPath="$PROJECT_DIR$/data/luceneindex/segments.gen" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/wikiindex/segments.gen" afterPath="$PROJECT_DIR$/data/wikiindex/segments.gen" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples-psoc.alloc" afterPath="$PROJECT_DIR$/data/dbmodel/triples-psoc.alloc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples-psoc.dat" afterPath="$PROJECT_DIR$/data/dbmodel/triples-psoc.dat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples-spoc.alloc" afterPath="$PROJECT_DIR$/data/dbmodel/triples-spoc.alloc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples-spoc.dat" afterPath="$PROJECT_DIR$/data/dbmodel/triples-spoc.dat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/values.dat" afterPath="$PROJECT_DIR$/data/dbmodel/values.dat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/values.hash" afterPath="$PROJECT_DIR$/data/dbmodel/values.hash" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/values.id" afterPath="$PROJECT_DIR$/data/dbmodel/values.id" />
+    <list default="true" id="a26513bf-ef9b-444b-b327-3048da108931" name="Default" comment="Integrated graph and restored basic auth">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java" afterPath="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java" afterPath="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/com/fluidops/iwb/user/UserManagerImpl.java" afterPath="$PROJECT_DIR$/src/com/fluidops/iwb/user/UserManagerImpl.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/extensions.css" afterPath="$PROJECT_DIR$/webapps/ROOT/extensions.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fiwb.iml" afterPath="$PROJECT_DIR$/fiwb.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/jetty.xml" afterPath="$PROJECT_DIR$/.idea/libraries/jetty.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/etc/jetty.xml" afterPath="$PROJECT_DIR$/etc/jetty.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/namespaces.dat" afterPath="$PROJECT_DIR$/data/dbmodel/namespaces.dat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/primitives.js" afterPath="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/primitives.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/logs/service.log" afterPath="$PROJECT_DIR$/logs/service.log" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/dbmodel/triples.prop" afterPath="$PROJECT_DIR$/data/dbmodel/triples.prop" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/widgets.prop" afterPath="$PROJECT_DIR$/config/widgets.prop" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/widgets.xml" afterPath="$PROJECT_DIR$/config/widgets.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/logs/wrapper.log" afterPath="$PROJECT_DIR$/logs/wrapper.log" />
     </list>
-    <ignored path="fiwb-mod.iws" />
+    <ignored path="fiwb.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -57,107 +28,17 @@
   <component name="DaemonCodeAnalyzer">
     <disable_hints />
   </component>
-  <component name="DebuggerManager">
-    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
-      <breakpoint url="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/WidgetSelectorImpl.java" line="108" class="com.fluidops.iwb.api.WidgetSelectorImpl" package="com.fluidops.iwb.api">
-        <option name="ENABLED" value="false" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/com/fluidops/iwb/ajax/FGraph.java" line="77" class="com.fluidops.iwb.ajax.FGraph" package="com.fluidops.iwb.ajax">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-    </line_breakpoints>
-    <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
-    <breakpoint_any default_suspend_policy="SuspendAll" default_condition_enabled="true">
-      <breakpoint>
-        <option name="NOTIFY_CAUGHT" value="true" />
-        <option name="NOTIFY_UNCAUGHT" value="true" />
-        <option name="ENABLED" value="false" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint>
-        <option name="NOTIFY_CAUGHT" value="true" />
-        <option name="NOTIFY_UNCAUGHT" value="true" />
-        <option name="ENABLED" value="false" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-    </breakpoint_any>
-    <breakpoint_rules />
-    <ui_properties />
-  </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
-    <favorites_list name="fiwb-mod" />
+    <favorites_list name="fiwb" />
   </component>
   <component name="FileEditorManager">
     <leaf>
       <file leaf-file-name="OntoViewer.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="36" column="51" selection-start="971" selection-end="971" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="833">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ontographonlylinked.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinked.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="28" column="13" selection-start="1018" selection-end="1018" vertical-scroll-proportion="-18.307692" vertical-offset="0" max-vertical-offset="1003">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="extensions.css" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/webapps/ROOT/extensions.css">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1" column="34" selection-start="86" selection-end="86" vertical-scroll-proportion="0.037527595" vertical-offset="0" max-vertical-offset="453">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="833">
+              <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -166,7 +47,48 @@
       <file leaf-file-name="OntoViewerWidget.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="24" column="22" selection-start="638" selection-end="638" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1020">
+            <state vertical-scroll-proportion="0.0" vertical-offset="437" max-vertical-offset="952">
+              <caret line="52" column="34" selection-start-line="52" selection-start-column="34" selection-end-line="52" selection-end-column="34" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="extensions.css" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webapps/ROOT/extensions.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="119">
+              <caret line="1" column="32" selection-start-line="1" selection-start-column="32" selection-end-line="1" selection-end-column="32" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="UserManagerImpl.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/user/UserManagerImpl.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.5961165" vertical-offset="1461" max-vertical-offset="4675">
+              <caret line="144" column="5" selection-start-line="144" selection-start-column="5" selection-end-line="144" selection-end-column="5" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="widgets.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/config/widgets.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="2807" max-vertical-offset="3485">
+              <caret line="177" column="17" selection-start-line="177" selection-start-column="17" selection-end-line="177" selection-end-column="17" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="jetty.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/etc/jetty.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="2402" max-vertical-offset="3944">
+              <caret line="157" column="43" selection-start-line="157" selection-start-column="43" selection-end-line="157" selection-end-column="43" />
               <folding />
             </state>
           </provider>
@@ -175,12 +97,9 @@
       <file leaf-file-name="LayouterImpl.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="84" column="43" selection-start="3450" selection-end="3450" vertical-scroll-proportion="0.0" vertical-offset="355" max-vertical-offset="1870">
-              <folding>
-                <element signature="e#0#5417#0" expanded="false" />
-                <element signature="imports" expanded="false" />
-                <element signature="e#4269#4281#0" expanded="false" />
-              </folding>
+            <state vertical-scroll-proportion="0.0" vertical-offset="283" max-vertical-offset="1853">
+              <caret line="87" column="26" selection-start-line="87" selection-start-column="26" selection-end-line="87" selection-end-column="26" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -188,20 +107,32 @@
       <file leaf-file-name="EntityPageWidgetContainer.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="101" column="32" selection-start="3364" selection-end="3364" vertical-scroll-proportion="0.0" vertical-offset="887" max-vertical-offset="1870">
+            <state vertical-scroll-proportion="0.0" vertical-offset="1219" max-vertical-offset="1870">
+              <caret line="59" column="8" selection-start-line="59" selection-start-column="8" selection-end-line="59" selection-end-column="8" />
+              <folding>
+                <element signature="e#1806#1807#0" expanded="true" />
+                <element signature="e#1823#1824#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TabWidgetContainer.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="781" max-vertical-offset="2907">
+              <caret line="101" column="32" selection-start-line="101" selection-start-column="32" selection-end-line="101" selection-end-column="32" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="WebAppClassLoader.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://F:/tmp/jetty.bundles.repo/target/site/plugins/org.eclipse.jetty.webapp.source_8.1.3.v20120416.jar!/org/eclipse/jetty/webapp/WebAppClassLoader.java">
+      <file leaf-file-name="widgets.prop" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/config/widgets.prop">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="226" column="16" selection-start="8530" selection-end="8530" vertical-scroll-proportion="0.0" vertical-offset="2886" max-vertical-offset="7038">
-              <folding>
-                <element signature="e#7027#7028#0" expanded="true" />
-                <element signature="e#7058#7059#0" expanded="true" />
-              </folding>
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="612">
+              <caret line="30" column="47" selection-start-line="30" selection-start-column="47" selection-end-line="30" selection-end-column="47" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -210,88 +141,28 @@
   </component>
   <component name="FindManager">
     <FindUsagesManager>
-      <setting name="OPEN_NEW_TAB" value="false" />
+      <setting name="OPEN_NEW_TAB" value="true" />
     </FindUsagesManager>
-  </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-  </component>
-  <component name="GitLogSettings">
-    <option name="myDateState">
-      <MyDateState />
-    </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/com/fluidops/iwb/user/UserManagerImpl.java" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/extensions.css" />
+        <option value="$PROJECT_DIR$/config/widgets.prop" />
+        <option value="$PROJECT_DIR$/config/widgets.xml" />
+        <option value="$PROJECT_DIR$/etc/jetty.xml" />
+        <option value="$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java" />
         <option value="$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java" />
         <option value="$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java" />
-        <option value="$PROJECT_DIR$/config/widgets.xml" />
-        <option value="$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java" />
-        <option value="$PROJECT_DIR$/src/com/fluidops/iwb/server/Servlet.st" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/js/sparql.js" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/indexbig.html" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlybig.html" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinkedlearning.html" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js" />
-        <option value="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java" />
-        <option value="$PROJECT_DIR$/etc/jetty.xml" />
-        <option value="$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinked.html" />
-        <option value="$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html" />
+        <option value="$PROJECT_DIR$/webapps/ROOT/extensions.css" />
+        <option value="$PROJECT_DIR$/src/com/fluidops/iwb/user/UserManagerImpl.java" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="54" />
-    <option name="y" value="-8" />
-    <option name="width" value="1874" />
-    <option name="height" value="1096" />
-  </component>
-  <component name="ProjectInspectionProfilesVisibleTreeState">
-    <entry key="Project Default">
-      <profile-state>
-        <expanded-state>
-          <State>
-            <id />
-          </State>
-          <State>
-            <id>Abstraction issues</id>
-          </State>
-          <State>
-            <id>Android Lint</id>
-          </State>
-          <State>
-            <id>Code style issues</id>
-          </State>
-          <State>
-            <id>Control flow issues</id>
-          </State>
-          <State>
-            <id>Java language level migration aids</id>
-          </State>
-          <State>
-            <id>Performance issues</id>
-          </State>
-          <State>
-            <id>Plugin DevKit</id>
-          </State>
-          <State>
-            <id>Probable bugs</id>
-          </State>
-          <State>
-            <id>XPath</id>
-          </State>
-        </expanded-state>
-        <selected-state>
-          <State>
-            <id>Abstraction issues</id>
-          </State>
-        </selected-state>
-      </profile-state>
-    </entry>
+    <option name="x" value="-1688" />
+    <option name="y" value="22" />
+    <option name="width" value="1696" />
+    <option name="height" value="1066" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -304,10 +175,10 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectReloadState">
-    <option name="STATE" value="0" />
+    <option name="STATE" value="2" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
+    <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -319,143 +190,105 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemId" value="fiwb" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemId" value="fiwb" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="fiwb" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemId" value="fiwb" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="fiwb" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="webapps" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fiwb-mod" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fiwb" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="webapps" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ROOT" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fiwb-mod" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fiwb" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="ailab" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="fiwb-mod" />
+              <option name="myItemId" value="fiwb" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="fiwb" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fiwb" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fluidops" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane">
-        <subPane />
-      </pane>
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="project.structure.last.edited" value="Artifacts" />
-    <property name="GoToFile.includeJavaFiles" value="false" />
-    <property name="OverrideImplement.combined" value="true" />
-    <property name="project.structure.proportion" value="0.15" />
-    <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="options.lastSelected" value="project.propVCSSupport.Mappings" />
-    <property name="MemberChooser.sorted" value="false" />
-    <property name="recentsLimit" value="5" />
-    <property name="last_opened_file_path" value="F:/tmp/jetty.bundles.repo/target/site/plugins/org.eclipse.jetty.webapp.source_8.1.3.v20120416.jar!/" />
-    <property name="project.structure.side.proportion" value="0.2" />
-    <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="GoToClass.toSaveIncludeLibraries" value="false" />
-    <property name="restartRequiresConfirmation" value="true" />
-    <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="dynamic.classpath" value="false" />
-    <property name="options.searchVisible" value="true" />
-    <property name="options.splitter.details.proportions" value="0.2" />
-    <property name="FullScreen" value="false" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="64" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="64" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="65" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="684" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="70" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder0" value="0" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="60" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder1" value="1" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="65" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder2" value="2" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="682" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
+    <property name="GoToClass.toSaveIncludeLibraries" value="false" />
+    <property name="GoToFile.includeJavaFiles" value="false" />
+    <property name="MemberChooser.sorted" value="false" />
+    <property name="MemberChooser.showClasses" value="true" />
+    <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/lib/findbugs/annotations.jar!/" />
+    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="SearchEverywhereHistoryKey" value="usermanagerim&#9;PSI&#9;JAVA://com.fluidops.iwb.user.UserManagerImpl&#10;extensions.css&#9;FILE&#9;file://D:/projects/github/LinkedLearningIWB/fiwb/webapps/ROOT/extensions.css&#10;tabwidgetc&#9;PSI&#9;JAVA://com.fluidops.iwb.layout.TabWidgetContainer&#10;entityp&#9;PSI&#9;JAVA://com.fluidops.iwb.layout.EntityPageWidgetContainer&#10;layouteri&#9;PSI&#9;JAVA://com.fluidops.iwb.api.LayouterImpl&#10;jetty.xml&#9;FILE&#9;file://D:/projects/github/LinkedLearningIWB/fiwb/etc/jetty.xml&#10;widgets.prop&#9;FILE&#9;file://D:/projects/github/LinkedLearningIWB/fiwb/config/widgets.prop&#10;widgets.xml&#9;FILE&#9;file://D:/projects/github/LinkedLearningIWB/fiwb/config/widgets.xml" />
+    <property name="recentsLimit" value="5" />
+    <property name="restartRequiresConfirmation" value="true" />
+    <property name="dynamic.classpath" value="false" />
   </component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\projects\Ontology\IWB51mod\fiwb\webapps" />
-      <recent name="D:\projects\Ontology\IWB51mod\fiwb\webapps\ROOT" />
-      <recent name="D:\projects\Ontology\IWB51mod\fiwb\webapps\ROOT\oeditor\html" />
-    </key>
-  </component>
-  <component name="RunManager" selected="Application.IwbStart">
-    <configuration default="true" type="GrailsRunConfigurationType" factoryName="Grails" singleton="true">
+  <component name="RunManager" selected="Application.iwb">
+    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
+      <module name="" />
+      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m -ea" />
+      <option name="PROGRAM_PARAMETERS" />
+      <method />
+    </configuration>
+    <configuration default="true" type="GrailsRunConfigurationType" factoryName="Grails">
       <module name="" />
       <setting name="vmparams" value="" />
       <setting name="cmdLine" value="run-app" />
@@ -465,66 +298,15 @@
       <setting name="launchBrowser" value="false" />
       <method />
     </configuration>
-    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin" singleton="true">
-      <module name="" />
-      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m" />
-      <option name="PROGRAM_PARAMETERS" />
+    <configuration default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
       <method />
     </configuration>
-    <configuration default="true" type="AndroidTestRunConfigurationType" factoryName="Android Tests">
-      <module name="" />
-      <option name="TESTING_TYPE" value="0" />
-      <option name="INSTRUMENTATION_RUNNER_CLASS" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="PACKAGE_NAME" value="" />
-      <option name="TARGET_SELECTION_MODE" value="EMULATOR" />
-      <option name="USE_LAST_SELECTED_DEVICE" value="false" />
-      <option name="PREFERRED_AVD" value="" />
-      <option name="USE_COMMAND_LINE" value="true" />
-      <option name="COMMAND_LINE" value="" />
-      <option name="WIPE_USER_DATA" value="false" />
-      <option name="DISABLE_BOOT_ANIMATION" value="false" />
-      <option name="NETWORK_SPEED" value="full" />
-      <option name="NETWORK_LATENCY" value="none" />
-      <option name="CLEAR_LOGCAT" value="false" />
-      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
-      <method />
-    </configuration>
-    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true">
-      <method />
-    </configuration>
-    <configuration default="true" type="FlexUnitRunConfigurationType" factoryName="FlexUnit" appDescriptorForEmulator="Android" class_name="" emulatorAdlOptions="" method_name="" output_log_level="null" package_name="" scope="Class">
-      <option name="BCName" value="" />
-      <option name="launcherParameters">
-        <LauncherParameters>
-          <option name="browserFamily" value="FIREFOX" />
-          <option name="launcherType" value="OSDefault" />
-          <option name="newPlayerInstance" value="false" />
-          <option name="playerPath" value="FlashPlayerDebugger.exe" />
-        </LauncherParameters>
-      </option>
-      <option name="moduleName" value="" />
-      <option name="trusted" value="true" />
-      <method />
-    </configuration>
-    <configuration default="true" type="CucumberJavaRunConfigurationType" factoryName="Cucumber java">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <option name="myFilePath" />
-      <option name="GLUE" />
-      <option name="myNameFilter" />
-      <option name="myGeneratedName" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="" />
-      <envs />
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
       <method />
     </configuration>
     <configuration default="true" type="Applet" factoryName="Applet">
@@ -551,9 +333,9 @@
       <option name="METHOD_NAME" />
       <option name="GROUP_NAME" />
       <option name="TEST_OBJECT" value="CLASS" />
-      <option name="VM_PARAMETERS" />
+      <option name="VM_PARAMETERS" value="-ea" />
       <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="OUTPUT_DIRECTORY" />
       <option name="ANNOTATION_TYPE" />
       <option name="ENV_VARIABLES" />
@@ -566,21 +348,6 @@
       <envs />
       <properties />
       <listeners />
-      <method />
-    </configuration>
-    <configuration default="true" type="Application" factoryName="Application">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="" />
-      <envs />
       <method />
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
@@ -620,7 +387,7 @@
       <option name="launchUrl" value="false" />
       <option name="launcherParameters">
         <LauncherParameters>
-          <option name="browserFamily" value="FIREFOX" />
+          <option name="browser" value="a7bb68e0-33c0-4d6f-a81a-aac1fdb870c8" />
           <option name="launcherType" value="OSDefault" />
           <option name="newPlayerInstance" value="false" />
           <option name="playerPath" value="FlashPlayerDebugger.exe" />
@@ -637,6 +404,75 @@
       <option name="screenWidth" value="0" />
       <option name="url" value="http://" />
       <option name="usbDebugPort" value="7936" />
+      <method />
+    </configuration>
+    <configuration default="true" type="AndroidTestRunConfigurationType" factoryName="Android Tests">
+      <module name="" />
+      <option name="TESTING_TYPE" value="0" />
+      <option name="INSTRUMENTATION_RUNNER_CLASS" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="TARGET_SELECTION_MODE" value="EMULATOR" />
+      <option name="USE_LAST_SELECTED_DEVICE" value="false" />
+      <option name="PREFERRED_AVD" value="" />
+      <option name="USE_COMMAND_LINE" value="true" />
+      <option name="COMMAND_LINE" value="" />
+      <option name="WIPE_USER_DATA" value="false" />
+      <option name="DISABLE_BOOT_ANIMATION" value="false" />
+      <option name="NETWORK_SPEED" value="full" />
+      <option name="NETWORK_LATENCY" value="none" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
+      <option name="FILTER_LOGCAT_AUTOMATICALLY" value="true" />
+      <method />
+    </configuration>
+    <configuration default="true" type="FlexUnitRunConfigurationType" factoryName="FlexUnit" appDescriptorForEmulator="Android" class_name="" emulatorAdlOptions="" method_name="" package_name="" scope="Class">
+      <option name="BCName" value="" />
+      <option name="launcherParameters">
+        <LauncherParameters>
+          <option name="browser" value="a7bb68e0-33c0-4d6f-a81a-aac1fdb870c8" />
+          <option name="launcherType" value="OSDefault" />
+          <option name="newPlayerInstance" value="false" />
+          <option name="playerPath" value="FlashPlayerDebugger.exe" />
+        </LauncherParameters>
+      </option>
+      <option name="moduleName" value="" />
+      <option name="trusted" value="true" />
+      <method />
+    </configuration>
+    <configuration default="true" type="CucumberJavaRunConfigurationType" factoryName="Cucumber java">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="myFilePath" />
+      <option name="GLUE" />
+      <option name="myNameFilter" />
+      <option name="myGeneratedName" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
       <method />
     </configuration>
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
@@ -656,9 +492,10 @@
       <option name="NETWORK_LATENCY" value="none" />
       <option name="CLEAR_LOGCAT" value="false" />
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
+      <option name="FILTER_LOGCAT_AUTOMATICALLY" value="true" />
       <method />
     </configuration>
-    <configuration default="false" name="IwbStart" type="Application" factoryName="Application">
+    <configuration default="false" name="iwb" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="com.fluidops.iwb.IwbStart" />
       <option name="VM_PARAMETERS" value="" />
@@ -680,7 +517,7 @@
       <method />
     </configuration>
     <list size="1">
-      <item index="0" class="java.lang.String" itemvalue="Application.IwbStart" />
+      <item index="0" class="java.lang.String" itemvalue="Application.iwb" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -688,82 +525,81 @@
     </configuration>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
-  <component name="SliceManager">
-    <option name="analysisUIOptions">
-      <AnalysisUIOptions />
-    </option>
-  </component>
-  <component name="SvnConfiguration" maxAnnotateRevisions="500" myUseAcceleration="nothing" myAutoUpdateAfterCommit="false" cleanupOnStartRun="false" SSL_PROTOCOLS="all">
-    <option name="USER" value="" />
-    <option name="PASSWORD" value="" />
-    <option name="mySSHConnectionTimeout" value="30000" />
-    <option name="mySSHReadTimeout" value="30000" />
-    <option name="LAST_MERGED_REVISION" />
-    <option name="MERGE_DRY_RUN" value="false" />
-    <option name="MERGE_DIFF_USE_ANCESTRY" value="true" />
-    <option name="UPDATE_LOCK_ON_DEMAND" value="false" />
-    <option name="IGNORE_SPACES_IN_MERGE" value="false" />
-    <option name="CHECK_NESTED_FOR_QUICK_MERGE" value="false" />
-    <option name="IGNORE_SPACES_IN_ANNOTATE" value="true" />
-    <option name="SHOW_MERGE_SOURCES_IN_ANNOTATE" value="true" />
-    <option name="FORCE_UPDATE" value="false" />
-    <option name="IGNORE_EXTERNALS" value="false" />
-    <myIsUseDefaultProxy>false</myIsUseDefaultProxy>
+  <component name="SvnConfiguration">
+    <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="06c880ca-ca94-4a20-9487-0366cd7238c1" name="Default" comment="" />
-      <created>1384245229404</created>
-      <updated>1384245229404</updated>
-      <workItem from="1389853233623" duration="4980000" />
+      <changelist id="a26513bf-ef9b-444b-b327-3048da108931" name="Default" comment="" />
+      <created>1402400890030</created>
+      <updated>1402400890030</updated>
+      <workItem from="1402400894564" duration="386000" />
+      <workItem from="1402401283185" duration="6987000" />
     </task>
-    <task id="LOCAL-00001" summary="Initial commit, already modified fiwb">
-      <created>1387286520099</created>
-      <updated>1387286520099</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4980000" />
+    <option name="totallyTimeSpent" value="7373000" />
+  </component>
+  <component name="TodoView" selected-index="0">
+    <todo-panel id="selected-file">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="default-changelist">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="54" y="-8" width="1874" height="1096" extended-state="6" />
-    <editor active="false" />
+    <frame x="-1688" y="22" width="1696" height="1066" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3271523" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32941177" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Java Enterprise" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.5046536" sideWeight="0.8023128" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.5046536" sideWeight="0.19768722" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980132" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980132" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.249694" sideWeight="0.5874587" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Java Enterprise" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32941177" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3989305" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
+      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3989305" sideWeight="0.5" order="9" side_tool="true" content_ui="tabs" />
+      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3299595" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
+      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21123321" sideWeight="0.50079745" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32941177" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18722467" sideWeight="0.9116081" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21123321" sideWeight="0.49920255" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
-    <option name="RECENTLY_FILTERED_USERS">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
       <collection />
     </option>
   </component>
@@ -771,325 +607,178 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <option name="CHECK_NEW_TODO" value="false" />
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Initial commit, already modified fiwb" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit, already modified fiwb" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager />
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java</url>
+          <line>87</line>
+          <properties />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="1" />
+    </breakpoint-manager>
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html">
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/widget/admin/RepositoryConfigWidget.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="36" selection-start="1029" selection-end="1041" vertical-scroll-proportion="0.0" vertical-offset="476" max-vertical-offset="986">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1357" max-vertical-offset="8211">
+          <caret line="181" column="59" selection-start-line="181" selection-start-column="59" selection-end-line="181" selection-end-column="59" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/lib/google/guava-15.0.jar!/com/google/common/base/Throwables.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22742476" vertical-offset="0" max-vertical-offset="598">
+          <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/widget/admin/RepositoryConfigWidget.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1357" max-vertical-offset="8211">
+          <caret line="184" column="40" selection-start-line="184" selection-start-column="40" selection-end-line="184" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/provider/TableProvider.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3862" max-vertical-offset="17476">
+          <caret line="58" column="0" selection-start-line="58" selection-start-column="0" selection-end-line="58" selection-end-column="0" />
           <folding>
-            <element signature="n#style#0;n#span#1;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="5" selection-start="1099" selection-end="1099" vertical-scroll-proportion="0.0" vertical-offset="612" max-vertical-offset="1190">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="50" column="0" selection-start="1898" selection-end="1898" vertical-scroll-proportion="0.0" vertical-offset="850" max-vertical-offset="986">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="257" column="0" selection-start="8453" selection-end="8453" vertical-scroll-proportion="0.0" vertical-offset="4369" max-vertical-offset="37366" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/etc/jetty.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="151" column="16" selection-start="6921" selection-end="6921" vertical-scroll-proportion="0.0" vertical-offset="2567" max-vertical-offset="3111">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="24" selection-start="1015" selection-end="1015" vertical-scroll-proportion="0.0" vertical-offset="527" max-vertical-offset="1343">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/server/Servlet.st">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="44" column="8" selection-start="2129" selection-end="2129" vertical-scroll-proportion="0.0" vertical-offset="748" max-vertical-offset="1496" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config/widgets.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="33" selection-start="243" selection-end="243" vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="3689" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/widget/GraphWidget.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="19" selection-start="2667" selection-end="2667" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="11084" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="100" column="93" selection-start="3963" selection-end="3985" vertical-scroll-proportion="0.0" vertical-offset="1700" max-vertical-offset="3740" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="101" column="52" selection-start="4079" selection-end="4079" vertical-scroll-proportion="0.0" vertical-offset="1717" max-vertical-offset="2618" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="86" column="59" selection-start="2951" selection-end="2951" vertical-scroll-proportion="0.0" vertical-offset="1462" max-vertical-offset="2397" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/util/Config.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="342" column="18" selection-start="12000" selection-end="12000" vertical-scroll-proportion="0.0" vertical-offset="5814" max-vertical-offset="17323" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="12648">
+          <caret line="910" column="18" selection-start-line="910" selection-start-column="18" selection-end-line="910" selection-end-column="18" />
+          <folding>
+            <element signature="e#1368#1489#0" expanded="true" />
+          </folding>
+        </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/page/PageContext.java">
+    <entry file="jar://E:/soft/jdk1.7/src.zip!/java/lang/SuppressWarnings.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="37" selection-start="2445" selection-end="2445" vertical-scroll-proportion="0.0" vertical-offset="1292" max-vertical-offset="2652" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/WidgetSelectorImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="115" column="16" selection-start="4373" selection-end="4373" vertical-scroll-proportion="0.0" vertical-offset="1955" max-vertical-offset="4318">
+        <state vertical-scroll-proportion="0.4119497" vertical-offset="146" max-vertical-offset="782">
+          <caret line="48" column="18" selection-start-line="48" selection-start-column="18" selection-end-line="48" selection-end-column="18" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/Global.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="60" selection-start="2062" selection-end="2062" vertical-scroll-proportion="0.0" vertical-offset="918" max-vertical-offset="1292">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1734">
+          <caret line="36" column="9" selection-start-line="36" selection-start-column="9" selection-end-line="36" selection-end-column="9" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/config/widgets.xml">
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/model/PojoModel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="33" selection-start="243" selection-end="243" vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="3689" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/widget/GraphWidget.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="19" selection-start="2667" selection-end="2667" vertical-scroll-proportion="0.0" vertical-offset="1105" max-vertical-offset="11084" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="100" column="93" selection-start="3963" selection-end="3985" vertical-scroll-proportion="0.0" vertical-offset="1700" max-vertical-offset="3740" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="101" column="52" selection-start="4079" selection-end="4079" vertical-scroll-proportion="0.0" vertical-offset="1717" max-vertical-offset="2618" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="86" column="59" selection-start="2951" selection-end="2951" vertical-scroll-proportion="0.0" vertical-offset="1462" max-vertical-offset="2397" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/util/Config.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="342" column="18" selection-start="12000" selection-end="12000" vertical-scroll-proportion="0.0" vertical-offset="5814" max-vertical-offset="17323" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/page/PageContext.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="37" selection-start="2445" selection-end="2445" vertical-scroll-proportion="0.0" vertical-offset="1292" max-vertical-offset="2652" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/WidgetSelectorImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="115" column="16" selection-start="4373" selection-end="4373" vertical-scroll-proportion="0.0" vertical-offset="1955" max-vertical-offset="4318">
-          <folding />
+        <state vertical-scroll-proportion="0.0" vertical-offset="255" max-vertical-offset="4012">
+          <caret line="50" column="19" selection-start-line="50" selection-start-column="19" selection-end-line="50" selection-end-column="19" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#4126#4221#0" expanded="true" />
+          </folding>
         </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="29" selection-start="933" selection-end="933" vertical-scroll-proportion="0.0" vertical-offset="493" max-vertical-offset="1343">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="49" selection-start="49" selection-end="49" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="102" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config/widgets.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="33" selection-start="243" selection-end="243" vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="3689" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/WEB-INF/fiwb_jsp.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="23" selection-start="257" selection-end="257" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/stylesheet_fiwb.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="0" selection-start="144" selection-end="169" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config/widgets.prop">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/widget/WidgetConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="13" selection-start="1158" selection-end="1158" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/page/PageContext.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="37" selection-start="2445" selection-end="2445" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/WidgetSelectorImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="115" column="16" selection-start="4373" selection-end="4373" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="612">
+          <caret line="30" column="47" selection-start-line="30" selection-start-column="47" selection-end-line="30" selection-end-column="47" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config/widgets.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="33" selection-start="243" selection-end="243" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="53" selection-start="51" selection-end="53" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="856" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/server/Servlet.st">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="49" column="34" selection-start="2304" selection-end="2304" vertical-scroll-proportion="0.0" vertical-offset="532" max-vertical-offset="1496" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="100" column="93" selection-start="3963" selection-end="3985" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/widget/GraphWidget.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="19" selection-start="2667" selection-end="2667" vertical-scroll-proportion="0.0" vertical-offset="1105" max-vertical-offset="10098" />
-      </provider>
-    </entry>
-    <entry file="jar://E:/soft/jdk1.7/src.zip!/java/lang/String.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="107" column="19" selection-start="3638" selection-end="3638" vertical-scroll-proportion="0.33279744" vertical-offset="1051" max-vertical-offset="52292" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/util/Config.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="342" column="18" selection-start="12000" selection-end="12000" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/js/libs/klib.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="270" column="0" selection-start="8989" selection-end="8989" vertical-scroll-proportion="0.36288998" vertical-offset="4369" max-vertical-offset="37366" />
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/lib/jetty/jetty-webapp-8.1.3.v20120416.jar!/org/eclipse/jetty/webapp/WebAppClassLoader.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="0" selection-start="957" selection-end="957" vertical-scroll-proportion="0.0" vertical-offset="88" max-vertical-offset="1071">
+        <state vertical-scroll-proportion="0.0" vertical-offset="2807" max-vertical-offset="3485">
+          <caret line="177" column="17" selection-start-line="177" selection-start-column="17" selection-end-line="177" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/etc/jetty.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="161" column="48" selection-start="7569" selection-end="7569" vertical-scroll-proportion="0.63682604" vertical-offset="2111" max-vertical-offset="3128">
+        <state vertical-scroll-proportion="0.0" vertical-offset="2402" max-vertical-offset="3944">
+          <caret line="157" column="43" selection-start-line="157" selection-start-column="43" selection-end-line="157" selection-end-column="43" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://F:/tmp/jetty.bundles.repo/target/site/plugins/org.eclipse.jetty.webapp.source_8.1.3.v20120416.jar!/org/eclipse/jetty/webapp/WebAppClassLoader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="226" column="16" selection-start="8530" selection-end="8530" vertical-scroll-proportion="0.0" vertical-offset="2886" max-vertical-offset="7038">
-          <folding>
-            <element signature="e#7027#7028#0" expanded="true" />
-            <element signature="e#7058#7059#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/api/LayouterImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="84" column="43" selection-start="3450" selection-end="3450" vertical-scroll-proportion="0.0" vertical-offset="355" max-vertical-offset="1870">
-          <folding>
-            <element signature="e#0#5417#0" expanded="false" />
-            <element signature="imports" expanded="false" />
-            <element signature="e#4269#4281#0" expanded="false" />
-          </folding>
+        <state vertical-scroll-proportion="0.0" vertical-offset="283" max-vertical-offset="1853">
+          <caret line="87" column="26" selection-start-line="87" selection-start-column="26" selection-end-line="87" selection-end-column="26" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/EntityPageWidgetContainer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="101" column="32" selection-start="3364" selection-end="3364" vertical-scroll-proportion="0.0" vertical-offset="887" max-vertical-offset="1870">
-          <folding />
+        <state vertical-scroll-proportion="0.0" vertical-offset="170" max-vertical-offset="1836">
+          <caret line="59" column="8" selection-start-line="59" selection-start-column="8" selection-end-line="59" selection-end-column="8" />
+          <folding>
+            <element signature="e#1806#1807#0" expanded="true" />
+            <element signature="e#1823#1824#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java">
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/layout/TabWidgetContainer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="22" selection-start="638" selection-end="638" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1020">
+        <state vertical-scroll-proportion="0.0" vertical-offset="781" max-vertical-offset="2907">
+          <caret line="101" column="32" selection-start-line="101" selection-start-column="32" selection-end-line="101" selection-end-column="32" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="51" selection-start="971" selection-end="971" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="833">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="833">
+          <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonlylinked.html">
+    <entry file="file://$PROJECT_DIR$/src/ru/ifmo/ailab/OntoViewerWidget.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="13" selection-start="1018" selection-end="1018" vertical-scroll-proportion="-18.307692" vertical-offset="0" max-vertical-offset="1003">
+        <state vertical-scroll-proportion="0.0" vertical-offset="437" max-vertical-offset="952">
+          <caret line="52" column="34" selection-start-line="52" selection-start-column="34" selection-end-line="52" selection-end-column="34" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webapps/ROOT/extensions.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="34" selection-start="86" selection-end="86" vertical-scroll-proportion="0.037527595" vertical-offset="0" max-vertical-offset="453">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="119">
+          <caret line="1" column="32" selection-start-line="1" selection-start-column="32" selection-end-line="1" selection-end-column="32" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapps/ROOT/oeditor/html/ontographonly.html">
+    <entry file="file://$PROJECT_DIR$/src/com/fluidops/iwb/user/UserManagerImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="37" selection-start="2076" selection-end="2076" vertical-scroll-proportion="0.75443786" vertical-offset="0" max-vertical-offset="1014">
-          <folding>
-            <element signature="n#style#0;n#span#1;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.5961165" vertical-offset="1461" max-vertical-offset="4675">
+          <caret line="144" column="5" selection-start-line="144" selection-start-column="5" selection-end-line="144" selection-end-column="5" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1099,7 +788,7 @@
       <state key="ArtifactsStructureConfigurable.UI">
         <settings>
           <artifact-editor />
-          <last-edited>fiwb</last-edited>
+          <last-edited>fiwb:jar</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1152,18 +841,7 @@
             <option name="proportions">
               <list>
                 <option value="0.2" />
-              </list>
-            </option>
-          </splitter-proportions>
-        </settings>
-      </state>
-      <state key="ProjectJDKs.UI">
-        <settings>
-          <last-edited>1.7</last-edited>
-          <splitter-proportions>
-            <option name="proportions">
-              <list>
-                <option value="0.2" />
+                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>
@@ -1171,7 +849,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>lib1</last-edited>
+          <last-edited>annotations</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

@@ -36,6 +36,7 @@ import com.fluidops.iwb.widget.Widget;
 import com.fluidops.util.Rand;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import ru.ifmo.ailab.OntoViewerWidget;
 
 /**
  * The standard container for the platforms UI. This container shows the four
@@ -54,6 +55,7 @@ public class TabWidgetContainer implements WidgetContainer
 	public static final String TAB_WIKI_VIEW = "Wiki View";
 	public static final String TAB_TABLE_VIEW = "Table View";
 	public static final String TAB_GRAPH_VIEW = "Graph View";
+    public static final String TAB_ONTOGRAPH_VIEW = "Onto Graph";
 	public static final String TAB_PIVOT_VIEW = "Pivot View";	
 		
 	
@@ -96,6 +98,8 @@ public class TabWidgetContainer implements WidgetContainer
 			tabPane.addLazyView(TAB_TABLE_VIEW, tabWidgets.get(TripleEditorWidget.class),	"nav_table");
 		if(tabWidgets.containsKey(GraphWidget.class))
 			tabPane.addLazyView(TAB_GRAPH_VIEW, tabWidgets.get(GraphWidget.class), "nav_graph");
+        if(tabWidgets.containsKey(OntoViewerWidget.class))
+            tabPane.addLazyView(TAB_ONTOGRAPH_VIEW, tabWidgets.get(OntoViewerWidget.class), "nav_graph");
 		if(tabWidgets.containsKey(PivotWidget.class))
 			tabPane.addLazyView(TAB_PIVOT_VIEW, tabWidgets.get(PivotWidget.class), "nav_pivot");
 		

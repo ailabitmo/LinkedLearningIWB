@@ -46,6 +46,7 @@ import com.fluidops.iwb.widget.SemWikiWidget;
 import com.fluidops.iwb.widget.TripleEditorWidget;
 import com.fluidops.iwb.widget.Widget;
 import com.fluidops.util.Rand;
+import ru.ifmo.ailab.OntoViewerWidget;
 
 public class LayouterImpl implements Layouter
 {
@@ -80,7 +81,8 @@ public class LayouterImpl implements Layouter
         		if (!(widgetClass.equals(SemWikiWidget.class) ||
         				widgetClass.equals(TripleEditorWidget.class) ||
         				widgetClass.equals(GraphWidget.class) ||
-        				widgetClass.equals(PivotWidget.class)))
+        				widgetClass.equals(PivotWidget.class) ||
+                        widgetClass.equals(OntoViewerWidget.class)))
         		{
         			containsNonStandardWidget = true;
         			break;
