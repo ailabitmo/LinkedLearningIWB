@@ -40,7 +40,7 @@ public class TripleEditorSourceLiteralImpl extends TripleEditorSourceLoadAtOnceB
 		
 		List<TripleEditorStatement> res = new ArrayList<TripleEditorStatement>();
 		
-		for (Statement st : dm.getIncoming(value)) {
+		for (Statement st : dm().getIncoming(value)) {
 			res.add(new TripleEditorStatement(st, new TripleEditorPropertyInfo(st.getPredicate(), 
 					Sets.newHashSet(TripleEditorConstants.getDefaultClusteredResourceIncomingLiteral()), false)));
 		}

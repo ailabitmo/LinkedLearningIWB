@@ -18,24 +18,14 @@
 
 package com.fluidops.iwb.api.solution;
 
-import static org.apache.log4j.Logger.getLogger;
-
 import java.io.File;
-import java.util.List;
 
-import org.apache.log4j.Logger;
-import org.openrdf.model.Value;
-
-import com.fluidops.iwb.api.AbstractWidgetSelector;
 import com.fluidops.iwb.api.WidgetSelector;
 import com.fluidops.iwb.util.WidgetPersistence;
-import com.fluidops.iwb.widget.Widget;
 import com.fluidops.iwb.widget.WidgetConfig;
 
 public class WidgetHandler extends AbstractFailureHandlingHandler
 {
-	
-	private static final Logger logger = getLogger(SolutionService.INSTALL_LOGGER_NAME);
 
     static final String WIDGETS_XML_REL_PATH = "config/widgets.xml";
     private final WidgetSelector widgetSelector;
@@ -53,7 +43,6 @@ public class WidgetHandler extends AbstractFailureHandlingHandler
         for (WidgetConfig widgetConfig : persistence.load())
         {
             if(widgetConfig.deleted) continue;
-            checkIfContainsSimilar(widgetConfig);
             widgetSelector.addWidget(widgetConfig.widget, 
                     widgetConfig.input, 
                     widgetConfig.value, 
@@ -62,18 +51,4 @@ public class WidgetHandler extends AbstractFailureHandlingHandler
         }
         return true;
     }
-    
-    private void checkIfContainsSimilar(WidgetConfig config) throws Exception {
-    	List<WidgetConfig> widgets = widgetSelector.getWidgets();
-    	
-    	for(WidgetConfig existingConfig : widgets) {
-    		if(existingConfig.widget.equals(config.widget) && existingConfig.value.equals(config.value) && existingConfig.applyToInstances==config.applyToInstances) {
-    			if(!existingConfig.input.toString().equals(config.input.toString()) || AbstractWidgetSelector.hasPreCondition(existingConfig, config.preCondition)) {
-    				logger.info("Already contains a different configuration for widget class " + config.widget.toString()+" and resource "+config.value.stringValue()+".");
-    				logger.info("Both configurations are applied now.");
-    			}
-    		}
-    	}
-    }
-    
 }

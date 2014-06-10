@@ -18,6 +18,8 @@
 
 package com.fluidops.iwb.provider;
 
+import info.aduna.iteration.Iterations;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -115,7 +117,7 @@ public abstract class DataMappingProvider<T extends Serializable> extends Abstra
         	Resource targetResource = stmt.getSubject();			// the new name of the resource
         	Resource renamedResource = (Resource)stmt.getObject();	// the resource to be renamed
         	
-        	List<Statement> oldStatementsOut = dm.getStatements(renamedResource, null, null, false).asList(); 
+        	List<Statement> oldStatementsOut = Iterations.asList(dm.getStatements(renamedResource, null, null, false)); 
         	List<Statement> toAdd = new ArrayList<Statement>();
         	for (Statement s : oldStatementsOut)
         	{
@@ -124,7 +126,7 @@ public abstract class DataMappingProvider<T extends Serializable> extends Abstra
 	        		toAdd.add(newStatement);
         	}
         	
-        	List<Statement> oldStatementsIn = dm.getStatements(null, null, renamedResource, false).asList();
+        	List<Statement> oldStatementsIn = Iterations.asList(dm.getStatements(null, null, renamedResource, false));
         	for (Statement s : oldStatementsIn)
         	{
 	        		Statement newStatement = 

@@ -43,6 +43,7 @@ import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadWriteDataManager;
 import com.fluidops.iwb.api.ReadWriteDataManagerImpl;
+import com.fluidops.iwb.page.PageContext;
 import com.fluidops.iwb.user.UserManager.ValueAccessLevel;
 import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.widget.AbstractWidget;
@@ -94,11 +95,11 @@ public class SemWikiUtil {
 	 * @param parent a special container used for rendering (see e.g {@link LazyViewTabComponentHolder})
 	 * @return
 	 */
-	public static String getRenderedViewContent(String content, URI subject, Date version, FContainer parent) {
+	public static String getRenderedViewContent(String content, URI subject, Date version, FContainer parent, PageContext pc) {
 		// Initialize the HTML renderer.
 		// This is a per-thread context used for rendering.
 		Wikimedia.initializeHTMLRenderer();
-		String wikiHtml = Wikimedia.getHTML(content, subject, parent, version);			
+		String wikiHtml = Wikimedia.getHTML(content, subject, parent, version, pc);			
 		for (FComponent widgetComponent : Wikimedia.getRenderedComponents()) {
 			parent.add(widgetComponent);
 		}

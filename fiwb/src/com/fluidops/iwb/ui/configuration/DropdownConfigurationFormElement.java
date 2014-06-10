@@ -59,7 +59,7 @@ public class DropdownConfigurationFormElement extends AbstractConfigurationFormE
 		List<String> choices = Lists.newArrayList();
 		choices.add("");
 		
-		if (targetType.equals(Boolean.class)) 
+		if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) 
 		{
 			choices.add("false");
 			choices.add("true");

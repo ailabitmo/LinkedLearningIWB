@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -40,6 +41,7 @@ import com.fluidops.ajax.components.FCheckBox;
 import com.fluidops.ajax.components.FComboBox;
 import com.fluidops.ajax.components.FComponent;
 import com.fluidops.ajax.components.FContainer;
+import com.fluidops.ajax.components.FDialog;
 import com.fluidops.ajax.components.FForm.Validation;
 import com.fluidops.ajax.components.FHtmlString;
 import com.fluidops.ajax.components.FLabel;
@@ -60,6 +62,7 @@ import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadWriteDataManagerImpl;
 import com.fluidops.iwb.api.RequestMapper;
 import com.fluidops.iwb.api.RequestMapperImpl;
+import com.fluidops.iwb.model.Vocabulary;
 import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.util.validator.ConvertibleToUriValidator;
 import com.fluidops.iwb.widget.config.WidgetVoidConfig;
@@ -128,6 +131,14 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
         
         displaySelectedCtx.addStyle("font-size", "0.7em");
                 
+        //checkbox for exporting context meta info
+		final FCheckBox exportContextMetaDataCheckBox = new FCheckBox("exportContextMetaInfo", "include contexts meta information");
+		
+		exportContextMetaDataCheckBox.setTitle("Defines if the meta data of the selected contexts " +
+				"should also be exported.");
+		
+		exportContextMetaDataCheckBox.appendClazz("exportContextMetaData");
+		
         FContainer filetypeContainer = new FContainer("filetypeContainer");
 
         final FComboBox dataTypeBox = new RDFFormatComboBox("typebox");
@@ -137,7 +148,7 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
         filetypeContainer.add(dataTypeBox);
         
         boxContainer.add(filetypeContainer);
-        boxContainer.add(createExportToFileButton(dataTypeBox));
+        boxContainer.add(createExportToFileButton(dataTypeBox, exportContextMetaDataCheckBox));
 
         //repository export block
         //context input       
@@ -201,7 +212,7 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
                 "<p>The identifying name of the target repository (Required)</p>" ));
         repContainer.add(targetname);
 
-        repContainer.add(createExportToRepositoryButton(stat, label, context, targetserver, targetname, keepSourceCtx));
+        repContainer.add(createExportToRepositoryButton(stat, label, context, targetserver, targetname, keepSourceCtx, exportContextMetaDataCheckBox));
         
         FTabPane2Lazy tabpane = new FTabPane2Lazy("tabpane");	
         tabpane.addTab("File", "Exports selected context as a file", boxContainer);
@@ -215,6 +226,7 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
                 "Select 'All' to export the complete database</p>" ));
         supercontainer.add(displaySelectedCtx);
         supercontainer.add(createSelectionButton(displaySelectedCtx));
+        supercontainer.add(exportContextMetaDataCheckBox);
         supercontainer.add(createTitle("targetTitle", "Export target",
                 "<p>Select the target to export the data</p>" ));
         supercontainer.add(tabpane);
@@ -233,7 +245,8 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
      * @param label 
      * @return
 	 */
-	private FComponent createExportToRepositoryButton(final FContainer stat, final FLabel label, final FTextInput2 context, final FTextInput2 targetserver, final FTextInput2 targetname, final FCheckBox keepSourceCtx)
+	private FComponent createExportToRepositoryButton(final FContainer stat, final FLabel label, final FTextInput2 context, final FTextInput2 targetserver, 
+			final FTextInput2 targetname, final FCheckBox keepSourceCtx, final FCheckBox exportContextMetaDataCheckBox)
 	{
 		
 		FButton exportToRepositoryButton =  new FButton(Rand.getIncrementalFluidUUID(), "Export data to target repository")
@@ -291,8 +304,15 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
 					else {
 						
 						for(Resource ctx : selectedContexts) {
+							
 							stmts = global.getStatementsAsList(null, null, null, false, ctx);
 							targetConn.add(stmts, ctx);
+							
+							if(exportContextMetaDataCheckBox.checked)
+							{
+								stmts = global.getStatementsAsList(ctx, null, null, false, Vocabulary.SYSTEM_CONTEXT.METACONTEXT);
+								targetConn.add(stmts, Vocabulary.SYSTEM_CONTEXT.METACONTEXT);
+							}
 						}
 					}
 					
@@ -301,7 +321,7 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
 				} catch (Exception e) {
 					stat.hide(true);
 					logger.debug("Error while trying to export to remote repository: " + e.getMessage(), e);
-					getPage().getPopupWindowInstance().showError("Error while trying to export to remote repository:" + e.getMessage());
+					FDialog.showMessage(getPage(), "Error", "Error while trying to export to remote repository:" + StringEscapeUtils.escapeHtml(e.getMessage()), "Ok");
 					return;
 				} finally {
 					stat.hide(true);
@@ -320,7 +340,7 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
 	 * button for exporting the selected contexts
      * @param dataTypeBox 
 	 */
-	private FComponent createExportToFileButton(final FComboBox dataTypeBox)
+	private FComponent createExportToFileButton(final FComboBox dataTypeBox, final FCheckBox exportContextMetaInfo)
 	{
 
 		return new FButton("contextButton", "Export") {
@@ -336,7 +356,7 @@ public class ExportRDFWidget extends AbstractWidget<WidgetVoidConfig>
 
 				try {
 					String location = EndpointImpl.api().getRequestMapper().getContextPath()+"/sparql" +
-							"?query="+urlEncode(selectedContexts)+"&queryType=context"+"&format="+((RDFFormat) dataTypeBox.getSelected().get(0)).getName()+"&infer=false&forceDownload=true";
+							"?query="+urlEncode(selectedContexts)+"&queryType=context"+"&format="+((RDFFormat) dataTypeBox.getSelected().get(0)).getName()+"&infer=false&forceDownload=true&exportContextMetaData="+exportContextMetaInfo.checked;
 					if (!StringUtil.isNullOrEmpty(com.fluidops.iwb.util.Config.getConfig().getServletSecurityKey()))
 					{
 						String tokenBase = com.fluidops.iwb.util.Config.getConfig().getServletSecurityKey() + selectedContexts;

@@ -17,9 +17,15 @@
  */
 
 package com.fluidops.iwb.provider;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,12 +38,14 @@ import java.util.regex.Pattern;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
@@ -48,15 +56,22 @@ import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.tidy.Tidy;
+import org.xml.sax.SAXException;
 
 import com.fluidops.api.security.SHA512;
 import com.fluidops.iwb.api.EndpointImpl;
+import com.fluidops.iwb.datasource.TreeDataSource;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.TypeConfigDoc;
+import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.util.IWBFileUtil;
+import com.fluidops.iwb.util.User;
+import com.fluidops.util.Base64;
 import com.fluidops.util.Pair;
 import com.fluidops.util.StringUtil;
 import com.fluidops.util.XML;
@@ -97,27 +112,113 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 	
 	private transient NamespaceContext ctx;
 
-	
 	@Override
 	public void gather(final List<Statement> res) throws Exception
 	{				
 		HashMap<String, MappingRule> mappingRules = initializeGather();
-	
-		// load XML in DOM
-		File xmlFile = IWBFileUtil.getFileInWorkingDir(config.xmlfile);
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setValidating(false);
-		factory.setNamespaceAware(true);
-		factory.setXIncludeAware(false);
-		factory.setExpandEntityReferences(false);
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document doc = builder.parse(xmlFile);
 		
+		Document doc = null;
+		if (config.dataSource!=null) {
+			
+			TreeDataSource ds = config.lookupAndRefreshDataSource(TreeDataSource.class);
+			doc = ds.getDocument();
+			
+		} else {
+			// legacy support
+			
+			// load XML in DOM
+			InputStream in = null;
+			
+			try {
+				in = getInputStream();
+				doc = getDocument(in);
+			} finally {
+				IOUtils.closeQuietly(in);
+			}
+		}
+
 		// execute mapping rules in specification one by one
 	    for (MappingRule mr : mappingRules.values())
 	    	processMappingRule(res, mappingRules, doc, mr);
 	}
 
+	/**
+	 * Provides the InputStream for the provider. At the moment, this can be a xml or (x)html file. 
+	 * Either accessible from within the IWB working dir or from remote i.g., http(s).
+	 * If a username and password is provided, HTTP BasicAuth will be used.
+	 * Extension may override this method in order to construct InputStreams from other sources.
+	 * 
+	 * @return a input
+	 * @throws IOException
+	 */
+	protected InputStream getInputStream() throws IOException {
+ 		//decide whether it is a remote or local file
+		if ((config.xmlfile.startsWith("http://") || config.xmlfile.startsWith("https://"))) {
+			URL url = new URL(config.xmlfile);
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			// if username + password are provide try to use BasicAuth
+			if (config.user!=null)
+		         connection.setRequestProperty("Authorization", "Basic " + Base64.encode(config.user.username + ":" + config.user.password(this)));
+			
+	        connection.setRequestMethod("GET");
+	        return  (InputStream) connection.getInputStream();
+		} else {
+			return  new FileInputStream( IWBFileUtil.getFileInWorkingDir(config.xmlfile));
+		}
+	}
+	
+	/**
+	 * Constructs a w3c DOM from an InputStream. Depending on whether the InputStream is constructed from
+	 * an html or xml file, it will used JTidy for clean-up and constructing the document DOM.
+	 * @param in any input stream that contains (x)html/xml data
+	 * @return the DOM of an HTML or XML constructed from any InputStream
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 */
+	protected Document getDocument(InputStream in) throws SAXException, IOException, ParserConfigurationException{
+		Tidy tidy = new Tidy();
+        tidy.setHideComments(true);
+        tidy.setTidyMark(false);
+        tidy.setQuiet(true);
+        tidy.setShowErrors(1);
+        tidy.setShowWarnings(false);
+		if (StringUtil.isNotNullNorEmpty(config.inputEncoding)) {
+			tidy.setInputEncoding(config.inputEncoding);
+		}
+        tidy.setOutputEncoding("UTF-8");
+		tidy.setMakeClean(true);
+		
+		Document doc = null;
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setValidating(false);
+		factory.setNamespaceAware(true);
+		factory.setXIncludeAware(false);
+		factory.setExpandEntityReferences(false);
+		DocumentBuilder db = factory.newDocumentBuilder();
+		
+		// we assume that xml is provided, if no file extension .htm(l) is provided
+		if (!config.xmlfile.toLowerCase().endsWith(".htm") && !config.xmlfile.toLowerCase().endsWith("html")) {
+			// let jtidy know that it needs to handle xml, instead of html
+			tidy.setXmlOut(true);
+			tidy.setXmlTags(true);
+			
+			// need to have another (re)rewrite of the DOM in order to gain a clean w3c.dom 
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			InputStream is = null;
+			try{
+				doc = tidy.parseDOM(in,outputStream);
+				is = new ByteArrayInputStream(outputStream.toByteArray());
+				doc = db.parse(is); 
+			}finally{
+				IOUtils.closeQuietly(outputStream);
+				IOUtils.closeQuietly(is);
+			}
+		}else{
+			doc = tidy.parseDOM(in , null);
+		}
+		return doc;
+    }
 
 	@Override
 	public void gatherOntology(final List<Statement> ontology) throws Exception
@@ -207,7 +308,7 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 	 * @return
 	 * @throws Exception
 	 */
-	protected HashMap<String, MappingRule> initializeGather() throws Exception 
+	public HashMap<String, MappingRule> initializeGather() throws Exception 
 	{
 		// mapping from prefixes to namespaces, as defined in the config
 		ctx = getNamespaceContextFromConfig();
@@ -218,6 +319,9 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 		uriResolver = new ProviderURIResolver(config.globalResolver);
 		
 		// load specification
+		if ( config.mappingfile == null )
+			return null;
+		
 		File mappingFile = IWBFileUtil.getFileInWorkingDir(config.mappingfile);
 		HashMap<String,MappingRule> mappingRules = parseMappingFile(mappingFile);
 		return mappingRules;
@@ -233,8 +337,8 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 	 * @param mr
 	 * @throws XPathExpressionException
 	 */
-	protected void processMappingRule(List<Statement> stmts,
-			HashMap<String, MappingRule> mappingRules, Document doc,
+	public void processMappingRule(List<Statement> stmts,
+			HashMap<String, MappingRule> mappingRules, Node doc,
 			MappingRule mr) throws XPathExpressionException 
 	{
 		///////////////////////////////////////
@@ -445,15 +549,32 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 					map.put(xPathExpression,xpathExp);
 				}
 
-				NodeList dpNodeList = (NodeList)xpathExp.evaluate(context, XPathConstants.NODESET);
-
-		    	for (int i=0;i<dpNodeList.getLength();i++)
-		    	{
-		    		Node dpNode = dpNodeList.item(i);
-		    		String dpNodeVal = useNodeName ? dpNode.getNodeName() : dpNode.getTextContent();	    		
-		            if (!StringUtil.isNullOrEmpty(dpNodeVal))
-		                entry.getValue().add(dpNodeVal);
-		    	}
+				try
+				{
+					NodeList dpNodeList = (NodeList)xpathExp.evaluate(context, XPathConstants.NODESET);
+	
+			    	for (int i=0;i<dpNodeList.getLength();i++)
+			    	{
+			    		Node dpNode = dpNodeList.item(i);
+			    		String dpNodeVal = null;
+						if (useNodeName)
+							dpNodeVal = dpNode.getNodeName();
+						else {
+							if (dpNode instanceof Element)
+								dpNodeVal = dpNode.getTextContent();
+							else
+								dpNodeVal = dpNode.getNodeValue();
+						}    		
+			            if (!StringUtil.isNullOrEmpty(dpNodeVal))
+			                entry.getValue().add(dpNodeVal);
+			    	}
+				}
+				catch ( XPathExpressionException isString )
+				{
+					String string = (String)xpathExp.evaluate(context, XPathConstants.STRING);
+		            if (!StringUtil.isNullOrEmpty(string))
+		                entry.getValue().add(string);
+				}
 			}
 			catch (Exception e)
 			{
@@ -752,7 +873,7 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 			xpf = XPathFactoryImpl.newInstance();			
 	}
 
-	public static class Config implements Serializable
+	public static class Config extends AbstractFlexProvider.DataSourceProviderConfig implements Serializable
 	{
 		/**
 		 * 
@@ -765,8 +886,9 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 		public String xmlfile;
 	    
 		@ParameterConfigDoc(
-				desc = "Mapping file describing how to map the XML file to the RDF data model",
-				required = true)
+				desc = "The location of a mapping file describing how to map the XML file to the RDF data model. The file must be located in a directory where access is granted. Example: config/xml/MappingSpec.xml",
+				required = true,
+				type = Type.FILEEDITOR)
 		public String mappingfile;
 	    
 	    @ParameterConfigDoc(desc = "Resolver file defining a translation from properties used in the input and mapping files to actual RDF properties")
@@ -777,6 +899,12 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 	    
 	    @ParameterConfigDoc(desc = "Comma-separated list of namespaces that can occur in XPath expressions in the mapping file e.g. fluidops=http://www.fluidops.com/, we can now use fluidops: to refer to XML elements in the respective namespace.")
 	    public String namespaceAbbreviations;
+	    
+	    @ParameterConfigDoc(desc = "Encoding of the input file e.g. UTF-8, iso-8859-1")
+	    public String inputEncoding;
+	    
+	    @ParameterConfigDoc(desc = "Login credentials for retrieving a file which is protected using BasicAuthentification (if needed)", required = false)
+		public User user;
 	}
 
 	/**
@@ -790,45 +918,45 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 		 * Unique ID for the mapping rule. Using the same ID for multiple
 		 * more than once means only the last rule is valid.
 		 */
-		String id;
+		public String id;
 		
 		/**
 		 * XPath expression specifying the nodes set the rule applies to.
 		 */
-		String nodeBase;
+		public String nodeBase;
 		
 		/**
 		 * OWL type that will be assigned to the nodes in the node base.
 		 */
-		List<String> owlTypes;
+		public List<String> owlTypes;
 	
 		/**
 		 * Namespace to which instances are written. Must be a valid namespace
 		 * prefix as registered in the namespace service.
 		 */
-		String instanceNamespace;
+		public String instanceNamespace;
 		
 		/**
 		 * Parametrized XPath expression for generating the object ID
 		 * relative to context node; example: {./@lastame}-{./@firstname}
 		 */
-		String objectId;
+		public String objectId;
 		
 		/**
 		 * Parametrized XPath expression for generating the object ID;
 		 * example: {./@lastame}-{./@firstname}
 		 */
-		String objectLabel;
+		public String objectLabel;
 		
 		/**
 		 * List of Datatype Property Mappings
 		 */
-		List<DatatypePropertyMapping> datatypePropMappings;
+		public List<DatatypePropertyMapping> datatypePropMappings;
 		
 		/**
 		 * List of Object Property Mappings
 		 */
-		List<ObjectPropertyMapping> objectPropertyMappings;
+		public List<ObjectPropertyMapping> objectPropertyMappings;
 	}
 
 	public static class DatatypePropertyMapping
@@ -836,28 +964,28 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 		/**
 		 * Parametrized XPath expression denoting the value.
 		 */
-		String value;
+		public String value;
 		
 		/**
 		 * The OWL property used for referencing to value.
 		 */
-		String owlProperty;
+		public String owlProperty;
 		
 		/**
 		 * manipulation methods for the extracted value (toLowercase, toUppercase, ...)
 		 */
-		String manipulator;
+		public String manipulator;
 		
 		/**
 		 * Use node name instead of node text for value
 		 */
-		boolean useNodeName;
+		public boolean useNodeName;
 		
 		/**
 		 * Regexp that, if matches the value, has the consequence that
 		 * the property-value-pair is ignored.
 		 */
-		String ignoreIfMatches;
+		public String ignoreIfMatches;
 	}
 
 	public static class ObjectPropertyMapping
@@ -865,46 +993,46 @@ public class XMLProvider  extends AbstractFlexProvider<XMLProvider.Config>
 		/**
 		 * Node base: for these nodes, the object property is generated
 		 */
-		String nodeBase;
+		public String nodeBase;
 		
 		/**
 		 * Parametrized XPath expression denoting the value relative to the base node.
 		 */
-		String value;
+		public String value;
 		
 		/**
 		 * Hash the value
 		 */
-		boolean hashValue;
+		public boolean hashValue;
 		
 		/**
 		 * The referred rule (needed because namespace of referred resource is unknown).
 		 * If, for instance, the object property mapping refers to a Person and there
 		 * is a rule for generating the person, provide the id of the latter rule here.
 		 */
-		String referredRule; 
+		public String referredRule; 
 		
 		/**
 		 * The OWL property used for referencing to value.
 		 */
-		String owlProperty;
+		public String owlProperty;
 		
 		/**
 		 * As an alternative to referred rule (i.e., if the object is not created
 		 * by an other rule), we can use instanceNamespace to pass a namespace.
 		 */
-		String instanceNamespace;
+		public String instanceNamespace;
 		
 		/**
 		 * Use node name instead of node text for value
 		 */
-		boolean useNodeName;
+		public boolean useNodeName;
 		
 		/**
 		 * Regexp that, if matches the value, has the consequence that
 		 * the property-value-pair is ignored.
 		 */
-		String ignoreIfMatches;
+		public String ignoreIfMatches;
 	
 	}
 	

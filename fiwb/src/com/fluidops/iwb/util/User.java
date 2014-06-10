@@ -22,6 +22,10 @@ import java.io.Serializable;
 
 import org.openrdf.model.Resource;
 
+import com.fluidops.iwb.datasource.DataSource;
+import com.fluidops.iwb.datasource.DataSourcePwdSafe;
+import com.fluidops.iwb.model.ParameterConfigDoc;
+import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.provider.AbstractFlexProvider;
 import com.fluidops.iwb.user.IwbPwdSafe;
 
@@ -42,14 +46,44 @@ public class User implements Serializable
 
 	public static final String MASKEDPASSWORD = "********";
     
+	/**
+	 * Field name where the username is stored
+	 */
+	public static final String FIELD_USERNAME = "username";
+	
+	/**
+	 * Field name where the password is stored
+	 */
+	public static final String FIELD_PASSWORD = "password";
+	
+	@ParameterConfigDoc(desc="The user name")
 	public String username;
+	
+	@ParameterConfigDoc(desc="The password", type=Type.PASSWORD)
     public String password = MASKEDPASSWORD;
+	
     public Resource __resource;
     
     public String password( AbstractFlexProvider p )
     {
     	if ( MASKEDPASSWORD.equals( password ) )
     		return IwbPwdSafe.retrieveProviderUserPassword(p.providerID, username);
+    	else
+    		return password;
+    }
+    
+    /**
+     * Return the password for the {@link DataSource}. If the password is the
+     * {@link #MASKEDPASSWORD}, a lookup to the {@link DataSourcePwdSafe} is
+     * done.
+     * 
+     * @param ds
+     * @return
+     */
+    public String password( DataSource ds )
+    {
+    	if ( MASKEDPASSWORD.equals( password ) )
+    		return DataSourcePwdSafe.retrieveDataSourceUserPassword(ds.getIdentifier(), username);
     	else
     		return password;
     }

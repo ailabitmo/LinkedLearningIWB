@@ -8,7 +8,7 @@ $!
 
 	<div class="topmenubarLeft">
 		$if(loggedIn)$
-			<div class="loggedInLabel">&nbsp;Logged in as <b>$user$</b></div>
+			<div class="loggedInLabel">&nbsp;Logged in as <a href=$contextPath$/resource/?uri=$userUri$>$user$</a></div>
 		$endif$
 	</div>
 	

@@ -28,15 +28,43 @@ import org.openrdf.repository.RepositoryConnection;
  */
 public interface DBBulkService
 {
-    /**
-     * Load the given rdf-xml file into the database and replace an old version. The data is loaded into the context: 
-     * {@code "http://www.fluidops.com/ontologyContext/" + ontologyFile.getName()}
-     * If there already is a triple
-     * {@code "http://www.fluidops.com/name/" + ontologyFile.getName() Vocabulary.VERSION <version>} and this version is 
-     * newer or equals to the version found in the file, the import does not take place. Otherwise the former version is 
-     * replaced.
-     *  
-     * @param ontologyFile A file in rdf-xml format.
+	/**
+	 * Updates an ontology in the database if the given file ontology in RDF/XML
+	 * is a newer version or not present yet. 
+	 * <p>
+	 * The context of the imported ontology always is:
+	 * <ul>
+	 *  <li>{@code "http://www.fluidops.com/ontologyContext/" + ontologyFile.getName()}
+	 * </ul>
+	 * <p>
+	 * The given file is queried for two properties:<code>owl:versionInfo</code>
+	 * and <code>owl:versionIRI</code>. <code>owl:versionInfo</code> should refer to 
+	 * a literal which is interpreted as <b>positive integer</b> (including 0) whereas 
+	 * <code>owl:versionIRI</code> should refer to a URI which matches the following 
+	 * pattern: <code>[anyURI]/[yyyymmdd]</code>. The trailing 8 characters are interpreted 
+	 * as date encoded as digits (yyyy=year, mm=month, dd=day). Version <code>A</code> 
+	 * of ontology <code>O</code> is newer than Version <code>B</code> if and only if,
+	 * the version literal or version date (as Integer) of <code>A</code> are greater 
+	 * than the version literal or the version date (as Integer) of <code>B</code>. If 
+	 * an ontology contains both a version literal and a version date, then the version 
+	 * date is preferred.
+	 * <p>
+	 * A given file version <code>A</code> of ontology <code>O</code> is imported if
+	 * <ul>
+	 *  <li> <code>O</code> is not present in the database or
+	 *  <li> database version <code>B</code> of <code>O</code> has no version information or
+	 *  <li> <code>A</code> is newer than database version <code>B</code> or
+	 *  <li> version Literal and IRI of <code>A</code> and of database version <code>B</code>
+	 *       cannot be interpreted as Integer. 
+	 * </ul>
+	 * A given file version <code>A</code> of ontology <code>O</code> is not imported if
+	 * <code>A</code> has no version information and database version <code>B</code> of 
+	 * <code>O</code> has version information. 
+	 * 
+	 * @see <a href="http://www.w3.org/TR/owl-ref/#VersionInformation">OWL1 Version Information</a>
+	 * @see <a href="http://www.w3.org/TR/owl2-syntax/#Ontology_IRI_and_Version_IRI">OWL2 Version IRI</a>
+	 * @param ontologyFile An ontology as file in RDF/XML format.
+	 * @throws RuntimeException if malformed RDF/XML is provided
      */
     void updateOntology(File ontologyFile);
     

@@ -18,6 +18,8 @@
 
 package com.fluidops.iwb.ajax;
 
+import info.aduna.iteration.Iterations;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -425,8 +427,8 @@ public class StatementInputHelper
             try
             {
                 List<Statement> existingStmts = 
-                    dm.getStatements(stmt.getSubject(), stmt.getPredicate(), 
-                                        stmt.getObject(), false).asList();
+                    Iterations.asList(dm.getStatements(stmt.getSubject(), stmt.getPredicate(), 
+                                        stmt.getObject(), false));
 
                 boolean existsInEditableContext = false;
                 for (Statement existingStmt : existingStmts)
@@ -457,8 +459,8 @@ public class StatementInputHelper
             try
             {
                 List<Statement> existingStmts = 
-                    dm.getStatements(stmt.getSubject(), stmt.getPredicate(), 
-                                        stmt.getObject(), false).asList();
+                    Iterations.asList(dm.getStatements(stmt.getSubject(), stmt.getPredicate(), 
+                                        stmt.getObject(), false));
                 
                 boolean existsInEditableContext = false;
                 for (Statement existingStmt : existingStmts)

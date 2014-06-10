@@ -122,6 +122,15 @@
 </servlet-mapping>
 
 <servlet>
+	<servlet-name>TextEditor</servlet-name>
+	<servlet-class>com.fluidops.iwb.server.TextEditorServlet</servlet-class>
+</servlet>
+
+<servlet-mapping>
+	<servlet-name>TextEditor</servlet-name>
+	<url-pattern>/texteditor</url-pattern>
+</servlet-mapping>
+<servlet>
 	<servlet-name>AnalyzeServlet</servlet-name>
 	<servlet-class>com.fluidops.iwb.util.analyzer.AnalyzeServlet</servlet-class>
 </servlet>

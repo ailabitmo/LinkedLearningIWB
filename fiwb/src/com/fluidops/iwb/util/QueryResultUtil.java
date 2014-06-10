@@ -27,6 +27,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
@@ -43,13 +44,13 @@ import com.fluidops.iwb.ajax.FValue.ValueConfig;
 import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadWriteDataManagerImpl;
-import com.fluidops.iwb.service.CodeExecution;
+import com.fluidops.iwb.api.query.QueryBuilder;
 import com.fluidops.iwb.service.CodeExecution.CodeExecutionContext;
 import com.fluidops.iwb.service.CodeExecution.Config;
-import com.fluidops.iwb.service.CodeExecution.WidgetCodeConfig;
 import com.fluidops.iwb.widget.AbstractWidget;
 import com.fluidops.iwb.widget.ActionableResultWidget;
 import com.fluidops.iwb.widget.CodeExecutionWidget;
+import com.fluidops.iwb.widget.CodeExecutionWidget.WidgetCodeConfig;
 import com.fluidops.util.Rand;
 import com.google.common.collect.Lists;
 
@@ -58,11 +59,16 @@ import com.google.common.collect.Lists;
  * Utility class to retrieve queries as table model 
  * 
  * @author as
- *
+ * @author michele
  */
 public class QueryResultUtil
 {
 	
+	/**
+	 * Label for the column that contain actions specified as {@link WidgetCodeConfig} instances.
+	 */
+	private static final String ACTIONS_COLUMN_NAME = "";
+
 	/**
 	 * Returns the given {@link TupleQueryResult} as a list of {@link BindingSet}. The
 	 * iteration is closed as part of this method
@@ -136,12 +142,8 @@ public class QueryResultUtil
      * 
      * @param rep
      * 			the repository to use
-     * @param query
-     * 			a valid SPARQL SELECT query
-     * @param resolveNamespaces
-     * 			boolean flag, to specifiy if abbreviated namespaces should be resolved
-     * @param resolveValue
-     * 					the value to use as replacement for ??
+     * @param queryBuilder
+     * 			a {@link QueryBuilder} for the {@link TupleQuery}
      * @param valueConfig
      * 			a {@link ValueConfig} to define how values shall be treated
 	 *
@@ -152,8 +154,7 @@ public class QueryResultUtil
      * @throws MalformedQueryException
      * @throws QueryEvaluationException
      */
-    public static FTableModel sparqlSelectAsTableModel(Repository rep, String query,
-            boolean resolveNamespaces, boolean infer, Value resolveValue, 
+    public static FTableModel sparqlSelectAsTableModel(Repository rep, QueryBuilder<TupleQuery> queryBuilder, 
             ValueConfig valueCfg)
             throws RepositoryException, MalformedQueryException,
             QueryEvaluationException
@@ -162,8 +163,8 @@ public class QueryResultUtil
     	
         TupleQueryResult result = null;
         try {
-	        result = dm.sparqlSelect(query, resolveNamespaces,
-	                resolveValue, infer);
+        	TupleQuery query = queryBuilder.build(dm);
+	        result = query.evaluate();
 	        FTableModel tm = new FTableModel();
 	
 	        for (String name : result.getBindingNames())
@@ -194,12 +195,8 @@ public class QueryResultUtil
      * 
      * @param rep
      * 				the repository to evaluate the query on
-     * @param query
-     * 				the SPARQL SELECT query
-     * @param resolveNamespaces
-     * 				flag to determine if namespaces should be resolved
-     * @param resolveValue
-     * 				the value to resolve for, i.e. the value that is inserted into the query for ??, can be null
+     * @param queryBuilder
+     * 				the {@link QueryBuilder} for the {@link TupleQuery}
      * @param valueCfg
      * 				maintain value information, such as the ImageResolver
      * @param singleRowAction
@@ -211,8 +208,7 @@ public class QueryResultUtil
      * @throws MalformedQueryException
      * @throws QueryEvaluationException
      */
-    public static FTableModel sparqlSelectAsTableModelWithSingleRowAction(Repository rep, String query,
-            boolean resolveNamespaces, boolean infer, Value resolveValue, 
+    public static FTableModel sparqlSelectAsTableModelWithSingleRowAction(Repository rep, QueryBuilder<TupleQuery> queryBuilder, 
             ValueConfig valueCfg,
             List<WidgetCodeConfig> rowActions,
             CodeExecutionContext ceCtx)
@@ -221,44 +217,32 @@ public class QueryResultUtil
     {
     	
     	if (rowActions==null || rowActions.isEmpty())
-    		return sparqlSelectAsTableModel(rep, query, resolveNamespaces, infer, resolveValue, valueCfg);
+    		return sparqlSelectAsTableModel(rep, queryBuilder, valueCfg);
     	
     	ReadDataManager dm = ReadDataManagerImpl.getDataManager(rep);
     	
         TupleQueryResult result = null;
         try {
-	        result = dm.sparqlSelect(query, resolveNamespaces, resolveValue, infer);
+        	TupleQuery query = queryBuilder.build(dm);
+	        result = query.evaluate();
 	        FTableModel tm = new FTableModel();
 	
 	        for (String name : result.getBindingNames())
 	            tm.addColumn(name);
-	        tm.addColumn("");
-	        int rowCounter = 0;	    
+			/*
+			 * Add an "actions" column for row actions
+			 */
+	        tm.addColumn(ACTIONS_COLUMN_NAME);
+
+	        int rowCounter = 0;
 	        
 	        // add the row content to the model
-	        while (result.hasNext())
-	        {
-	        	BindingSet b=result.next();
+	        while (result.hasNext()) {
+	        	BindingSet b = result.next();
 	            List<FComponent> row = buildRow(b, result.getBindingNames(), rowCounter, dm, valueCfg);
-	              	
-	            // add row actions (>1 => container, component otherwise)
-	            if (rowActions.size()>1) {
-	            	FContainer btnCnt = new FContainer("btnCnt"+Rand.getIncrementalFluidUUID());
-	            	// we have to render in inverse order to be able to use float:right
-	            	// and to have in addition the intended order
-	            	for (int i=rowActions.size()-1; i>=0; i--) {
-	            		FComponent c = RowActionComponentBuilder.buildActionComponent(rowActions.get(i), b, ceCtx);
-	            		c.addStyle("float", "right");
-	            		btnCnt.add(c);
-	            	}
-	            	btnCnt.addStyle("padding-right", "10px");
-	            	row.add(btnCnt);
-	            } else {
-	            	FComponent c = RowActionComponentBuilder.buildActionComponent(rowActions.get(0), b, ceCtx);
-	        		c.addStyle("float", "right");
-	        		c.addStyle("margin-right", "10px");
-	            	row.add(c);
-	            }
+
+	            // add the row action(s)
+	            row.add(buildRowActionComponent(b, rowActions, ceCtx));
 	            
 	            tm.addRow(row.toArray());
 	            rowCounter++;
@@ -269,7 +253,6 @@ public class QueryResultUtil
         	ReadWriteDataManagerImpl.closeQuietly(result);
         } 
     }
-    
     
     /**
      * Return a {@link FSelectableTableModel} for the query to be used together with
@@ -285,6 +268,8 @@ public class QueryResultUtil
      * 				the value to resolve for, i.e. the value that is inserted into the query for ??, can be null
      * @param valueCfg
      * 				maintain value information, such as the ImageResolver
+     * @param rowActions
+     * 				actions that have to be supported for single rows like in {@link #sparqlSelectAsTableModelWithSingleRowAction(Repository, QueryBuilder, ValueConfig, List, CodeExecutionContext)}
      * @param ceCtx
      *  
      * @return
@@ -292,35 +277,82 @@ public class QueryResultUtil
      * @throws MalformedQueryException
      * @throws QueryEvaluationException
      */
-    public static FSelectableTableModel<BindingSet> sparqlSelectAsTableModelForColumnActions(Repository rep, String query,
-            boolean resolveNamespaces, boolean infer, Value resolveValue, 
-            ValueConfig valueCfg)
+    public static FSelectableTableModel<BindingSet> sparqlSelectAsTableModelForColumnActions(Repository rep, QueryBuilder<TupleQuery> queryBuilder,
+            ValueConfig valueCfg, List<WidgetCodeConfig> rowActions, CodeExecutionContext ceCtx)
             throws RepositoryException, MalformedQueryException,
             QueryEvaluationException
     {
 		ReadDataManager dm = ReadDataManagerImpl.getDataManager(rep);
 
+		final boolean hasRowActions = (rowActions != null && rowActions.size() > 0);
+
 		TupleQueryResult result = null;
 		try {
-			result = dm.sparqlSelect(query, resolveNamespaces, resolveValue, infer);
-			
-			FSelectableTableModel<BindingSet> tm = new FSelectableTableModelImpl<BindingSet>(result.getBindingNames(), true);
+			TupleQuery tupleQuery = queryBuilder.build(dm);
+			result = tupleQuery.evaluate();
+
+			List<String> columnNames = Lists.newArrayList(result.getBindingNames());
+			if (hasRowActions) {
+				/*
+				 * If there are row actions, add an "anonymous"
+				 * column for them.
+				 */
+				columnNames.add(ACTIONS_COLUMN_NAME);
+			}
+
+			FSelectableTableModel<BindingSet> tm = new FSelectableTableModelImpl<BindingSet>(columnNames, true);
 
 			int rowCounter = 0;
 
-			// add the row content to the model
-			while (result.hasNext()) {
-				BindingSet b = result.next();
-				List<FComponent> row = buildRow(b, result.getBindingNames(),
-						rowCounter, dm, valueCfg);
-				
-				tm.addRow(row.toArray(), b);
-				rowCounter++;
-			}
-			return tm;
+	        // add the row content to the model
+	        while (result.hasNext()) {
+	        	BindingSet b = result.next();
+	            List<FComponent> row = buildRow(b, result.getBindingNames(), rowCounter, dm, valueCfg);
+
+	            if (hasRowActions) {
+	            	row.add( buildRowActionComponent(b, rowActions, ceCtx));
+	            }
+	            
+	            tm.addRow(row.toArray(), b);
+	            rowCounter++;
+	        } 
+
+	        return tm;
 		} finally {
 			ReadWriteDataManagerImpl.closeQuietly(result);
 		}    
+    }
+    
+    /**
+     * Build the component representing the row action(s). This is either a single component or
+     * a container containing multiple row actions.
+     * 
+     * @param bindings
+     * @param rowActions
+     * @param ceCtx
+     * @return
+     */
+    private static FComponent buildRowActionComponent(BindingSet bindings, List<WidgetCodeConfig> rowActions, CodeExecutionContext ceCtx) {
+    	
+    	// 1) a single row action
+    	if (rowActions.size()==1) {
+        	FComponent c = RowActionComponentBuilder.buildActionComponent(rowActions.get(0), bindings, ceCtx);
+    		c.addStyle("float", "right");
+    		c.addStyle("margin-right", "10px");
+        	return c;
+    	}     	
+
+    	// 2) multiple row actions    	
+    	FContainer btnCnt = new FContainer("btnCnt"+Rand.getIncrementalFluidUUID());
+    	// we have to render in inverse order to be able to use float:right
+    	// and to have in addition the intended order
+    	for (int i=rowActions.size()-1; i>=0; i--) {
+    		FComponent c = RowActionComponentBuilder.buildActionComponent(rowActions.get(i), bindings, ceCtx);
+    		c.addStyle("float", "right");
+    		btnCnt.add(c);
+    	}
+    	btnCnt.addStyle("padding-right", "10px");
+    	return btnCnt;
     }
    
     /**
@@ -379,7 +411,7 @@ public class QueryResultUtil
 		
 		public FComponent buildActionComponent(WidgetCodeConfig action, final CodeExecutionContext ceCtx) {
     		CodeExecutionWidget cw = new CodeExecutionWidget() ;
-    		CodeExecution.WidgetCodeConfig cfg = WidgetCodeConfig.copy(action);
+    		WidgetCodeConfig cfg = action.clone();
     		cfg.onFinish = action.onFinish==null ? "none" : action.onFinish;
     		cfg.args = new ArrayList<Object>();		         
             
@@ -465,7 +497,7 @@ public class QueryResultUtil
 				// we require to work on a copy as the codeConfig belongs
 				// to the state of the widget. The selected rows have to be
 				// retrieved on demand.
-				Config copyCodeConfig = Config.copy(codeConfig);
+				Config copyCodeConfig = codeConfig.clone();
 				List<BindingSet> selectedRows = table.getSelectedObjects();
 				
 				for (int i=0; i<copyCodeConfig.args.length; i++) {
@@ -499,7 +531,7 @@ public class QueryResultUtil
 
 		public FComponent buildActionComponent(WidgetCodeConfig action, final CodeExecutionContext ceCtx) {
 			SelectedActionWidget cw = new SelectedActionWidget();
-    		CodeExecution.WidgetCodeConfig cfg = WidgetCodeConfig.copy(action);
+    		WidgetCodeConfig cfg = action.clone();
     		cfg.onFinish = action.onFinish==null ? "none" : action.onFinish;
     		cfg.args = Lists.newArrayList();        
             

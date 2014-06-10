@@ -26,6 +26,9 @@ package com.fluidops.iwb.api.datacatalog;
  */
 public interface RelationalDatabaseEndpoint extends DataEndpoint
 {
+	/**
+	 * @return the Schema for the RelationalDatabaseEndpoint (one RDE can only have one associated Schema)
+	 */
 	public Schema getSchema();
 	
 	public DatabaseInfo getDatabaseInfo();

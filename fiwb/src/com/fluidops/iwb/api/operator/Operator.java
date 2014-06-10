@@ -20,6 +20,7 @@ package com.fluidops.iwb.api.operator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -28,16 +29,17 @@ import org.openrdf.model.Value;
 
 
 /**
- * Operator framework for configuration of widgets.
+ * Operator framework for configuration of widgets.<p>
  * 
  * Provides convenience method for serialization and 
- * evaluation of Operators.
+ * evaluation of Operators.<p>
  * 
  * The public interface is described by the methods available
- * in the Operator class.
+ * in the Operator class.<p>
  * 
- * Syntax:
+ * Syntax:<p>
  * 
+ * <pre>
  * a) Constant expressions
  * 
  * String => 'Hello World'
@@ -58,18 +60,20 @@ import org.openrdf.model.Value;
  * $this.myProperty$
  * $SELECT ?x WHERE { ?x rdf:type foaf:Person }$
  * 
+ * </pre>
+ * 
  * For concrete examples, please refer to the particular 
  * {@link OperatorNode} implementations in this class, or
- * the test cases.
+ * the test cases.<p>
  * 
  * The following special tokens are replaced in constant
  * expressions as well as SELECT queries (see 
  * {@link OperatorUtil#replaceSpecialTokens(String)} for 
  * details):
  * 
- * <code>
+ * <pre>
  * {{Pipe}} => |
- * </code>
+ * </pre>
  * 
  * @author aeb (original version)
  * @author as
@@ -103,6 +107,17 @@ public class Operator implements Serializable
 	public boolean isDynamic() {
 		return (root instanceof OperatorThisEvalNode) || (root instanceof OperatorSelectEvalNode);
 	}
+	
+    /**
+     * Method for checking if this {@link Operator} is a
+     * {@link OperatorSelectEvalNode}.
+     * 
+     * @return Returns <code>true</code> if {@link Operator#root} is of type
+     *         {@link OperatorSelectEvalNode}. <code>false</code> otherwise.
+     */
+    public boolean isSelect() {
+        return (root instanceof OperatorSelectEvalNode);
+    }
 	
 	/**
 	 * package internal function to access the root node
@@ -157,7 +172,21 @@ public class Operator implements Serializable
 		return null;
 	}
 	
-	public List<Operator> getListItems() {
+    /**
+     * Returns all structured items that are children of the
+     * {@link Operator#root}.
+     */
+    public Collection<Operator> getStructureItems() {
+        if (!isStructure())
+            throw new IllegalArgumentException("Operator is not a structure: " + root.getClass().getName());
+        List<Operator> structuredItems = new ArrayList<Operator>();
+        for (OperatorNode node : ((OperatorStructNode) root).values()) {
+            structuredItems.add(new Operator(node));
+        }
+        return structuredItems;
+    }
+
+    public List<Operator> getListItems() {
 		if (!isList())
 			throw new IllegalArgumentException("Operator is not a structure: " + root.getClass().getName());
 		List<Operator> res = new ArrayList<Operator>();

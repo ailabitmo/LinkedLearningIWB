@@ -1,3 +1,5 @@
 # ':' and '=' must be escaped with '\'
-
-http\://dbpedia.org/resource/=http\://en.wikipedia.org/w/
+# Wikibot is used to retrieve additional Wikimedia information for a given entity in the http://dbpedia.org/resource/ namespace.
+# By default it is disabled. See also: /resource/Help:Wiki#Automated_Content_Retrieval. 
+# To enable this feature, uncomment the following line.
+# http\://dbpedia.org/resource/=http\://en.wikipedia.org/w/

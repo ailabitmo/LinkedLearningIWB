@@ -60,35 +60,34 @@ public abstract class FValueHoldingTextInput extends FAbstractTextInputWithAutos
 	protected AutoSuggester suggester = AutoCompleteFactory.createFixedListAutoSuggester(Collections.<Value>emptyList());
 	protected boolean activated = false;
 	
-	private HashMap<String, OptionStruct> optionsMap = new HashMap<String, OptionStruct>();
+	protected HashMap<String, OptionStruct> optionsMap = new HashMap<String, OptionStruct>();
 	 
-	private HashMap<String, OptionStruct> optionsMapByDisplayName = new HashMap<String, OptionStruct>();
+	protected HashMap<String, OptionStruct> optionsMapByDisplayName = new HashMap<String, OptionStruct>();
 	
-	private HashSet<String> duplicateDisplayNames = new HashSet<String>();
+	protected HashSet<String> duplicateDisplayNames = new HashSet<String>();
 	
-	private AutocompletionOption<Value> chosenOption;
+	protected AutocompletionOption<Value> chosenOption;
 	
 	// Now the options are loaded every time when INPUT_CHANGED is fired. 
 	// The first time options are loaded, we need to check 
 	// if the currently set value appears in the autosuggestion list.
 	// If yes, we display its displayName, otherwise, the value itself.
-	private boolean optionsLoaded = false;
+	protected boolean optionsLoaded = false;
 	
-	private boolean previousInputInterpretedAsAURILabel = false;
+	protected boolean previousInputInterpretedAsAURILabel = false;
 	
-    
     /**
      * Implementation of the AutocompletionOption for RDF values.
      * @author andriy.nikolov
      *
      */
-	private class OptionStruct implements AutocompletionOption<Value> {
+	protected class OptionStruct implements AutocompletionOption<Value> {
 		
-		private Value value = null;
-		private FComponent display = null;
-		private String displayLastGeneratedForInput = "";
-		private String displayName = null;
-		private String displayUri = null;
+		protected Value value = null;
+		protected FComponent display = null;
+		protected String displayLastGeneratedForInput = "";
+		protected String displayName = null;
+		protected String displayUri = null;
 		
 		public OptionStruct(Value value) {
 			this.value = value;
@@ -105,15 +104,19 @@ public abstract class FValueHoldingTextInput extends FAbstractTextInputWithAutos
 			}
 			displayName = EndpointImpl.api().getDataManager().getLabel(value);
 			
-			if(!duplicateDisplayNames.contains(displayName)) {
-
-				if(optionsMapByDisplayName.put(displayName, this)!=null) {
-					optionsMapByDisplayName.remove(displayName);
-					duplicateDisplayNames.add(displayName);
-				}
-			}
+			indexByString(displayName);
 			
 			return displayName;
+		}
+		
+		protected void indexByString(String searchToken) {
+			if(!duplicateDisplayNames.contains(searchToken)) {
+
+				if(optionsMapByDisplayName.put(searchToken, this)!=null) {
+					optionsMapByDisplayName.remove(searchToken);
+					duplicateDisplayNames.add(searchToken);
+				}
+			}
 		}
 		
 		@Override
@@ -237,7 +240,7 @@ public abstract class FValueHoldingTextInput extends FAbstractTextInputWithAutos
 			boolean enablesuggestion) {
 		super(id, value, label, enablesuggestion);
 	}
-
+	
 	/**
 	 * @param id
 	 * @param enablesuggestion
@@ -253,7 +256,7 @@ public abstract class FValueHoldingTextInput extends FAbstractTextInputWithAutos
 	 */
 	public FValueHoldingTextInput(String id, String value,
 			boolean enablesuggestion) {
-		super(id, value, enablesuggestion);
+		this(id, value, "", enablesuggestion);
 	}
 	
 	@Override

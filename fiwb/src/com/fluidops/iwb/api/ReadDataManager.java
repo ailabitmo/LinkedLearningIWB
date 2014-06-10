@@ -35,14 +35,16 @@ import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
-
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.rio.RDFFormat;
 
 
+
 import com.fluidops.iwb.api.Context.ContextState;
 import com.fluidops.iwb.api.ReadDataManagerImpl.StatementConstraint;
+import com.fluidops.iwb.api.query.QueryBuilder;
 import com.fluidops.iwb.cache.PropertyCache.PropertyInfo;
 import com.fluidops.iwb.provider.TableProvider.Table;
 import com.fluidops.util.ObjectTable;
@@ -291,7 +293,10 @@ public interface ReadDataManager
      * @param infer
      * 			boolean flag to indicate inference
      * @throws IllegalAccessException if the query type is not allowed
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public Query prepareQuery(String query, boolean resolveNamespaces, Value resolveValue, boolean infer)
     		throws RepositoryException, MalformedQueryException, IllegalAccessException;
 
@@ -301,13 +306,19 @@ public interface ReadDataManager
      * the result in form of a boolean. Namespace prefixes used in the query
      * are resolved using the namespaces that are currently registered with the
      * namespace service, if enabled. Inferencing is enabled as configured.
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public boolean sparqlAsk(String query, boolean resolveNamespaces, Value resolveValue, boolean infer)
     		throws RepositoryException, MalformedQueryException, QueryEvaluationException;
     
     /**
      * Returns the graph returned by a SPARQL CONSTRUCT query. No inferencing is applied.
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public GraphQueryResult sparqlConstruct(String query) throws Exception;    
 
     /**
@@ -316,7 +327,10 @@ public interface ReadDataManager
      * are resolved using the namespaces that are currently registered with the
      * namespace service. In addition, the pattern "??" is replaced by the URI
      * given by resolveURI. infer determines whether inferencing should be applied or not.
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public GraphQueryResult sparqlConstruct(String query, boolean resolveNamespaces, Value resolveValue, boolean infer)
     		throws RepositoryException, MalformedQueryException, QueryEvaluationException;
 
@@ -325,7 +339,10 @@ public interface ReadDataManager
      * the result in form of a GraphQueryResult. Namespace prefixes used in the query
      * are resolved using the namespaces that are currently registered with the
      * namespace service. No inferencing is applied.
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public GraphQueryResult sparqlConstruct(String query, boolean resolveNamespaces)
     		throws RepositoryException, MalformedQueryException, QueryEvaluationException;
     
@@ -337,7 +354,10 @@ public interface ReadDataManager
      * 
      * @param query
      * 			a valid SPARQL query
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public TupleQueryResult sparqlSelect(String query)
     		throws MalformedQueryException, QueryEvaluationException;
 
@@ -351,7 +371,10 @@ public interface ReadDataManager
      * 			a valid SPARQL query
      * @param resolveNamespaces
      * 			flag to enable resolution of namespace prefixes in the query
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public TupleQueryResult sparqlSelect(String query, boolean resolveNamespaces)
     		throws MalformedQueryException, QueryEvaluationException;
     
@@ -362,7 +385,10 @@ public interface ReadDataManager
      * namespace service. In addition, the pattern "??" is replaced by the URI
      * given by resolveURI, $user$ is replaced by the user URI. infer determines
      * whether inferencing should be applied or not.
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public TupleQueryResult sparqlSelect(String query, boolean resolveNamespaces, Value resolveValue, boolean infer)
     		throws MalformedQueryException, QueryEvaluationException;
 
@@ -374,7 +400,10 @@ public interface ReadDataManager
      * given by resolveURI. resolveUser determines whether the variable $user$ in
      * the query is replaced by the user URI. infer determines whether inferencing
      * should be applied or not.
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public TupleQueryResult sparqlSelect(String query, boolean resolveNamespaces, Value resolveValue, 
     		boolean resolveUser, boolean infer)
     		throws MalformedQueryException, QueryEvaluationException;
@@ -385,14 +414,20 @@ public interface ReadDataManager
      * are resolved using the namespaces that are currently registered with the
      * namespace service. In addition, the pattern "??" is replaced by the URI
      * given by resolveURI. infer determines whether inferencing should be applied or not.
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public ObjectTable sparqlSelectAsObjectTable(String query, boolean resolveNamespaces, Value resolveValue, boolean infer)
     		throws MalformedQueryException, QueryEvaluationException;
 
     /**
      * Constructs a table from a SPARQL SELECT query
      * No inferencing is applied.
+     * 
+     * @deprecated use {@link QueryBuilder} instead
      */
+    @Deprecated
     public Table sparqlSelectAsTable(String query)
     		throws RepositoryException, MalformedQueryException, QueryEvaluationException;
 
@@ -645,4 +680,34 @@ public interface ReadDataManager
      * Returns true if the statement stems from an editable context
      */
     public boolean isEditableStatement(Statement stmt);
+
+    /**
+     * Run a task which requires access to the internal {@link RepositoryConnection} of
+     * this {@link ReadDataManager}. Tasks are defined using the {@link RepositoryConnectionTask}
+     * interface.
+     * 
+     * @param task
+     * @return
+     * @throws MalformedQueryException
+     * @throws RepositoryException
+     * @see RepositoryConnectionTask
+     */
+    public <T> T run(RepositoryConnectionTask<T> task) throws MalformedQueryException, RepositoryException;
+
+    public static interface RepositoryConnectionTask<T> {
+
+    	/**
+    	 * Run a task which may access the {@link RepositoryConnection} of
+    	 * this {@link ReadDataManager}.
+    	 * 
+    	 * <b>Important:</b> Tasks MUST NOT close the connection.
+    	 * 
+    	 * @param connection
+    	 * @return
+    	 * @throws RepositoryException
+    	 */
+    	public T run(RepositoryConnection connection) throws MalformedQueryException, RepositoryException;
+
+    }
+
 }

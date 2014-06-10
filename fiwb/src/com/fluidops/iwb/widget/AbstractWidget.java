@@ -39,12 +39,12 @@ import com.fluidops.iwb.page.PageContext;
 import com.fluidops.iwb.user.UserManager;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.NotificationType;
-import com.fluidops.iwb.widget.config.WidgetVoidConfig;
 import com.fluidops.iwb.widget.config.WidgetBaseConfig;
+import com.fluidops.iwb.widget.config.WidgetVoidConfig;
 import com.fluidops.security.acl.ACL;
 import com.fluidops.security.acl.ACLPermission;
+import com.fluidops.util.StringUtil;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 /**
  * Base implementation class of IWB widgets.
@@ -240,13 +240,19 @@ public abstract class AbstractWidget<T> implements Widget<T>
     			component = new FAsynchContainer(id, "<div class=\"statusLoading\" />") {
     				@Override
     				public FComponent getComponentAsynch() {
-    					FComponent res = AbstractWidget.this.getComponent(id+"_a");
-    					/*
-    					 * Make sure that the widget attribute is set on the
-    					 * div that is filled out with asynch loading.
-    					 */
-    					res.addAttribute(new Attribute(Widget.WIDGET_ATTRIBUTE, AbstractWidget.this.getClass().getName()));
-    					return res;
+    					PageContext _old = PageContext.getThreadPageContext();
+    					try {
+    						PageContext.setThreadPageContext(pc);
+    						FComponent res = AbstractWidget.this.getComponent(id+"_a");
+        					/*
+        					 * Make sure that the widget attribute is set on the
+        					 * div that is filled out with asynch loading.
+        					 */
+        					res.addAttribute(new Attribute(Widget.WIDGET_ATTRIBUTE, AbstractWidget.this.getClass().getName()));
+        					return res;
+    					} finally {
+    						PageContext.setThreadPageContext(_old);
+    					}    					
     				}        		
     			};
     		} else {
@@ -296,4 +302,41 @@ public abstract class AbstractWidget<T> implements Widget<T>
     	this.value=value;
     	wasEvaluated=true;
     }
+    
+    /**
+	 * Trims and normalizes the value for a dimension (height or width), adding
+	 * "px" if {@code size} is a valid integer.
+	 * 
+	 * This method should be used to normalize the values of
+	 * {@link WidgetBaseConfig#height} and {@link WidgetBaseConfig#width}.
+	 * 
+	 * @param size
+	 *            The value for a dimension to be normalized.
+	 * @return The normalized size.
+	 */
+	protected String normalizeDimensionSize(String size) {
+		if (StringUtil.isNullOrEmpty(size)) {
+			throw new IllegalArgumentException(
+					"The provided size is null or empty");
+		}
+
+		size = size.trim();
+
+		try {
+			Integer.parseInt(size);
+			/*
+			 * The size is a valid integer. For backwards-compatibility, we
+			 * interpret this as a size in pixels.
+			 */
+			size += "px";
+		} catch (NumberFormatException e) {
+			/*
+			 * The size is not specified as a number (e.g., could be a
+			 * percentage), let's not modify it.
+			 */
+		}
+
+		return size;
+	}
+    
 }

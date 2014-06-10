@@ -37,7 +37,6 @@ import org.openrdf.query.MalformedQueryException;
 import com.fluidops.ajax.components.FComponent;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
-import com.fluidops.iwb.wiki.FluidTemplateResolver;
 import com.fluidops.iwb.wiki.FluidWikiModel;
 import com.fluidops.iwb.wiki.FluidWikiModel.TemplateResolver;
 import com.fluidops.util.ObjectHolder;
@@ -103,11 +102,11 @@ class OperatorParser  {
 		}
 		if (o instanceof Literal) {
 			Literal v = (Literal)o;
-			return toOperatorConstantNode("'" + v.toString() + "'");			
+			return toOperatorConstantNode("'" + OperatorUtil.valueToOperatorSerialization(v) + "'");			
 		}
 		if (o instanceof URI) {
 			URI u = (URI)o;
-			return toOperatorConstantNode("'<" + u.stringValue() + ">'");			
+			return toOperatorConstantNode("'" + OperatorUtil.valueToOperatorSerialization(u) + "'");			
 		}
 		// TODO additional constants that are supported
 		if (o instanceof Boolean || o instanceof Integer) {
@@ -140,6 +139,8 @@ class OperatorParser  {
 			throw new IllegalArgumentException("Illegal evaluation pattern specified: " + s);
 		if (s.startsWith("$this"))
 			return new OperatorThisEvalNode(s);
+		if (OperatorCodeEvalNode.isOperatorCodeNode(s)) 
+			return new OperatorCodeEvalNode(s);
 		try	{
 			String queryString = s.substring(1, s.length()-1);			
 			SparqlQueryType qt = ReadDataManagerImpl.getSparqlQueryType(OperatorUtil.replaceSpecialTokens(queryString), true);
@@ -236,26 +237,6 @@ class OperatorParser  {
 			}
 
 		} );
-        FluidTemplateResolver tplResolver = new FluidTemplateResolver(wikiModel, null) {
-
-			@Override
-			public String resolveTemplate(String namespace,	String templateName,
-					Map<String, String> templateParameters, URI page, FComponent parent) {
-				// if the templateName does not contain a ':' ignore it. The issue is that
-				// we need to support some legacy syntax like "items = {{ item | item1 }}"
-				// (i.e. without the ''). If "item" exists as template wiki page, it would
-				// be included by the template resolver. The test is now that only those
-				// items (without ') will be considered by this template resolver, which
-				// contain a : (see WikimediaTest#testListParsingInSpecialWidget)
-				// details are tracked in bug 10550
-				if (!templateName.contains(":"))
-					return null;				
-				return super.resolveTemplate(namespace, templateName, templateParameters, page,
-						parent);
-			}        	
-        };
-        tplResolver.setIgnoreErrors(true);
-        wikiModel.addTemplateResolver(tplResolver);  
         wikiModel.setUp();
         
         s = AbstractTemplateFunction.parseTrim(s, wikiModel);

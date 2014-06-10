@@ -18,6 +18,7 @@
 
 package com.fluidops.iwb.api.valueresolver;
 
+import static com.fluidops.iwb.api.ImageResolver.getDefaultImageResolver;
 import static com.fluidops.iwb.api.valueresolver.ValueResolver.CurrencyUSDValueResolver.resolveNumber2Places;
 
 import java.text.DateFormat;
@@ -40,7 +41,6 @@ import com.fluidops.iwb.api.ImageResolver;
 import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.util.DateTimeUtil;
 import com.fluidops.iwb.util.HTMLSanitizer;
-import com.fluidops.iwb.util.IWBFileUtil;
 import com.fluidops.security.XssSafeHttpRequest;
 import com.fluidops.util.ExtensibleEnumValue;
 import com.fluidops.util.StringUtil;
@@ -216,10 +216,10 @@ public abstract class ValueResolver extends ExtensibleEnumValue {
 	/**
 	 * Looks up the given valueResolver in the {@link ValueResolverRegistry}
 	 * and returns the found result. If the valueResolver is not known to
-	 * the system, this method returns <null>
+	 * the system, this method returns {@code null}
 	 * 
 	 * @param valueResolver a valueResolver name known to the {@link ValueResolverRegistry}
-	 * @return a {@link ValueResolver} or <null>
+	 * @return a {@link ValueResolver} or {@code null}
 	 */
 	public static ValueResolver getValueResolver(String valueResolver) {
 		ValueResolverRegistry reg = ValueResolverRegistry.getInstance();
@@ -1006,14 +1006,5 @@ public abstract class ValueResolver extends ExtensibleEnumValue {
 	    	}
 	    	return sb.substring(0, sb.length()-2 );		// remove the last comma and space
 		}		
-	}
-	
-	/**
-     * Get default image resolver.
-     * 
-	 * @return image resolver
-	 */
-	private static ImageResolver getDefaultImageResolver() {
-		return new ImageResolver(IWBFileUtil.getFileInConfigFolder("images.prop").getPath(), false);
 	}
 }

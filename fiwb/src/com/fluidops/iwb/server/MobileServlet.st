@@ -32,6 +32,9 @@ $!
     <head>
          <title>$term$</title>
  
+		$mobileHeader$
+		$mobileStandaloneHeader$
+ 
  	 <!-- Sencha Touch CSS -->
 	 <link rel="stylesheet" href="$path$/css/sencha-touch.css" type="text/css">
 

@@ -19,23 +19,23 @@
 package com.fluidops.iwb.widget;
 
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.mcavallo.opencloud.Cloud;
 import org.mcavallo.opencloud.Tag;
 import org.mcavallo.opencloud.formatters.HTMLFormatter;
-import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
 
 import com.fluidops.ajax.components.FComponent;
 import com.fluidops.ajax.components.FLabel;
@@ -43,6 +43,8 @@ import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
+import com.fluidops.iwb.api.query.FromStringQueryBuilder;
+import com.fluidops.iwb.api.query.QueryBuilder;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
@@ -50,6 +52,7 @@ import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.NotificationType;
 import com.fluidops.iwb.widget.config.WidgetQueryConfig;
 import com.fluidops.util.StringUtil;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * This widget creates a Tag Cloud.
@@ -171,18 +174,9 @@ public class TagCloudWidget extends AbstractWidget<TagCloudWidget.Config>
         else
         { // linking to query results (as search page)
 
-            // replacing page context variable       	
-        	queryPattern = ReadDataManagerImpl.replaceSpecialVariablesInQuery(queryPattern, pc.value, false);
-        	
-        	// replacing input variable 
-            if (key instanceof URI)
-                queryPattern = queryPattern.replaceAll("\\?\\:input",
-                        "<" + Matcher.quoteReplacement(((URI) key).toString())
-                                + ">");
-            else if (key instanceof Literal)
-                queryPattern = queryPattern.replaceAll("\\?\\:input",
-                        "\"" + Matcher.quoteReplacement(key.stringValue())
-                                + "\"");
+            // replacing page context variable
+        	Map<String,Value> queryParams = ImmutableMap.<String, Value>builder().put("input", key).build();
+        	queryPattern = QueryBuilder.replaceSpecialVariablesInQuery(queryPattern, pc.value, queryParams);        
 
             return EndpointImpl.api().getRequestMapper().getSearchUrlForValue(queryPattern, "SPARQL");
         }
@@ -202,9 +196,6 @@ public class TagCloudWidget extends AbstractWidget<TagCloudWidget.Config>
 			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.NO_QUERY);
 		} // if
 
-		// Repository to work with. This could be extended for use with history.
-		Repository rep = pc.repository;
-
 		// Initialize the cloud, set additional different parameters here
 		// FUTURE IMPROVEMENTS: Let user decide about these settings
 		cloud = new Cloud(); // create cloud
@@ -215,25 +206,31 @@ public class TagCloudWidget extends AbstractWidget<TagCloudWidget.Config>
 
 		// Evaluate query
 		q = q.trim();
+		FromStringQueryBuilder<? extends Operation> queryBuilder;
 		// only select queries are supported
 		try 
 		{
-			SparqlQueryType type = ReadDataManagerImpl.getSparqlQueryType(q, true);
-			if (!type.equals(SparqlQueryType.SELECT))
+			queryBuilder = QueryBuilder.create(q);
+			if (!queryBuilder.getQueryType().equals(SparqlQueryType.SELECT))
 				return WidgetEmbeddingError.getErrorLabel(id,ErrorType.NO_SELECT_QUERY);
 		} 
 		catch (MalformedQueryException e) 
 		{
-			// is handled below
+			logger.warn(e.getMessage());
+			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.SYNTAX_ERROR, e.getMessage());
 		}
 		
-		ReadDataManager dm = ReadDataManagerImpl.getDataManager(rep);
+		// apply query configuration
+		queryBuilder.resolveValue(pc.value).resolveNamespaces(true).infer(config.infer);
+		
+		ReadDataManager dm = ReadDataManagerImpl.getDataManager(pc.repository);
 		TupleQueryResult result = null;
 		
 		try
 		{
 			// Evaluate query
-			result = dm.sparqlSelect(q, true, pc.value,config.infer);
+			TupleQuery query = (TupleQuery) queryBuilder.build(dm);
+			result = query.evaluate();
 
 			// Query result is empty.
 			if(result == null || !result.hasNext())
@@ -305,7 +302,12 @@ public class TagCloudWidget extends AbstractWidget<TagCloudWidget.Config>
 			logger.warn(e.getMessage());
 			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.SYNTAX_ERROR,
 					e.getMessage());
-		} // catch
+		} 
+		catch ( RepositoryException e )
+		{
+			logger.warn(e.getMessage());
+			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.QUERY_EVALUATION, e.getMessage());
+		} 
 		catch ( QueryInterruptedException e )
 		{
 			logger.warn(e.getMessage());

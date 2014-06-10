@@ -125,4 +125,10 @@ public class StatusServlet extends IWBHttpServlet {
 			this.value = value;
 		}		
 	}
+	
+	
+	@Override
+	protected String getPageTitle() {
+		return "Status Servlet";
+	}  
 }

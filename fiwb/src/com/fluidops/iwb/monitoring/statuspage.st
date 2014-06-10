@@ -13,9 +13,9 @@ $!
 <html version="-//W3C//DTD XHTML 1.1//EN"
 	xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-<title>Information Workbench status page</title>
+<title>Status page</title>
 <meta name="Copyright"
-	content="Copyright &copy; 2012 fluid Operations AG" />
+	content="Copyright &copy; 2013 fluid Operations AG" />
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 
  	<style type="text/css">
@@ -30,7 +30,7 @@ $!
 
 <body>
 
-<h3>Information Workbench status page</h3>
+<h3>Status page</h3>
 	
 <table>
 $stateRows:{ stateRow |

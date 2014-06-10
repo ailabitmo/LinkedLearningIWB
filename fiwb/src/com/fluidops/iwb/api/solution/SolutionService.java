@@ -19,7 +19,9 @@
 package com.fluidops.iwb.api.solution;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Service to handle solutions.  
@@ -57,12 +59,46 @@ public interface SolutionService extends ExternalSolutionService
     File detectSolution();
     
     /**
-     * Detect solution "handles". These are of the same "type" as the handles
-     * that are passed to {@link #install(java.net.URL)}
+     * Detect solution "handles" that are available for installation. These are 
+     * {@link URI}s, and can represent local {@link File}s or {@link URL}s.
      * 
-     * @return an array of URLs to solutions or <code>null</code>, if none were found.
+     * @return an array of {@link URI}s to solutions or <code>null</code>, if none were found.
      */
-    URL[] detectSolutions();
+    List<URI> detectSolutions();
 
     void addHandler(SolutionHandler<?> handler);
+    
+    /**
+     * Returns the installation status of the given solution. If the solution
+     * is not known nor installed, this method returns {@code null}
+     * 
+     * @param solution
+     * @return
+     */
+    // TODO define exception handling: what happens if solution does not exist
+    InstallationResult getSolutionStatus(URI solution);
+    
+    /**
+     * Returns the installed/known solutions, including those that are not yet 
+     * installed (see {@link #detectSolution()}.
+     * 
+     * @return a {@link List} of all known solutions, may be empty. Never returns {@code null}
+     */
+    List<URI> getSolutions();
+    
+    /**
+     * Returns the installed solutions
+     * 
+     * @return a {@link List} of all known solutions, may be empty. Never returns {@code null}
+     */
+    List<URI> getInstalledSolutions();
+    
+    /**
+     * Returns the SolutionInfo about the given solution. 
+     * 
+     * @param solution
+     * @return
+     */
+    // TODO define exception handling: what happens if solution does not exist
+    SolutionInfo getSolutionInfo(URI solution);
 }

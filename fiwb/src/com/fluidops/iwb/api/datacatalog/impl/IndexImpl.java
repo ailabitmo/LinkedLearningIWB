@@ -81,7 +81,8 @@ public class IndexImpl implements Index
 				if (columnUri instanceof URI)
 					tmpColumns.add(new ColumnImpl(graph,(URI)columnUri));
 			}
-			columns = ColumnImpl.assertValidAndOrder(tmpColumns);
+			columns=tmpColumns;
+//			columns = ColumnImpl.assertValidAndOrder(tmpColumns);
 			
 		}
 		catch (GraphUtilException e)
@@ -129,14 +130,12 @@ public class IndexImpl implements Index
 		IndexType it = IndexType.UNKNOWN;
 		if (indexTypeUri!=null)
 		{
-			if (indexTypeUri.equals(RSO.INDIVIDUAL_INDEX_TYPE_CLUSTERED))
-				it = IndexType.CLUSTERED;
-			else if (indexTypeUri.equals(RSO.INDIVIDUAL_INDEX_TYPE_HASHED))
-				it = IndexType.HASHED;
-			else if (indexTypeUri.equals(RSO.INDIVIDUAL_INDEX_TYPE_OTHER))
-				it = IndexType.OTHER;
-			else if (indexTypeUri.equals(RSO.INDIVIDUAL_INDEX_TYPE_STATISTIC))
-				it = IndexType.STATISTIC;
+			if (indexTypeUri.equals(RSO.INDIVIDUAL_INDEX_TYPE_UNIQUE))
+				it = IndexType.UNIQUE;
+			else if (indexTypeUri.equals(RSO.INDIVIDUAL_INDEX_TYPE_PRIMARY))
+				it = IndexType.PRIMARY;
+			else if (indexTypeUri.equals(RSO.INDIVIDUAL_INDEX_TYPE_PERFORMANCE))
+				it = IndexType.PERFORMANCE;
 			else // indexTypeUri.equals(RSO.INDIVIDUAL_INDEX_TYPE_UNKNOWN) or invalid
 				it = IndexType.UNKNOWN;
 		}

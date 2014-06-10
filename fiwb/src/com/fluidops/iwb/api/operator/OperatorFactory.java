@@ -172,6 +172,10 @@ public class OperatorFactory {
 		return new Operator(opNode);
 	}
 	
+	public static OperatorNode voidOperatorNode() {
+		return new OperatorVoidNode();
+	}
+	
 	/**
 	 * Convert the given operator to text input
 	 * 

@@ -1,7 +1,0 @@
-=== Wiki Template Page Overview ===
-
-The [[Admin:TemplatePages| templates page]] provides an overview of all available [[Help:Wiki|wiki template pages]] deployed in the underlying system and allows to create backups or to delete revisions.
-
-<br/>
-
-<img src="../images/help/templatepages.png" width="1000px" />

@@ -120,9 +120,6 @@ public class BarChartWidget extends AbstractChartWidget<BarChartWidget.Config>
 	protected FComponent getChart(String id, BarChartWidget.Config config,
 			ReadDataManager globalDm, ReadDataManager queryDM,
 			Vector<Vector<Number>> values, Vector<Value> labels) {
-        FComponent widgetEmbeddingError = config.checkObligatoryFields(id, config, pc.value, CHART_HEIGHT_DEFAULT);
-	      if(widgetEmbeddingError!=null)
-	            return widgetEmbeddingError;
 	      
 	      	
 	      	// legacy handling
@@ -159,7 +156,7 @@ public class BarChartWidget extends AbstractChartWidget<BarChartWidget.Config>
 	        				chartDataSeries.valuesArray[i]);
 	        	}
 	        	
-	            widgetEmbeddingError = config.setOutputLabels(id, outputs, pm);
+	        	WidgetEmbeddingError widgetEmbeddingError = config.setOutputLabels(id, outputs, pm);
 	    	      if(widgetEmbeddingError!=null)
 	  	            return widgetEmbeddingError;
 	        } 
@@ -203,6 +200,15 @@ public class BarChartWidget extends AbstractChartWidget<BarChartWidget.Config>
 
 	        return chart;
     }
+
+	/**
+	 * @see com.fluidops.iwb.widget.AbstractChartWidget#getHeightDefault()
+	 */
+	@Override
+	protected String getDefaultHeight()
+	{
+		return CHART_HEIGHT_DEFAULT;
+	}
 
 }
 

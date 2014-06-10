@@ -20,8 +20,10 @@ package com.fluidops.iwb.ui.templates;
 
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.Global;
 import com.fluidops.iwb.ajax.SearchTextInput;
 import com.fluidops.iwb.api.EndpointImpl;
@@ -82,6 +84,12 @@ public class ServletPageParameters extends PageParameters {
 	 */
 	public static final String BODY = "body";
 	
+	/**
+	 * Title including a configurable title prefix (for html head title, only).
+	 * C.f. {@link Config#getTitlePrefix()}
+	 */
+	public static final String PREFIXED_TITLE = "prefixedPageTitle";
+	
 	
 	public static ServletPageParameters computePageParameter(PageContext pc) {			
 		PrinterExtensions printerExtensions = Global.printerExtension;
@@ -90,6 +98,9 @@ public class ServletPageParameters extends PageParameters {
 		ServletPageParameters p = new ServletPageParameters();
 		p.pc = pc;
 		p.pageTitle = pc.title;
+		p.prefixedPageTitle = Config.getConfig().getTitlePrefix() == null ? pc.title
+				: StringEscapeUtils.escapeHtml(Config.getConfig().getTitlePrefix())
+				+ " " + pc.title;
 		p.htmlHead = PrinterImpl.computeHtmlHead(pc);
 		p.userScript = printerExtensions.getUserScript();
 		p.contextPath = EndpointImpl.api().getRequestMapper().getContextPath();
@@ -167,6 +178,8 @@ public class ServletPageParameters extends PageParameters {
 		return tb.renderTemplate(pageParams.toStringBuilderArgs());
 	}
 	
+	protected String prefixedPageTitle;
+	
 	protected String topMenuBar;
 	protected String lowerMenuBar;
 	
@@ -182,6 +195,7 @@ public class ServletPageParameters extends PageParameters {
 		res.put(HTML_HEAD, htmlHead);
 		res.put(USER_SCRIPT, userScript);
 		res.put(BODY, body);
+		res.put(PREFIXED_TITLE, prefixedPageTitle);
 		res.put(TOP_MENU_BAR, topMenuBar);
 		res.put(LOWER_MENU_BAR, lowerMenuBar);
 		return res;	

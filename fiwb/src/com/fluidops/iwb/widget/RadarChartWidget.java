@@ -127,10 +127,6 @@ public class RadarChartWidget extends AbstractChartWidget<RadarChartWidget.Confi
 	protected FComponent getChart(String id, RadarChartWidget.Config config,
 			ReadDataManager globalDm, ReadDataManager queryDM,
 			Vector<Vector<Number>> values, Vector<Value> labels) {
-        FComponent widgetEmbeddingError = config.checkObligatoryFields(id, config, pc.value, CHART_HEIGHT_DEFAULT);
-        
-        if(widgetEmbeddingError!=null)
-            return widgetEmbeddingError;
                 
         ChartDataModel pm = ChartWidgetUtil.createChartModel(FChartType.RADAR, config.height,
                 config.width, config.title);
@@ -151,7 +147,7 @@ public class RadarChartWidget extends AbstractChartWidget<RadarChartWidget.Confi
                     chartDataSeries.valuesArray[i]);
         }
 
-        widgetEmbeddingError = config.setOutputLabels(id, outputs, pm);
+        WidgetEmbeddingError widgetEmbeddingError = config.setOutputLabels(id, outputs, pm);
 	      if(widgetEmbeddingError!=null)
 	            return widgetEmbeddingError;
 
@@ -214,6 +210,15 @@ public class RadarChartWidget extends AbstractChartWidget<RadarChartWidget.Confi
 
         return chart;
     }
-
+	
+	/**
+	 * @see com.fluidops.iwb.widget.AbstractChartWidget#getHeightDefault()
+	 */
+	@Override
+	protected String getDefaultHeight()
+	{
+		return CHART_HEIGHT_DEFAULT;
+	}
+	
 }
 

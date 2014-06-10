@@ -46,7 +46,7 @@ public class SchemaImpl implements Schema
     		Logger.getLogger(SchemaImpl.class.getName());
 	
 	protected String name;
-	protected String fullName;
+
 	
 	protected List<Table> tables=null;
 	
@@ -65,10 +65,6 @@ public class SchemaImpl implements Schema
 			Literal nameLit = GraphUtil.getOptionalObjectLiteral(graph, schemaUri, RSO.PROP_SCHEMA_NAME);
 			if (nameLit!=null)
 				name = nameLit.stringValue();
-				
-			Literal fullNameLit = GraphUtil.getOptionalObjectLiteral(graph, schemaUri, RSO.PROP_SCHEMA_FULL_NAME);
-			if (fullNameLit!=null)
-				fullName = fullNameLit.stringValue();
 	
 		}
 		catch (GraphUtilException e)
@@ -82,12 +78,6 @@ public class SchemaImpl implements Schema
 	public String getName()
 	{
 		return name;
-	}
-	
-	@Override
-	public String getFullName()
-	{
-		return fullName;
 	}
 
 	@Override

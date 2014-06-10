@@ -106,7 +106,7 @@ public class AdHocSearchResultsWidgetSelectorImpl extends AbstractWidgetSelector
 				}
 			} 
 
-		} else if (Config.getConfig().getPivotActive())
+		} else if (Config.getConfig().getPivotActive() && (queryType.equals("CONSTRUCT")))
 		{
 			PivotWidget piv = new PivotWidget();
 			guessInitialPivotConfiguration(piv);
@@ -289,21 +289,53 @@ public class AdHocSearchResultsWidgetSelectorImpl extends AbstractWidgetSelector
 		return false;
 	}
 	
+	/**
+	 * Determine if a search result can be mapped to GMap. A query result can
+	 * be mapped to GMap if it satisfies one or more of the following conditions:
+	 * 
+	 * a) It contains only projection variables that are available in the {@link GMapWdiget.Config}
+	 * b) Latitude ("lat") and longitude ("lng") are specified as pairs
+	 * c) Longitude is a numerical value in the range [-180,180]
+	 * d) Latitude is a numerical value in the range [-90,90]
+	 * 
+	 * 
+	 * @param mapFieldProfiles
+	 * @return
+	 */
 	private boolean canBeMappedToGMap(Map<String, QueryFieldProfile> mapFieldProfiles) {
 		
+		QueryFieldProfile locationProfile = null, latProfile = null, lngProfile = null;
+
+		// Check whether the search results contain any fields except the reserved ones.
+		for(Entry<String, QueryFieldProfile> entry : mapFieldProfiles.entrySet()) {
+			switch(entry.getKey()) {
+				case "location":
+					locationProfile = entry.getValue();
+					break;
+				case "lat":
+					latProfile = entry.getValue();
+					break;
+				case "lng":
+					lngProfile = entry.getValue();
+					break;
+				case "link":
+				case "description":
+				case "image":
+					break;
+				default:
+					return false;
+			}
+		}
+		
 		// Check whether the search results contain location as a string
-		QueryFieldProfile tmpProfile = mapFieldProfiles.get("location"); 
-		if(tmpProfile != null && tmpProfile.getPossibleFieldTypes().contains(FieldType.NOMINAL)) 
+		if(locationProfile != null && locationProfile.getPossibleFieldTypes().contains(FieldType.NOMINAL)) 
 			return true;
 		
 		// If not, check if the results contain geo coordinates as "lng" and "lat" variables
-		tmpProfile = mapFieldProfiles.get("lng");
-		QueryFieldProfile tmpProfile2 = mapFieldProfiles.get("lat");
-		
-		if(tmpProfile!=null 
-				&& tmpProfile2!=null 
-				&& tmpProfile.getPossibleFieldTypes().contains(FieldType.GEO_LONGITUDE) 
-				&& tmpProfile2.getPossibleFieldTypes().contains(FieldType.GEO_LATITUDE))
+		if(latProfile!=null 
+				&& lngProfile!=null 
+				&& lngProfile.getPossibleFieldTypes().contains(FieldType.GEO_LONGITUDE) 
+				&& latProfile.getPossibleFieldTypes().contains(FieldType.GEO_LATITUDE))
 			return true;
 			
 		return false;

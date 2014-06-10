@@ -262,7 +262,7 @@ public class AnalyzingRepositoryConnection implements RepositoryConnection, Anal
 		long start = System.currentTimeMillis();
         BooleanQuery res = conn.prepareBooleanQuery(ql, query, baseURI);
         long duration = System.currentTimeMillis() - start;
-        Analyzer.getInstance().analyze(this, "#prepareBooleanQuery: "+query, duration);
+        Analyzer.getInstance().analyzePrepareQuery(this, "#prepareBooleanQuery: ", query, duration);
         return new AnalyzingBooleanQuery(this, res, query);
 	}
 
@@ -274,7 +274,7 @@ public class AnalyzingRepositoryConnection implements RepositoryConnection, Anal
 		long start = System.currentTimeMillis();
         GraphQuery res = conn.prepareGraphQuery(ql, query, baseURI);
         long duration = System.currentTimeMillis() - start;
-        Analyzer.getInstance().analyze(this, "#prepareGraphQuery: "+query, duration);
+        Analyzer.getInstance().analyzePrepareQuery(this, "#prepareGraphQuery: ", query, duration);
         return new AnalyzingGraphQuery(this, res, query);
 	}
 
@@ -306,7 +306,7 @@ public class AnalyzingRepositoryConnection implements RepositoryConnection, Anal
         long start = System.currentTimeMillis();
         TupleQuery tq = conn.prepareTupleQuery(ql, query, baseURI);
         long duration = System.currentTimeMillis() - start;
-        Analyzer.getInstance().analyze(this, "#prepareTupleQuery: "+query, duration);
+        Analyzer.getInstance().analyzePrepareQuery(this, "#prepareTupleQuery: ", query, duration);
         return new AnalyzingTupleQuery(this, tq, query);
 	}
 

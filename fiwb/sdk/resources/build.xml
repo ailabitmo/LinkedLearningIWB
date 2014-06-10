@@ -152,6 +152,10 @@
 	    		<exclude name="solution.properties" />
                 <exclude name="*.launch" />
 	    		
+	    		<!-- skip files and folders, which should not be packaged as part of the solution -->
+            	<exclude name="_*" />
+            	<exclude name="_*/**" />
+	    		
 	    		<exclude name="artifacts/**" />
 	    		<exclude name="temp/**" />
 	    		

@@ -81,7 +81,7 @@ public class TripleEditorSourceURIImpl extends TripleEditorSourceLoadAtOnceBase<
 		TupleQueryResult outgoing=null, incoming=null;
 		try
         {
-            outgoing = dm.sparqlSelect(prepareQuery(QUERY_OUTGOING_ALL, subject), true);
+            outgoing = dm().sparqlSelect(prepareQuery(QUERY_OUTGOING_ALL, subject), true);
 
 			while (outgoing.hasNext()) {
 				BindingSet tuple = outgoing.next();
@@ -94,7 +94,7 @@ public class TripleEditorSourceURIImpl extends TripleEditorSourceLoadAtOnceBase<
 
             if (includeInverse)
             {
-                incoming = dm.sparqlSelect(prepareQuery(QUERY_INCOMING_ALL, subject), true);       
+                incoming = dm().sparqlSelect(prepareQuery(QUERY_INCOMING_ALL, subject), true);       
 
                 while (incoming.hasNext())
                 {
@@ -159,12 +159,15 @@ public class TripleEditorSourceURIImpl extends TripleEditorSourceLoadAtOnceBase<
 	
 	@Override
 	public void initialize(URI uri, int initialValuesDisplayed,
-			boolean includeInverseProperties) throws QueryEvaluationException 
-	{
+			boolean includeInverseProperties, TripleEditorSourceInformation info)
+			throws QueryEvaluationException {
 		this.value = uri;
 		this.includeInverse = includeInverseProperties;
 		// initialValuesDisplayed not used by this triple source
 		
+		if (info.hasOrderedListProperty())
+			throw new RuntimeException(this.getClass()
+					+ " does not support ordered lists in TripleEditor.");
 		initialize();
 	}
 

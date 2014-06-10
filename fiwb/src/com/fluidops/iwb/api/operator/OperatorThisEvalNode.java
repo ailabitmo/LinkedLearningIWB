@@ -19,9 +19,7 @@
 package com.fluidops.iwb.api.operator;
 
 import java.util.List;
-import java.util.Set;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -30,50 +28,48 @@ import com.fluidops.iwb.Global;
 import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.provider.ProviderUtils;
-import com.google.common.collect.Sets;
 
 /**
- * Operator for evaluation of properties of a given resource. The 
- * operator is denoted as $this.<MyProperty>$, where my property
- * can be converted to a valid full URI. Note that valueContext
- * is used as the subject, i.e. it needs to be set prior to evaluation.
- * Otherwise an OperatorException is thrown.
+ * Operator for evaluation of properties of a given resource.
+ * <p>
  * 
- * If there are multiple instances for the given property, the first
- * item of the list is returned (in case a single result is expected). 
+ * The operator is denoted as $this.&lt;MyProperty&gt;$, where my property can be
+ * converted to a valid full URI. Note that valueContext is used as the subject,
+ * i.e. it needs to be set prior to evaluation. Otherwise an OperatorException
+ * is thrown.<p>
  * 
- * If the query result is empty, <null> is returned.
+ * If there are multiple instances for the given property, an operator exception
+ * is thrown (in case a single result is expected).<p>
  * 
- * If the targetType does not match the runtime type of retrieved object,
- * a ClassCastException will be thrown.
+ * If the query result is empty, {@code null} is returned.<p>
  * 
- * Examples:
- * $this.label$
- * $this.rdfs:label$
- * $this.<http://example.org/property>$
+ * If the targetType does not match the runtime type of retrieved object, a
+ * ClassCastException will be thrown.<p>
  * 
+ * Examples: 
+ * <pre>
+ * $this.label$ $this.rdfs:label$ $this.&lt;http://example.org/property&gt;$
+ * </pre>
  * 
- * Supported targetTypes
+ * Supported targetTypes are defined in {@link OperatorNodeListBase#supportedTargetTypes}:
  * 
- * List<Value> (default), URI, Literal, List<Value>, String, Object (=> Value)
+ * <pre>
+ * List&lt;Value&gt; (default), URI, Literal, List&lt;Value&gt;, String, Object (=> List&lt;Value&gt;)
+ * </pre>
  * 
  * @author as
  */
-class OperatorThisEvalNode implements OperatorNode {
+public class OperatorThisEvalNode extends OperatorNodeListBase implements OperatorNode {
 
 	private static final long serialVersionUID = -4124591126222019504L;
 	
 	private final String serialized;
 	private Resource valueContext = null;
-	
-	@SuppressWarnings("unchecked")
-	private Set<Class<? extends Object>> supportedTargetTypes = Sets.newHashSet(Value.class, URI.class, Literal.class, String.class, Object.class, List.class);
-	
-	public OperatorThisEvalNode(String serialized)	{
+		
+	OperatorThisEvalNode(String serialized)	{
 		this.serialized = serialized;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T evaluate(Class<T> targetType) throws OperatorException	{
 		if (valueContext==null)
@@ -87,18 +83,7 @@ class OperatorThisEvalNode implements OperatorNode {
 		ReadDataManager dm = ReadDataManagerImpl.getDataManager(Global.repository);
 		List<Value> values = dm.getProps(valueContext, getPredicate());
 		
-		if (List.class.isAssignableFrom(targetType)) {
-			return (T)values;
-		}
-		
-		if (values.size()==0)
-			return null;		
-		
-		if (targetType.equals(Object.class)) {
-			return (T)values;
-		}
-
-		return toTargetType(values.get(0), targetType);
+		return handleList(targetType, values);
 	}
 
 	@Override
@@ -116,10 +101,5 @@ class OperatorThisEvalNode implements OperatorNode {
 	private URI getPredicate() {
 		// serialized is $this.MYPROPERTY$
 		return ProviderUtils.objectToUri(serialized.substring(6, serialized.length()-1));
-	}
-	
-	@SuppressWarnings("unchecked")
-	private <T> T toTargetType(Value v, Class<T> targetType) {
-		return (T)OperatorUtil.toTargetType(v, targetType);
-	}
+	}		
 }

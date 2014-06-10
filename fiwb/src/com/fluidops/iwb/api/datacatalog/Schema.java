@@ -27,10 +27,15 @@ import java.util.List;
  */
 public interface Schema 
 {
+	/**
+	 * @return the schema's name
+	 */
 	public String getName();
 	
-	public String getFullName();
 	
+	/**
+	 * @return all tables belonging to the schema
+	 */
 	public List<Table> getTables();
 	
 	/**

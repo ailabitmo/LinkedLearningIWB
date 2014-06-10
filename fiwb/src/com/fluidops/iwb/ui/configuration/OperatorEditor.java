@@ -193,11 +193,6 @@ public class OperatorEditor extends FContainer {
 				
 			}
 		});
-	
-		// show a confirmation question, if some input has been made already in the form independent from the operator itself
-		// TODO activate confirmation question once problem described in bug 11003 is fixed
-//		if (StringUtil.isNullOrEmpty(operatorString) && toOperatorNode()!=null)
-//			btn_done.setConfirmationQuestion("This operation will clear all manually made config settings. Do you want to continue?");
 
 		FButton btn_clear = new FButton(Rand.getIncrementalFluidUUID(),
 				"Clear Operator") {
@@ -209,8 +204,7 @@ public class OperatorEditor extends FContainer {
 				formElementContainer.populateView();
 			}
 		};
-		// TODO activate confirmation question once problem described in bug 11003 is fixed
-//		btn_clear.setConfirmationQuestion("This operation will clear the specified dynamic operator. Do you want to continue?");
+		btn_clear.setConfirmationQuestion("This operation will clear the specified dynamic operator. Do you want to continue?");
 		dialog.add(btn_clear, "floatRight");
 
 		return dialog;

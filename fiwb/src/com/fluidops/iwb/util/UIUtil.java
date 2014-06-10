@@ -63,8 +63,8 @@ public class UIUtil {
 	public static String configDefaultValueToString(ParameterConfigDoc configAnnotation) {
 		if (configAnnotation==null)
 			throw new IllegalArgumentException("Argument must not be null.");
-		Object defaultValue = configAnnotation.defaultValue();
-		if (defaultValue!=null && !StringUtil.isNullOrEmpty(defaultValue.toString()))
+		String defaultValue = configAnnotation.defaultValue();
+		if (defaultValue!=null && !StringUtil.isNullOrEmpty(defaultValue))
 			return "Default: " + defaultValue.toString();
 		return "";
 	}

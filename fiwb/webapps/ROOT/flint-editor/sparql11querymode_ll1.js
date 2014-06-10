@@ -3597,13 +3597,17 @@ var acceptEmpty=false;
 		var PN_CHARS= '('+PN_CHARS_U+'|-|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])';
 		var VARNAME = '('+PN_CHARS_U+'|[0-9])'+
 			'('+PN_CHARS_U+'|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])*';
-		var VAR1 = '\\?'+VARNAME;
+		
+		// Support query parameters notated by ?:param
+		var VARNAME_PLUS = '('+VARNAME+')|(:'+VARNAME+')';
 		// Special check to allow '??' when editing a query template
 		// from a widget configuration form
 		if(typeof(supportQueryTemplates)!=='undefined' && supportQueryTemplates) {
-			var VARNAME_PLUS = '(('+VARNAME+')|(\\?))';
-			VAR1 = '(\\?'+VARNAME_PLUS+')';
+			VARNAME_PLUS = VARNAME_PLUS + '|(\\?)';
 		} 
+		VARNAME_PLUS = '(' + VARNAME_PLUS + ')';
+		var VAR1 = '(\\?'+VARNAME_PLUS+')';
+		
 		var VAR2 = '\\$'+VARNAME;
 
 		var PN_PREFIX= '('+PN_CHARS_BASE+')((('+PN_CHARS+')|\\.)*('+PN_CHARS+'))?';

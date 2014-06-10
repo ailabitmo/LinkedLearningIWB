@@ -30,6 +30,20 @@
   <url-pattern>/*</url-pattern>
 </filter-mapping>
 
+<!--
+<filter>
+	<filter-name>AclFilter</filter-name>
+	<display-name>AclFilter</display-name>
+	<description>This filter checks the ACLs to the resource</description>
+	<filter-class>com.fluidops.iwb.user.AclFilter</filter-class>
+</filter>
+
+<filter-mapping>
+	<filter-name>AclFilter</filter-name>
+    <url-pattern>*.jsp</url-pattern>
+</filter-mapping>
+-->
+
 <servlet-mapping>
 	<servlet-name>jsp</servlet-name>
 	<url-pattern>/login/login.jsp</url-pattern>

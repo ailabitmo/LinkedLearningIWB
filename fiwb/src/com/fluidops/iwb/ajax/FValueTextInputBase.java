@@ -265,7 +265,7 @@ public abstract class FValueTextInputBase extends FValueInputBase
             // no valid type
             return false;
         }
-        
+
         // check for known types, i.e. various XSD datatypes
         // Validation should not happen for resources selected from the autosuggestion list,  
         // because the validation method tries to guess the URI for the text input, which would fail if 
@@ -283,6 +283,9 @@ public abstract class FValueTextInputBase extends FValueInputBase
     @Override
     public Value getRdfValue()
     {
+    	if (!uiInitialized)
+    		return origVal;
+    	
         assert currentType != null;
 
         // -> only return if valid
@@ -584,35 +587,23 @@ public abstract class FValueTextInputBase extends FValueInputBase
         if (allowResource)
             typeInput.addChoice(Datatype.getLabel(RDFS.RESOURCE), RDFS.RESOURCE);
 
-        // (3) add basic literal type (if allowed, depending on restrictions)
-        if (restrictToSuggestions)
-        {
-            // restricted: basic literal only if no literal types suggested
-            if (allowLiteral && suggestedLiteralTypes.size() == 0)
-            {
-                typeInput.addChoice(Datatype.getLabel(RDFS.LITERAL), RDFS.LITERAL);
-                literalMenuEntries.add(RDFS.LITERAL);
-            }
-        }
-        else
-        {
-            // unrestricted: basic literal whenever literals allowed
-            if (allowLiteral)
-            {
-                typeInput.addChoiceIfAbsent("Literal (any/untyped)",
-                        RDFS.LITERAL);
-                literalMenuEntries.add(RDFS.LITERAL);
-            }
-        }
+		// (3) add basic literal type (if allowed and not specified
+		// more specifically)        
+		if (allowLiteral && suggestedLiteralTypes.size() == 0)
+		{
+			typeInput.addChoice(Datatype.getLabel(RDFS.LITERAL), RDFS.LITERAL);
+			literalMenuEntries.add(RDFS.LITERAL);
+		}
 
         // (4) add all remaining literal types if unrestricted and explicit
         // typing for data types switched on by global configuration
         if (allowLiteral
-                && !restrictToSuggestions
+                && suggestedLiteralTypes.size() == 0
                 && com.fluidops.iwb.util.Config.getConfig()
                         .displayDatatypeDropdown())
         {
-        	for (Datatype d : Datatype.values()) {
+        	for (Datatype d : Datatype.values())
+        	{
         		typeInput.addChoiceIfAbsent(d.toString(), d.getTypeURI());
         		literalMenuEntries.add(d.getTypeURI());
         	}
@@ -646,8 +637,11 @@ public abstract class FValueTextInputBase extends FValueInputBase
 
         currentType = origType;
 
-		// fine, there is a choice, keep dropdown
-		typeComponent = typeInput;
+        // always hide if there is no actual choice
+        if (typeInput.getChoices().size() < 2)
+        	typeInput.setHidden(true);
+        
+        typeComponent = typeInput;
 		return typeInput;
     }
 

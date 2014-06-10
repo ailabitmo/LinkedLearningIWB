@@ -114,6 +114,7 @@ public class Servlet extends IWBHttpServlet
 			
 			// the main object passed between processing steps
 			PageContext pc = new PageContext();
+			PageContext.setThreadPageContext(pc);
 			
 			// page webapp context
 			pc.contextPath = request.getContextPath();
@@ -124,6 +125,9 @@ public class Servlet extends IWBHttpServlet
 			pc.setRequest(request);
 			pc.httpResponse = response;
 			pc.repository = Global.repository;
+			
+			// apply the repository request parameter, if given
+			pc.configureRepositoryFromRequest(request);
 
 			//hide the popup window
 			if (pc.page!=null)
@@ -225,4 +229,8 @@ public class Servlet extends IWBHttpServlet
         doGet(req, resp);
     }
     
+	@Override
+	protected String getPageTitle() {
+		return "HTTP Servlet";
+	}  
 }

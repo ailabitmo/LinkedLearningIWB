@@ -23,6 +23,8 @@ import org.openrdf.model.Value;
 import com.fluidops.ajax.components.FComponent;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
+import com.fluidops.iwb.ui.configuration.ValueDropdownConfigurationFormElement.ValueFormElementConfig;
+import com.fluidops.iwb.util.User;
 
 /**
  * Factory to instantiate new {@link ConfigurationFormElement} for
@@ -39,11 +41,14 @@ public class ConfigurationFormElementFactory {
 	 * in {@link FormElementConfig#parameterConfig}.
 	 * 
 	 * For the following targetTypes the default rendering component is changed (if it was set
-	 * to the default, i.e., {@link Type#SIMPLE}.
+	 * to the default, i.e., {@link Type#SIMPLE}.<p>
 	 * 
 	 *  - boolean => {@link Type#DROPDOWN}
 	 *  - enum => {@link Type#DROPDOWN}
 	 *  
+	 * There is also special support targetType {@link User}: the type information is ignored
+	 * and a {@link UserConfigurationFormElement} is returned.
+	 * 
 	 * @param fCfg
 	 * @return
 	 */
@@ -59,9 +64,17 @@ public class ConfigurationFormElementFactory {
 				selectedType = Type.DROPDOWN;
 		}
 		
+		// support type User
+		if (fCfg.targetType.equals(User.class)) {
+			return new UserConfigurationFormElement();
+		}
 			
 		switch (selectedType) {
-		case SIMPLE: 	   	return new TextInputConfigurationFormElement();
+		case SIMPLE:
+			if (fCfg instanceof ValueFormElementConfig)
+				return new ValueHoldingTextInputConfigurationFormElement();
+			else
+				return new TextInputConfigurationFormElement();
 		case CONFIG:		return new ConfigInputConfigurationFormElement();
 		case LIST:			return new ListInputConfigurationFormElement();
 		case DROPDOWN:
@@ -73,6 +86,7 @@ public class ConfigurationFormElementFactory {
 		case PASSWORD:		return new PasswordSimpleConfigurationFormElement();
 		case CHECKBOX:		return new CheckboxConfigurationFormElement();
 		case SPARQLEDITOR:  return new SparqlEditorConfigurationFormElement();
+		case FILEEDITOR:    return new FileEditorConfigurationFormElement();
 		default:		throw new RuntimeException("Type not yet implemented: " + paramConfig.type());
 		}
 	}
@@ -83,9 +97,9 @@ public class ConfigurationFormElementFactory {
 		
 		// TODO null checks
 		
-		if (type.equals(String.class))
-			return new TextInputConfigurationFormElement();		
-		
+        if (type.equals(String.class))
+            return new TextInputConfigurationFormElement();
+
 		// render booleans and enums as dropdown
 		if(type.equals(Boolean.class) || type.equals(boolean.class) || type.isEnum())
 			return new DropdownConfigurationFormElement();
@@ -94,10 +108,13 @@ public class ConfigurationFormElementFactory {
 			return new TextInputConfigurationFormElement();	
 		
 		if (Value.class.isAssignableFrom(type))
-			return new TextInputConfigurationFormElement();
+		    return new ValueHoldingTextInputConfigurationFormElement();
 		
 		if (Object.class.equals(type))
 			return new TextInputConfigurationFormElement();
+		
+		if (User.class.isAssignableFrom(type))
+			return new UserConfigurationFormElement();
 		
 		return new SubformInputConfigurationFormElement();
 	}

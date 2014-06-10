@@ -420,9 +420,11 @@ function initRGraph(input1, id1){
     //end
     var infovis = document.getElementById(cont);
     var w = infovis.offsetWidth + 150, h = infovis.offsetHeight - 50;
+    var prevTop = 0;
 
     //init RGraph
     var rgraph = new $jit.RGraph({
+
         //Where to append the visualization
         injectInto: cont,
         width: w,
@@ -438,7 +440,7 @@ function initRGraph(input1, id1){
         //Add navigation capabilities:
         //zooming by scrolling and panning.
         Navigation: {
-          enable: true,
+          enable: false,
           panning: true,
           zooming: 10
         },
@@ -493,6 +495,20 @@ function initRGraph(input1, id1){
             var left = parseInt(style.left);
             var w = domElement.offsetWidth;
             style.left = (left - w / 2) + 'px';
+
+            // moving vertically overlapping labels:
+            var sTop =  parseInt(style.top);
+	    var tDist = prevTop - sTop;
+            var sig = 1;
+            if(tDist < 0) {
+                tDist = tDist * -1;
+                sig = -1;
+            }
+
+	    if(prevTop > 0 && tDist < 10) {
+		    style.top = (prevTop + 10) + 'px';
+            }
+	    prevTop = parseInt(style.top);
         }
     });
     //load JSON data

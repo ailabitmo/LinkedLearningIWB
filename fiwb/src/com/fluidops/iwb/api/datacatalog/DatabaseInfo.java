@@ -23,9 +23,18 @@ package com.fluidops.iwb.api.datacatalog;
  */
 public interface DatabaseInfo 
 {
+	/**
+	 * @return databaseProductName fetched from java.sql.DatabaseMetaData
+	 */
 	public String getProductName();
 	
+	/**
+	 * @return databaseProductVersion fetched from java.sql.DatabaseMetaData
+	 */
 	public String getProductVersion();
 	
+	/**
+	 * @return dababaseProductName + databaseProductVersion fetched from java.sql.DatabaseMetaData
+	 */
 	public String getDatabaseInfo();
 }

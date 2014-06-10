@@ -31,6 +31,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import com.fluidops.api.misc.ApiMethod;
 import com.fluidops.api.security.SHA512;
 import com.fluidops.api.security.SessionContext;
+import com.fluidops.iwb.annotation.CallableFromWidget;
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
 import com.fluidops.iwb.api.WikiStorageBulkServiceImpl;
@@ -39,14 +40,16 @@ import com.fluidops.iwb.server.HybridSearchServlet;
 import com.fluidops.iwb.server.SparqlServlet;
 import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.util.IWBFileUtil;
+import com.fluidops.util.SecurityUtils;
 import com.fluidops.util.StringUtil;
 import com.fluidops.util.user.UserContext;
 
 /**
  * Default implementation of the IWB user management. Grants almost
  * full rights to every user. The ACL user approach is implemented
- * in fiwbcom, class AclUserManagerImpl (which in parts makes use
- * of convenience methods defined here, such as user name and URI access).
+ * in the Enterprise Edition implementation, class AclUserManagerImpl 
+ * (which in parts makes use of convenience methods defined here, such
+ * as user name and URI access).
  * 
  * @author msc
  */
@@ -125,20 +128,13 @@ public class UserManagerImpl implements UserManager
 	@Override
     public boolean hasValueAccess(Value v, ValueAccessLevel al)
     {
-        UserContext c = UserContext.get();
-
-        //reject admin for non-admin
-        if (!v.stringValue().contains("/admin") || c != null && c.roles.contains(ADMIN_ROLE)) return true;
-        else return false;
+		return true;
     }
     
 	@Override
     public ValueAccessLevel getValueAccessLevel(Value v)
     {
-        UserContext c = UserContext.get();
-
-        if (c != null && c.roles.contains(ADMIN_ROLE)) return ValueAccessLevel.WRITE;
-        else return ValueAccessLevel.READ;
+		return ValueAccessLevel.WRITE; // full access
     }
 
     
@@ -169,6 +165,10 @@ public class UserManagerImpl implements UserManager
 	@Override
     public boolean hasFileAccess(String file, SessionContext sc, boolean enforceExists)
     {
+		// In IWB CE we allow the access to the following directories
+		// 1) the wiki export directory
+		// 2) the upload folder (data/upload)
+		// 3) the config folder (config)		
 		File f = new File(file);
 		try {
 			// allow file access to the wiki export storage for download
@@ -177,11 +177,13 @@ public class UserManagerImpl implements UserManager
 			// allow file access to the upload folder for download
 			if (IWBFileUtil.getUploadFolder().getCanonicalFile().equals(f.getCanonicalFile().getParentFile()))
 				return true;
+			// allow file access to the config folder in IWB CE
+			if (SecurityUtils.isSafePath(IWBFileUtil.getConfigFolder(), f))
+				return true;
 		} catch (IOException e) {
 			logger.debug("File access cannot be checked: " + e.getMessage());
 			return false;
 		}
-		// TODO: think about this, e.g. for config directory
 		// for security reasons, no file access via UI is enabled at all
 		return false;
     }
@@ -279,7 +281,7 @@ public class UserManagerImpl implements UserManager
 	 * @param user
 	 * @return
 	 */
-    protected String removeDomain(String user)
+    public static String removeDomain(String user)
     {
     	// cut away domain prefix or suffix
     	if (user.contains("\\"))
@@ -302,5 +304,17 @@ public class UserManagerImpl implements UserManager
 	{
 		// By default we allow access to everything
 		return true;
+	}
+
+	@Override
+	public void invalidate()
+	{
+		throw new IllegalStateException("ACL Cache invalidation only available in IWB Enterprise Edition");
+	}
+    
+    @CallableFromWidget
+	public static void reloadACLs()
+	{
+		EndpointImpl.api().getUserManager().invalidate();
 	}
 }

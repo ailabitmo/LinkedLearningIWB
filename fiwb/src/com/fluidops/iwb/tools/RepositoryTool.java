@@ -18,10 +18,14 @@
 
 package com.fluidops.iwb.tools;
 
+import info.aduna.iteration.FilterIteration;
+import info.aduna.iteration.Iteration;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -31,6 +35,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
@@ -46,12 +52,14 @@ import org.openrdf.repository.sail.SailRepository;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadWriteDataManagerImpl;
 import com.fluidops.iwb.api.solution.SolutionService;
+import com.fluidops.iwb.model.Vocabulary.SYSTEM_CONTEXT;
 import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.util.IWBFileUtil;
 import com.fluidops.util.GenUtil;
 import com.fluidops.util.logging.Log4JHandler;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Repository tool providing various operations on the repository level.
@@ -76,10 +84,14 @@ import com.google.common.collect.Lists;
 	                      recover (if problems are detected)
 	 -g,--garbageCheck    check for garbage data due to inconsistencies in the
 	                      triple store
-     -i,--indices <nativeStoreIndices>   the assumed native store indices,
+     -i,--indices &lt;nativeStoreIndices&gt;   the assumed native store indices,
          				  e.g. 'spoc,psoc'
 	 -h,--help            print this message
+	 -u,--userData        create a fresh repository containing everything but
+                          CommunicationService contexts
 	Examples
+	repotool -c
+    repotool -u data/dbmodel data/dbmodel-userdata
 	repotool -a -g
 	repotool -a data/dbmodel-broken
 	repotool -f data/dbmodel-broken
@@ -106,9 +118,10 @@ public class RepositoryTool {
 	 * 
 	 * @throws FileNotFoundException
 	 * @throws IOException
+	 * @return {@link RepositoryStatus} 
 	 */
-	public static void analyze(File dbModelFolder) throws FileNotFoundException, IOException {
-		analyze(dbModelFolder, false, getDefaultNativeStoreIndices());
+	public static RepositoryStatus analyze(File dbModelFolder) throws FileNotFoundException, IOException {
+		return analyze(dbModelFolder, false, getDefaultNativeStoreIndices());
 	}
 	
 	/**
@@ -125,9 +138,10 @@ public class RepositoryTool {
 	 * 
 	 * @throws FileNotFoundException
 	 * @throws IOException
+	 * @return {@link RepositoryStatus} 
 	 */
-	public static void analyze(File dbModelFolder, boolean checkGhostContext, String nativeStoreIndices) throws FileNotFoundException, IOException {
-		analyzeAndFixInternal(dbModelFolder, dbModelFolder, false, checkGhostContext, nativeStoreIndices);
+	public static RepositoryStatus analyze(File dbModelFolder, boolean checkGhostContext, String nativeStoreIndices) throws FileNotFoundException, IOException {
+		return analyzeAndFixInternal(dbModelFolder, dbModelFolder, false, checkGhostContext, nativeStoreIndices);
 	}
 
 	
@@ -144,9 +158,10 @@ public class RepositoryTool {
 	 * @param dbModelFolder the location of the native store
 	 * @throws FileNotFoundException
 	 * @throws IOException
+	 * @return {@link RepositoryStatus} 
 	 */
-	public static void analyzeAndFix(File dbModelFolder) throws FileNotFoundException, IOException {				
-		analyzeAndFix(dbModelFolder, false);		
+	public static RepositoryStatus analyzeAndFix(File dbModelFolder) throws FileNotFoundException, IOException {				
+		return analyzeAndFix(dbModelFolder, false);		
 	}
 	
 	/**
@@ -164,9 +179,10 @@ public class RepositoryTool {
 	 * @param checkGhostContext flag indicating whether ghost contexts are checked
 	 * @throws FileNotFoundException
 	 * @throws IOException
+	 * @return {@link RepositoryStatus} 
 	 */
-	public static void analyzeAndFix(File dbModelFolder, boolean checkGhostContext) throws FileNotFoundException, IOException {				
-		analyzeAndFix(dbModelFolder, dbModelFolder, checkGhostContext, getDefaultNativeStoreIndices());		
+	public static RepositoryStatus analyzeAndFix(File dbModelFolder, boolean checkGhostContext) throws FileNotFoundException, IOException {				
+		return analyzeAndFix(dbModelFolder, dbModelFolder, checkGhostContext, getDefaultNativeStoreIndices());		
 	}
 	
 	/**
@@ -184,9 +200,10 @@ public class RepositoryTool {
 	 * @param checkGhostContext flag indicating whether ghost contexts are checked
 	 * @throws FileNotFoundException
 	 * @throws IOException
+	 * @return {@link RepositoryStatus} 
 	 */
-	public static void analyzeAndFix(File dbModelFolder, File targetFolder, boolean checkGhostContext, String nativeStoreIndices) throws FileNotFoundException, IOException {				
-		analyzeAndFixInternal(dbModelFolder, targetFolder, true, checkGhostContext, nativeStoreIndices);		
+	public static RepositoryStatus analyzeAndFix(File dbModelFolder, File targetFolder, boolean checkGhostContext, String nativeStoreIndices) throws FileNotFoundException, IOException {				
+		return analyzeAndFixInternal(dbModelFolder, targetFolder, true, checkGhostContext, nativeStoreIndices);		
 	}
 	
 	/**
@@ -261,7 +278,63 @@ public class RepositoryTool {
 		rebuildRepository(dbModelFolder, target, nativeStoreIndices, nativeStoreIndices);
 	}
 	
-	private static void analyzeAndFixInternal(File dbModelFolder, File targetFolder, boolean fixMode, boolean checkGhostContexts, String nativeStoreIndices) throws FileNotFoundException, IOException {
+	
+	/**
+	 * Creates a fresh repository containing only user data as defined by {@link UserDataFilterIteration}.
+	 * 
+	 * 1) Open the original repository from dbModelFolder
+	 * 2) Open a fresh target repository at dbModelFolder.tmp using the provided native store indices
+	 * 3) Copy the content from source repository to target repository applying {@link UserDataFilterIteration}
+	 * 4) Leaves original repository intact
+	 * 5) Move fresh target repository to target
+	 * 
+	 * In case of an error during a physical I/O operation (i.e. moving the original folder, deleting
+	 * the temporary repository) an IOException is thrown. The original repository remains
+	 * untouched, the target repository may have created files in dbModelFolder.tmp (which
+	 * need to be deleted manually)
+	 * 
+	 * @param dbModelFolder the location of the native store
+	 * @param target
+	 * @param nativeStoreIndices
+	 * @throws IOException
+	 */
+	public static void copyUserData(File dbModelFolder, File target, String nativeStoreIndices) throws IOException {	
+		copyRepository(dbModelFolder, target, nativeStoreIndices, new UserDataFilterIterationFactory());
+	}
+	
+	/**
+	 * Creates a fresh repository containing only the data as filtered by the given {@link FilterIteration}.
+	 * If no filter iteration factory is provided, this method copies the entire repository.<p>
+	 * 
+	 * 1) Open the original repository from dbModelFolder
+	 * 2) Open a fresh target repository at dbModelFolder.tmp using the provided native store indices
+	 * 3) Copy the content from source repository to target repository applying the given {@link FilterIteration}
+	 * 4) Leaves original repository intact
+	 * 5) Move fresh target repository to target
+	 * 
+	 * In case of an error during a physical I/O operation (i.e. moving the original folder, deleting
+	 * the temporary repository) an IOException is thrown. The original repository remains
+	 * untouched, the target repository may have created files in dbModelFolder.tmp (which
+	 * need to be deleted manually)
+	 * 
+	 * @param dbModelFolder the location of the native store
+	 * @param target
+	 * @param nativeStoreIndices
+	 * @param filterIterationFactory a {@link FilterIterationFactory} or null (if not filter is desired)
+	 * @throws IOException
+	 */
+	public static void copyRepository(File dbModelFolder, File target, String nativeStoreIndices, FilterIterationFactory filterIterationFactory) throws IOException {
+		
+		print("Copying repository " + dbModelFolder.getPath() + " with filter " + filterIterationFactory);
+		
+		// precondition: check whether the repository is accessible
+		// if not: the appropriate exception is thrown
+		checkRepositoryAccessible(dbModelFolder, nativeStoreIndices);
+		
+		rebuildRepository(dbModelFolder, target, nativeStoreIndices, nativeStoreIndices, filterIterationFactory);
+	}
+	
+	private static RepositoryStatus analyzeAndFixInternal(File dbModelFolder, File targetFolder, boolean fixMode, boolean checkGhostContexts, String nativeStoreIndices) throws FileNotFoundException, IOException {
 		
 		print("Analyzing repository at " + dbModelFolder.getPath());
 		
@@ -349,14 +422,14 @@ public class RepositoryTool {
 				print(String.format(" * Repository is healthy (No garbage contexts detected, size: %s)", stateDefault.getSize()));
 			else
 				print(String.format(" * Repository is healthy (No checks for garbage contexts, size: %s)", stateDefault.getSize()));
-			return;
+			return RepositoryStatus.OK;
 		} else if (!allIndicesCorrupt){
 			print(" * Index " + goodIndex + " can be used for recovery process.");
 		}
 		
 		// Step 5: if desired automatically fix
 		if (!fixMode)
-			return;
+			return RepositoryStatus.INCONSISTENT;
 		
 		System.out.println("4) Trying to repair database");
 		if (allIndicesCorrupt) {
@@ -391,6 +464,8 @@ public class RepositoryTool {
 		// if the repository was affected by ghosts: remove them
 		if (checkGhostContexts && isAffectedByGhosts)
 			removeGhostContexts(targetFolder, nativeStoreIndices);
+		
+		return RepositoryStatus.FIXED;
 	}
 	
 	private static void print(String msg) {
@@ -479,11 +554,25 @@ public class RepositoryTool {
 	}
 	
 	/**
+	 * Invokes {@link #rebuildRepository(File, File, String, String, FilterIterationFactory)} with an
+	 * empty filter.
+	 * 
+	 * @param dbModelFolder
+	 * @param targetFolder
+	 * @param nativeStoreIndicesSource
+	 * @param nativeStoreIndicesTarget
+	 * @throws IOException
+	 */
+	private static void rebuildRepository(File dbModelFolder, File targetFolder, String nativeStoreIndicesSource, String nativeStoreIndicesTarget) throws IOException {
+		rebuildRepository(dbModelFolder, targetFolder, nativeStoreIndicesSource, nativeStoreIndicesTarget, null);
+	}
+	
+	/**
 	 * Rebuilds the repository by performing the following steps:
 	 * 
 	 * 1) Open the original repository from dbModelFolder
 	 * 2) Open a fresh target repository at dbModelFolder.tmp using nativeStoreIndices
-	 * 3) Copy the content from source repository to target repository
+	 * 3) Copy the content from source repository to target repository (optionally applying a {@link FilterIteration})
 	 * 4) Move original repository to dbModelFolder.bak
 	 * 5) Move fresh target repository to dbModelFolder
 	 * 
@@ -496,10 +585,12 @@ public class RepositoryTool {
 	 * @param targetFolder
 	 * @param nativeStoreIndicesSource the native store indices to be used for the source, e.g. "spoc"
 	 * @param nativeStoreIndicesTarget the native store indices to be used for the target, e.g. "spoc,psoc"
+	 * @param filterFactory the factory to create a {@link FilterIteration} (can be used to filter 
+	 *              statements during copying). May be <code>null</<code>
 	 * @throws IllegalStateException if the repository could not be repaired
 	 * @throws IOException
 	 */
-	private static void rebuildRepository(File dbModelFolder, File targetFolder, String nativeStoreIndicesSource, String nativeStoreIndicesTarget) throws IOException {		
+	private static void rebuildRepository(File dbModelFolder, File targetFolder, String nativeStoreIndicesSource, String nativeStoreIndicesTarget, FilterIterationFactory filterFactory) throws IOException {		
 
 		resetIndexConfiguration(dbModelFolder);
 		File targetRepoTmpFolder = new File(dbModelFolder.getParentFile(), dbModelFolder.getName() + ".tmp");
@@ -526,10 +617,10 @@ public class RepositoryTool {
 				targetConn = targetRepo.getConnection();
 				print("Copying contents of repository to new store ..."); 
 				print("(Note: Depending on the triple store size this might take several minutes)");
-				copyRepositoryContent(conn, targetConn);
+				copyRepositoryContent(conn, targetConn, filterFactory);
 				long sizeNew = targetConn.size();
 				print("New repository size: " + sizeNew);
-				if (sizeOld!=sizeNew)
+				if (filterFactory==null && sizeOld!=sizeNew)
 					print("WARNING: repository size of old and new repository differ, please validate manually.");
 			} finally {
 				ReadWriteDataManagerImpl.closeQuietly(targetConn);
@@ -614,9 +705,20 @@ public class RepositoryTool {
 		}
 	}
 	
-	private static void copyRepositoryContent(RepositoryConnection source, RepositoryConnection target) {		
+	/**
+	 * Copy the repository content from source to target. If filterFactory is given,
+	 * apply the given {@link FilterIteration}.
+	 * 
+	 * @param source
+	 * @param target
+	 * @param filterFactory a {@link FilterIterationFactory} or <code>null</code>
+	 */
+	private static void copyRepositoryContent(RepositoryConnection source, RepositoryConnection target, FilterIterationFactory filterFactory) {		
 		try {
-			target.add(source.getStatements(null, null, null, false));				
+			Iteration<Statement, RepositoryException> iter = source.getStatements(null, null, null, false);
+			if (filterFactory!=null)
+				iter = filterFactory.createFilterIteration(iter);
+			target.add(iter);
 		} catch (RepositoryException e) {
 			print("Error copying data from source repository.");
 		}
@@ -681,7 +783,12 @@ public class RepositoryTool {
 		    }
 		    
 		    if (line.hasOption("c")) {
-		    	cleanupRepository(source, target);
+		    	cleanupRepository(source, target, indices);
+		    	System.exit(0);
+		    }
+		    
+		    if (line.hasOption("u")) {
+		    	copyUserData(source, target, indices);
 		    	System.exit(0);
 		    }
 		    
@@ -701,6 +808,7 @@ public class RepositoryTool {
 		o.addOption("f", "analyzeAndFix", false, "analyze the repository, print results and try to recover (if problems are detected)");
 		o.addOption("g", "garbageCheck", false, "check for garbage data due to inconsistencies in the triple store");
 		o.addOption("c", "cleanup", false, "cleanup of the repository (assumes a non-corrupt repository). This operation potentially reduces the size of the repository.");
+		o.addOption("u", "userData", false, "create a fresh repository containing everything but CommunicationService contexts");
 		o.addOption("h", "help", false, "print this message");
 		o.addOption(OptionBuilder
 				.withArgName("nativeStoreIndices")
@@ -720,6 +828,8 @@ public class RepositoryTool {
     			"with a backup of the source being created to %source%.bak.\n\nOptions:", 
     			options, 
     			"Examples\n" +
+    			"repotool -c\n" +
+    			"repotool -u data/dbmodel data/dbmodel-userdata\n" +
     			"repotool -a -g\n" +
     			"repotool -a data/dbmodel-broken\n" +
     			"repotool -f data/dbmodel-broken\n" +
@@ -727,6 +837,25 @@ public class RepositoryTool {
     			"repotool -a -i cspo,cpso,cops data/historymodel", false );	   	
 	}
 	
+	/**
+	 * An indicator for the result of analyze (and fix) methods
+	 */
+	public static enum RepositoryStatus {
+		/**
+		 * Repository state is ok, no problems detected.
+		 */
+		OK, 
+		
+		/**
+		 * The repository is in an inconsistent state (e.g. indices out of synch or garbage contexts)
+		 */
+		INCONSISTENT, 
+		
+		/**
+		 * The repository was in an inconsistent state and has been fixed (is result if automated fix is requested)
+		 */
+		FIXED;
+	}
 	
 	protected static class RepositoryState {
 		private final String indices;
@@ -781,5 +910,64 @@ public class RepositoryTool {
 			this.contextUri = contextUri;
 			this.nTriples = nTriples;
 		}		
+	}
+	
+	/**
+	 * Interface for creating a {@link FilterIteration} from an inner iteration.
+	 * 
+	 * @author as
+	 */
+	public static interface FilterIterationFactory {
+		public FilterIteration<Statement, RepositoryException> createFilterIteration(
+				Iteration<Statement, RepositoryException> iter);
+	}
+		
+	protected static class UserDataFilterIterationFactory implements FilterIterationFactory {
+		
+		@Override
+		public FilterIteration<Statement, RepositoryException> createFilterIteration(
+				Iteration<Statement, RepositoryException> iter) {
+			return new UserDataFilterIteration(iter);
+		}		
+	}
+	
+	/**
+	 * A {@link FilterIteration} which filters the given inner iteration according to
+	 * the following rules to keep only user data:
+	 * 
+	 * 1) remove all contexts containing "CommunicationService"
+	 * 2) remove all contexts containing "sharedContext"
+	 * 3) remove all triples in {@link SYSTEM_CONTEXT#VOIDCONTEXT}
+	 * 4) remove all triples from {@link SYSTEM_CONTEXT#METACONTEXT} where
+	 *    the subject contains any string of the removeContexts set
+	 * 5) keep all data from the default namespace
+	 * 
+	 * @author as
+	 *
+	 */
+	protected static class UserDataFilterIteration extends FilterIteration<Statement, RepositoryException> {
+
+		private static final Set<String> removeContexts = Sets.newHashSet("CommunicationService", 
+				"sharedContext");
+		
+		public UserDataFilterIteration(Iteration<Statement, RepositoryException> iter) {
+			super(iter);
+		}
+
+		@Override
+		protected boolean accept(Statement stmt) throws RepositoryException {
+			Resource ctx = stmt.getContext();
+			if (ctx==null)
+				return true;		// accept all stmts in the default namespace
+			if (ctx.equals(SYSTEM_CONTEXT.VOIDCONTEXT))
+				return false;
+			for (String removeContext : removeContexts) {
+				if (ctx.stringValue().contains(removeContext))
+					return false;				
+				if (ctx.equals(SYSTEM_CONTEXT.METACONTEXT) && stmt.getSubject().stringValue().contains(removeContext))
+					return false;
+			}			
+			return true;
+		}	
 	}
 }

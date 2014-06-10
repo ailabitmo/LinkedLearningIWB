@@ -16,7 +16,11 @@ $!
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         $! the following header makes IE select latest document mode !$
         <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
-        <title>$pageTitle$</title>
+        <title>$prefixedPageTitle$</title>
+
+		$mobileHeader$
+		$mobileStandaloneHeader$
+		
         <script type='text/javascript' src='$contextPath$/ajax/ajax.js'></script>
         <script type='text/javascript' src='$contextPath$/jquery/jquery.min.js'></script>
 		<script type='text/javascript' src='$contextPath$/jquery/jquery-ui.min.js'></script>

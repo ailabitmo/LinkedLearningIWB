@@ -38,7 +38,7 @@ import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
-import com.fluidops.iwb.service.CodeExecution.WidgetCodeConfig;
+import com.fluidops.iwb.widget.CodeExecutionWidget.WidgetCodeConfig;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.widget.config.WidgetBaseConfig;
 import com.fluidops.util.Rand;

@@ -42,15 +42,20 @@ import com.google.common.base.Throwables;
  */
 public class ValueDropdownConfigurationFormElement extends AbstractConfigurationFormElement<FValueDropdown> {
 
-	public static class ValueDropdownFormElementConfig extends FormElementConfig {
+	public static class ValueFormElementConfig extends FormElementConfig {
 		private List<Value> values;
 
-		public ValueDropdownFormElementConfig(String fieldName, String label,
+		public ValueFormElementConfig(String fieldName, String label,
 				ParameterConfigDoc parameterConfig, Class<?> targetType,
 				Operator presetValue, List<Value> values)
 		{
 			super(fieldName, label, parameterConfig, targetType, presetValue);
 			this.values = values;
+		}
+		
+		@Override
+		public ValueFormElementConfig copyWithNewDefault(Operator newDefault) {
+			return new ValueFormElementConfig(fieldName, label, parameterConfig, targetType, newDefault, values);
 		}
 
 		public List<Value> getValues() {
@@ -71,10 +76,10 @@ public class ValueDropdownConfigurationFormElement extends AbstractConfiguration
 
 	@Override
 	protected FValueDropdown createComponent(FormElementConfig formElementConfig) {
-		if (!(formElementConfig instanceof ValueDropdownFormElementConfig))
-			throw new IllegalArgumentException("Expect configuration of type ValueDropdownFormElementConfig.");
+		if (!(formElementConfig instanceof ValueFormElementConfig))
+			throw new IllegalArgumentException("Expect configuration of type ValueFormElementConfig.");
 			
-		ValueDropdownFormElementConfig config = (ValueDropdownFormElementConfig) formElementConfig;
+		ValueFormElementConfig config = (ValueFormElementConfig) formElementConfig;
 		
 		// extract preset String
 		String preset = null;

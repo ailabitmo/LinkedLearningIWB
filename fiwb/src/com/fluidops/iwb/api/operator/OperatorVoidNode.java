@@ -25,10 +25,14 @@ import org.openrdf.model.Value;
  * Operator node which performs no operation
  *  @author as
  */
-class OperatorVoidNode implements OperatorNode {
+public class OperatorVoidNode implements OperatorNode {
 
 	private static final long serialVersionUID = -4423208089870162003L;
 
+	OperatorVoidNode() {
+		
+	}
+	
 	@Override
 	public <T> T evaluate(Class<T> targetType) throws OperatorException	{
 		return null;

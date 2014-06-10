@@ -2,6 +2,7 @@ com.fluidops.ajax
 com.fluidops.ajax.components
 com.fluidops.iwb.api
 com.fluidops.iwb.api.operator
+com.fluidops.iwb.api.query
 com.fluidops.iwb.api.valueresolver
 com.fluidops.iwb.mapping
 com.fluidops.iwb.provider

@@ -34,10 +34,7 @@ import com.fluidops.iwb.widget.TableResultWidget;
  * @see TableResultWidget
  * @see StockChartWidget
  */
-public class VariableConfig {
-
-	@ParameterConfigDoc(desc = "Variable name of a projection from the query", required=true)
-	public String variableName;
+public class VariableConfig extends BindingBaseConfig {
 	
 	@ParameterConfigDoc(desc = "Display label for the given SPARQL projection variable")
 	public String displayName;

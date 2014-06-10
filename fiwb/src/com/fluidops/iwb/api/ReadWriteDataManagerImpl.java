@@ -19,6 +19,7 @@
 package com.fluidops.iwb.api;
 
 import info.aduna.iteration.Iteration;
+import info.aduna.iteration.Iterations;
 
 import java.io.File;
 import java.io.InputStream;
@@ -56,6 +57,7 @@ import com.fluidops.iwb.Global;
 import com.fluidops.iwb.api.Context.ContextLabel;
 import com.fluidops.iwb.api.Context.ContextState;
 import com.fluidops.iwb.api.Context.ContextType;
+import com.fluidops.iwb.api.query.QueryBuilder;
 import com.fluidops.iwb.model.Vocabulary;
 import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.util.VoIDCalculationUsingSPARQLAggregation;
@@ -998,7 +1000,7 @@ public class ReadWriteDataManagerImpl extends ReadDataManagerImpl implements Rea
 	
 			// convert the retrieved contexts to a set of URIs
 			return cleanupMetaGarbage(Sets.newHashSet(Iterables.transform(
-					contexts.asList(), new Function<Statement, URI>()
+					Iterations.asList(contexts), new Function<Statement, URI>()
 					{
 						@Override
 						public URI apply(Statement st)
@@ -1081,8 +1083,8 @@ public class ReadWriteDataManagerImpl extends ReadDataManagerImpl implements Rea
         try
         {
             // Get all outgoing statements
-            List<Statement> stmts = conn.getStatements(resource, null, null,
-                    false, Vocabulary.SYSTEM_CONTEXT.VOIDCONTEXT).asList();
+            List<Statement> stmts = Iterations.asList(conn.getStatements(resource, null, null,
+                    false, Vocabulary.SYSTEM_CONTEXT.VOIDCONTEXT));
 
             // Get class partitions
             GraphQueryResult gqr = sparqlConstruct(classQuery);
@@ -1497,17 +1499,10 @@ public class ReadWriteDataManagerImpl extends ReadDataManagerImpl implements Rea
 	public void sparqlUpdate(String query, Value resolveValue, boolean infer, Context context)
 			throws MalformedQueryException, UpdateExecutionException
 	{
-		// special handling for %usercontext% in query
-		if (query.contains("$usercontext$")) {
-			if (context!=null)
-				query = query.replace("$usercontext$", "<" + context.getURI().stringValue() + ">");
-			else
-				throw new IllegalArgumentException("Query contains $usercontext$ though no context is provided.");
-		}
-		
 		try
 		{
-			Update updateQuery = (Update) prepareQueryInternal(query, true,	resolveValue, true, infer, SparqlQueryType.UPDATE);
+			QueryBuilder<Update> queryBuilder = QueryBuilder.createUpdate(query, context).resolveNamespaces(true).resolveValue(resolveValue).infer(infer);
+			Update updateQuery = queryBuilder.build(this);
 			updateQuery.execute();
 			
 			// check if something has been written to the context, if so persist meta context

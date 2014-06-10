@@ -48,8 +48,8 @@ import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.model.Vocabulary;
 import com.fluidops.iwb.service.CodeExecution;
-import com.fluidops.iwb.service.CodeExecution.WidgetCodeConfig;
 import com.fluidops.iwb.widget.CodeExecutionWidget;
+import com.fluidops.iwb.widget.CodeExecutionWidget.WidgetCodeConfig;
 import com.fluidops.iwb.widget.DataInputWidget;
 import com.fluidops.iwb.widget.DataInputWidget.AfterFinishAction;
 import com.fluidops.iwb.widget.DataInputWidget.StatementInput;
@@ -291,7 +291,13 @@ public class FMultiStageInputWizard extends FWizard
         parent.onWizardCancel();
     }
 
+    
     @Override
+	protected void openReferer() {
+		// do nothing here, bug 12346
+	}
+
+	@Override
     public void finish() throws Exception
     {
         FStep lastStep = allRegisteredSteps.get(allRegisteredSteps.size() - 1);

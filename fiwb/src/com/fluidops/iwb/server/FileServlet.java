@@ -87,5 +87,6 @@ public class FileServlet extends AbstractFileServlet
         	root = RootDirectory.valueOf(req.getParameter("root"));
         
         return root.fileFor(filePath);
-    }    
+    }
+  
 }

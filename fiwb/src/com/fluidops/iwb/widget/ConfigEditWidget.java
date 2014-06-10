@@ -18,13 +18,13 @@
 
 package com.fluidops.iwb.widget;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.fluidops.ajax.components.FComponent;
+import com.fluidops.ajax.components.configuration.DefaultPropertyManager;
 import com.fluidops.ajax.components.configuration.FPropertyEditForm;
 import com.fluidops.ajax.components.configuration.PropertyManager;
 import com.fluidops.ajax.components.configuration.PropertyWriter;
@@ -100,24 +100,20 @@ public class ConfigEditWidget extends AbstractWidget<ConfigEditWidget.Config> {
 		// use FPropertyEditForm facilities
 		List<String> displayCategories = getCategories();
 		
-		// register IWB configuration
-		PropertyManager.registerConfigClass(com.fluidops.iwb.util.Config.getConfig(), com.fluidops.iwb.util.Config.class);
+		// register available configuration classes
+		PropertyManager.discoverAndRegisterConfigClasses();
 		
-		PropertyManager propertyManager = new PropertyManager() {			
+		PropertyManager propertyManager = new DefaultPropertyManager() {			
 			@Override
-			public void onRefresh() {
-				try	{
-					String path = com.fluidops.iwb.util.Config.getConfig().getSourcePath();
-					if (path == null) {
-						path = com.fluidops.iwb.util.Config.DEFAULT_CONFIG_FILE;
-					}
-	    			loadFromFile(path, true, true);
-				} catch (IOException e)	{
-					logger.fatal("Failed to load config.prop: " + e.getMessage());
-					pc.page.getPopupWindowInstance().showError( "Failed to load config.prop: " + e.getMessage() );
-					return;
-				}
+			public String getConfigFilePath() {
+				return StringUtil.getNullSafeString(com.fluidops.iwb.util.Config.getConfig().getSourcePath(), com.fluidops.iwb.util.Config.DEFAULT_CONFIG_FILE);
 			}
+
+			@Override
+			public void onError(Exception e) {
+				pc.page.getPopupWindowInstance().showError( "Failed to load config.prop: " + e.getMessage() );
+			}  		
+
 			@Override
 			protected String getCategory(ConfigDoc doc)
 			{
@@ -138,7 +134,7 @@ public class ConfigEditWidget extends AbstractWidget<ConfigEditWidget.Config> {
 					return filteredConfigs;
 				}
 				return configurationProperties;
-			}  		
+			}
 		}; 
 		propertyManager.refresh();
 
@@ -156,7 +152,7 @@ public class ConfigEditWidget extends AbstractWidget<ConfigEditWidget.Config> {
 			}
 		}
 
-		final FPropertyEditForm propForm = new FPropertyEditForm(id, propertyManager, activeTab);
+		final FPropertyEditForm propForm = new FPropertyEditForm(id, propertyManager, activeTab, true);
 		propForm.setDisplayCategories(displayCategories);
 
 		propForm.setShowSubmit(true);

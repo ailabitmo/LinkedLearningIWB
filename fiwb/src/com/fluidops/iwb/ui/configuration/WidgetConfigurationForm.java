@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.openrdf.model.URI;
 
 import com.fluidops.ajax.components.FComboBox;
+import com.fluidops.ajax.components.FDialog;
 import com.fluidops.ajax.components.FPopupWindow;
 import com.fluidops.ajax.components.FTextArea;
 import com.fluidops.ajax.components.FTextInput2;
@@ -75,7 +76,6 @@ public class WidgetConfigurationForm extends WidgetConfigurationFormBase {
     protected FComboBox applyToInstances;    
     protected FTextArea preCondition;
     
-    protected Operator oldInput = null;
         
 	/**
 	 * @param id
@@ -83,16 +83,14 @@ public class WidgetConfigurationForm extends WidgetConfigurationFormBase {
 	 */
 	private WidgetConfigurationForm(String id, WidgetConfig widgetConfig) {
 		super(id, widgetConfig);
-		if(widgetConfig!=null) {
-			oldInput = widgetConfig.input;
-		}
 	}
 
 	@Override
 	protected void submitData(OperatorNode data) {
 		
+		// for an empty form create an empty operator (e.g. an empty configuration)
 		if (data==null)
-			return;		// do nothing, empty form
+			data = OperatorFactory.voidOperatorNode();
 		
 		Boolean forInstances = Boolean.parseBoolean((String)applyToInstances.getSelected().get(0));
         URI uri = EndpointImpl.api().getNamespaceService().guessURI(value.getValue());
@@ -100,26 +98,19 @@ public class WidgetConfigurationForm extends WidgetConfigurationFormBase {
         
         Class<? extends Widget<?>> widgetClass = getWidgetClass();
         
-        Operator widgetInput = OperatorFactory.toOperator(data);
-        
-		if (!isEditMode() && widgetConfigExists(widgetClass, widgetInput, uri, forInstances)) {
+		if (!isEditMode() && widgetConfigExists(widgetClass, uri, forInstances)) {
 
-			// TODO show this error in an additional popup as everything gets deleted
-			getPage().getPopupWindowInstance().showError(
-							widgetClass.getSimpleName()	+ " configuration "
-									+ (forInstances ? "for the resources of the type "	: "for the resource ")
-									+ "<br />'"	+ uri + "'<br /> already exists. Click 'edit' to change it.");
+			FDialog.showMessage(getPage(), "Error", 
+					widgetClass.getSimpleName()	+ " configuration "
+							+ (forInstances ? "for the resources of the type "	: "for the resource ")
+							+ "<br />'"	+ uri + "'<br /> already exists. Click 'edit' to change it.", "ok");
 			return;
 		}
         
         try {
-        	if(!isEditMode()) {
-        		EndpointImpl.api().getWidgetSelector().addWidget(widgetClass, widgetInput, uri, forInstances, condition);
-        	} else if(oldInput!=null) {
-        		EndpointImpl.api().getWidgetSelector().updateWidget(widgetClass, oldInput, widgetInput, uri, forInstances, condition);
-        	}
-        	
-        	getPage().getPopupWindowInstance().showInfoAndRefresh("Info", "Widget successfully " + (isEditMode() ? "edited" : "added") );
+            Operator widgetInput = OperatorFactory.toOperator(data);
+            EndpointImpl.api().getWidgetSelector().addWidget(widgetClass, widgetInput, uri, forInstances, condition);  
+            getPage().getPopupWindowInstance().showInfoAndRefresh("Info", "Widget successfully " + (isEditMode() ? "edited" : "added"));
         }
         catch (Exception e)  {
             logger.error("Widget configuration failed: " + e.getMessage());
@@ -174,17 +165,11 @@ public class WidgetConfigurationForm extends WidgetConfigurationFormBase {
 	 * @return
 	 */
 	private boolean widgetConfigExists(Class<? extends Widget<?>> widgetClass,
-			Operator widgetInput,
 			URI uri, Boolean forInstances) {
 		List<WidgetConfig> configs = getWidgetConfigs();
 		for (WidgetConfig c : configs) {
-			if (c.input.toString().equals(widgetInput.toString()) 
-					&& c.widget.equals(widgetClass) 
-					&& c.value.equals(uri) 
-					&& c.applyToInstances == forInstances) {
-
+			if (c.widget.equals(widgetClass) && c.value.equals(uri) && c.applyToInstances == forInstances)
 				return true;
-			}
 		}
 		return false;
 	}

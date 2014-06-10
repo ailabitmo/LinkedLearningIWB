@@ -35,7 +35,6 @@ import com.fluidops.iwb.util.ObjectPersistance;
 import com.fluidops.iwb.util.WidgetPersistence;
 import com.fluidops.iwb.widget.Widget;
 import com.fluidops.iwb.widget.WidgetConfig;
-import com.fluidops.util.StringUtil;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
@@ -96,10 +95,13 @@ public abstract class AbstractWidgetSelector implements WidgetSelector {
             applyToInstances=Boolean.FALSE;
 
         //look if the widget configuration exists and needs to be edited
-        WidgetConfig config = lookup(widget, input, value, applyToInstances, preCondition);
+        WidgetConfig config = lookup(widget, value, applyToInstances);
 
         if(config!=null)
         {
+       		config.preCondition = preCondition;
+            config.input=input;
+            config.applyToInstances=applyToInstances;
             config.deleted = false;
         }
         else
@@ -110,28 +112,17 @@ public abstract class AbstractWidgetSelector implements WidgetSelector {
         config.userModified = true;
     }
 
-    private static WidgetConfig lookup(Class<? extends Widget<?>> widget, Operator input, Value value, Boolean applyToInstances, String preCondition)
+    private static WidgetConfig lookup(Class<? extends Widget<?>> widget, Value value, Boolean applyToInstances)
     {
         for (WidgetConfig wc: widgetConfigs)
         {
-            if (wc.input.toString().equals(input.toString()) 
-            		&& wc.widget.equals(widget)
-            		&&wc.value.equals(value)
-            		&&(wc.applyToInstances==applyToInstances)
-            		&&hasPreCondition(wc, preCondition))
+            if (wc.widget.equals(widget)&&wc.value.equals(value)&&(wc.applyToInstances==applyToInstances))
                 return wc;
         }   
         // Nothing found
         return null;
     }
 
-    public static boolean hasPreCondition(WidgetConfig conf, String preCondition) {
-    	if(StringUtil.isNullOrEmpty(conf.preCondition) && StringUtil.isNullOrEmpty(preCondition))
-    		return true;
-    	if(StringUtil.isNotNullNorEmpty(conf.preCondition) && StringUtil.isNotNullNorEmpty(preCondition) && preCondition.equals(conf.preCondition))
-    		return true;
-    	return false;
-    }
 
     public void removeWidget(Class<? extends Widget<?>> widget, Operator input, Value value, Boolean applyToInstances) throws RemoteException, Exception
     {
@@ -144,31 +135,14 @@ public abstract class AbstractWidgetSelector implements WidgetSelector {
     {
         WidgetConfig config = new WidgetConfig(value, widget, null, input, applyToInstances);
         synchronized(widgetConfigs) {
-        	for(WidgetConfig widgetConfig : widgetConfigs) {
-        		if(widgetConfig.deleted) continue;
-        		if(config.equals(widgetConfig)) {
-        			widgetConfig.deleted = true;
-        			break;
-        		}
-        	}
+	        int index = widgetConfigs.indexOf(config);
+	        if(index == -1) return;
+	        WidgetConfig widgetConfig = widgetConfigs.get(index);
+	        widgetConfig.deleted = true;
         }
     }
-    
-	@Override
-	public void updateWidget(
-			Class<? extends Widget<?>> widget,
-			Operator oldInput,
-			Operator input,
-			Value value,
-			Boolean applyToInstances,
-			String preCondition)
-			throws RemoteException, Exception {
-		removeWidgetWithoutSaving(widget, oldInput, value, applyToInstances);
-		addWidgetWithoutSaving(widget, input, value, applyToInstances, preCondition);
-		save();
-	}
-	
-	private static void save() throws IOException
+
+    private static void save() throws IOException
     {
         userWidgetsPersistence.save(newArrayList(filter(widgetConfigs, IS_USER_CONFIG)));
     }

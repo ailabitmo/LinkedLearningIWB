@@ -26,9 +26,9 @@ $!
 
 	$! values supported in graph query !$
 	var supportedGraphQuery = new Array("auto","application/rdf+xml","text/plain",
-			  "text/turtle","text/rdf+n3","application/x-trig","application/trix");
+			  "text/turtle","text/rdf+n3","application/x-trig","application/trix","text/x-nquads");
 	var supportedTupleQuery = new Array("auto","application/sparql-results+xml",
-			  "application/sparql-results+json","text/csv");
+			  "application/sparql-results+json","text/csv","SPARQL/TSV");
 			  
 	var initQuery = "$initQuery$";
 	
@@ -114,8 +114,10 @@ $!
 			<option value="application/sparql-results+xml" title="SPARQL/XML">SPARQL/XML</option>
 			<option value="application/sparql-results+json" title="SPARQL/JSON">SPARQL/JSON</option>
 			<option value="text/csv" title="SPARQL/CSV">SPARQL/CSV</option>
+			<option value="SPARQL/TSV" title="SPARQL/TSV">SPARQL/TSV</option>
 			<option value="application/rdf+xml" title="RDF/XML">RDF/XML</option>
 			<option value="text/plain" title="N-Triples">N-Triples</option>
+			<option value="text/x-nquads" title="N-Quads">N-Quads</option>
 			<option value="text/turtle" title="Turtle">Turtle</option>
 			<option value="text/rdf+n3" title="N3">N3</option>
 			<option value="application/x-trig" title="TriG">TriG</option>

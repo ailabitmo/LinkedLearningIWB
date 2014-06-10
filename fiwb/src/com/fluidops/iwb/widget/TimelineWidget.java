@@ -185,7 +185,11 @@ public class TimelineWidget extends AbstractWidget<TimelineWidget.Config>
             {
             	
                 BindingSet bindingSet = res.next();
-
+                
+                //in case the query result contains just an empty binding. (e.g. queries containing 'group by')
+                if(bindingSet.size()==0)
+                	return WidgetEmbeddingError.getNotificationLabel(id, NotificationType.NO_DATA, c.noDataMessage);
+                
                 Date start = parseDate(bindingSet.getValue(c.start).stringValue());
                 Date end = parseDate(bindingSet.getValue(c.end).stringValue());        
                 String desc = "";

@@ -60,7 +60,8 @@ public class ZipFileBasedSolutionService extends AbstractSingleFileBasedSolution
     @SuppressWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="Rename result ignored on purpose.")
     protected InstallationResult doInstall(File solutionZip, SolutionInfo solutionInfo)
     {
-        assert solutionZip != null && solutionZip.isFile() : solutionZip;
+        if (solutionZip==null || !solutionZip.isFile())
+        	throw new IllegalStateException("File not found: " + solutionZip);
         
         try
         {

@@ -22,6 +22,7 @@ import info.bliki.wiki.model.IWikiModel;
 import info.bliki.wiki.template.AbstractTemplateFunction;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -32,13 +33,14 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryException;
 
-import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
+import com.fluidops.iwb.api.valueresolver.ValueResolver;
 import com.fluidops.iwb.page.PageContext;
 import com.fluidops.iwb.util.QueryResultUtil;
 import com.fluidops.util.StringUtil;
+import com.google.common.collect.Maps;
 
 
 /**
@@ -62,6 +64,20 @@ import com.fluidops.util.StringUtil;
  	* {{{class}}
  * </source>
  * 
+ * It is possible to optionally specify a set of valueResolvers as illustrated
+ * in the following:
+ * 
+ * <source>
+ * {{#sparql: SELECT ?htmlValue ?dateValue WHERE { 
+     BIND("<b>bold</b>" AS ?htmlValue) .
+     BIND("2013-09-06" AS ?dateValue) . 
+   } 
+	 | format=template
+	 | template=Template:ClassTemplate
+	 | valueResolvers=htmlValue=HTML,dateValue=DATE
+	}}
+	</source>
+ * 
  * b) Using no options
  * 
  * When using no arguments for the #sparql function, the query types SELECT, CONSTRUCT
@@ -82,7 +98,7 @@ public class SparqlParserFunction extends AbstractTemplateFunction implements Pa
 
 	private static Logger logger = Logger.getLogger(SparqlParserFunction.class);
 	
-	private PageContext pc;
+	protected PageContext pc;
 
 	@Override
 	public String parseFunction(List<String> parts, IWikiModel model,
@@ -135,8 +151,7 @@ public class SparqlParserFunction extends AbstractTemplateFunction implements Pa
 	 */
 	private String parseNoOptions(String query) throws IllegalAccessException, MalformedQueryException, RepositoryException, QueryEvaluationException {
 		
-		// TODO think about using repository from PageContext
-		ReadDataManager dm = EndpointImpl.api().getDataManager();
+		ReadDataManager dm = ReadDataManagerImpl.getDataManager(pc.repository);
 		
 
 		SparqlQueryType type = ReadDataManagerImpl.getSparqlQueryType(query, true);
@@ -208,19 +223,21 @@ public class SparqlParserFunction extends AbstractTemplateFunction implements Pa
 			throw new IllegalAccessException("Option template=TEMPLATE required for format=template.");
 		template = template.trim();
 				
-		// TODO think about using repository from PageContext
-		ReadDataManager dm = EndpointImpl.api().getDataManager();		
+		ReadDataManager dm = ReadDataManagerImpl.getDataManager(pc.repository);		
 
 		SparqlQueryType type = ReadDataManagerImpl.getSparqlQueryType(query, true);
 		if (type!=SparqlQueryType.SELECT)
 			throw new IllegalAccessException("Only SELECT queries supported for format=template.");
+		
+		// parse value resolvers (if any)
+		Map<String, ValueResolver> valueResolvers = parseValueResolvers(options.get("valueResolvers"));
 		
 		TupleQueryResult qRes = null;
 		StringBuilder sb = new StringBuilder();
 		try {
 			qRes = dm.sparqlSelect(query, true, pc.value, false);
 			while (qRes.hasNext()) {
-				sb.append( buildTemplateCall(template, qRes.next()) ).append("\n");				
+				sb.append( buildTemplateCall(template, qRes.next(), valueResolvers)).append("\n");				
 			}
 		} finally {
 			ReadDataManagerImpl.closeQuietly(qRes);
@@ -249,20 +266,53 @@ public class SparqlParserFunction extends AbstractTemplateFunction implements Pa
 	 * @param b
 	 * @return
 	 */
-	private String buildTemplateCall(String template, BindingSet bs) {
+	private String buildTemplateCall(String template, BindingSet bs, Map<String, ValueResolver> valueResolvers) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{{").append(template);
 		for (String bName : bs.getBindingNames()) {
 			sb.append("|");
 			sb.append(bName).append("=");
-			sb.append(ParserFunctionUtil.valueToString(bs.getValue(bName)));
+			sb.append(ParserFunctionUtil.valueToString(bs.getValue(bName), valueResolvers.get(bName)));
 		}
 		
 		sb.append("}}");
 		return sb.toString();
 	}
 	
-	
+	/**
+	 * Parse the valueResolvers configuration from the given valueResolvers String. If there is 
+	 * any error (e.g. the specified valueResolver does not exist) an
+	 * {@link IllegalArgumentException} is thrown.<p>
+	 * 
+	 * The valueResolvers setting is of the following form:
+	 * 
+	 * <source>
+	 * myBindingName1=DEFAULT,myDateProperty=DATE
+	 * </source>
+	 * 
+	 * @param options
+	 * @return
+	 */
+	static Map<String, ValueResolver> parseValueResolvers(String valueResolvers) {
+		if (StringUtil.isNullOrEmpty(valueResolvers))
+			return Collections.emptyMap();
+		try {
+			Map<String, ValueResolver> res = Maps.newHashMap();
+			String[] s = valueResolvers.split(",");
+			for (int i=0;i<s.length;i++) {
+				String[] s2 = s[i].split("=");
+				ValueResolver v = ValueResolver.getValueResolver(s2[1]);
+				if (v==null)
+					throw new IllegalArgumentException("ValueResolver " + s2[1] + " does not exist.");
+				res.put(s2[0], v);
+			}
+			return res;
+		} catch (IllegalArgumentException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Invalid specification of value resolvers: " + valueResolvers, e);
+		}
+	}
 	
 	@Override
 	public void setPageContext(PageContext pc) {

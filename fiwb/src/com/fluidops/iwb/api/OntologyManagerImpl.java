@@ -19,11 +19,14 @@
 package com.fluidops.iwb.api;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
@@ -37,6 +40,7 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.formats.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.io.StringDocumentTarget;
 import org.semanticweb.owlapi.model.IRI;
@@ -58,80 +62,95 @@ public class OntologyManagerImpl implements OntologyManager {
 	/**
 	 * Logger associated to the {@link OntologyManagerImpl} class.
 	 */
-    protected static final Logger logger = 
-    		Logger.getLogger(OntologyManagerImpl.class.getName());
-	
-    /**
-     * To be used instead of the constructor. 
-     */
-    public static OntologyManager getOntologyManager()
-    {
+	protected static final Logger logger = 
+			Logger.getLogger(OntologyManagerImpl.class.getName());
 
-    	OntologyManager om = new OntologyManagerImpl();
-        return om;
-    }
-	
-	@Override
-	public OWLOntology loadOntology(URI ontologyURI) throws OWLOntologyCreationException {
-		
-		OWLOntology o = null;
-        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+	/**
+	 * To be used instead of the constructor. 
+	 */
+	public static OntologyManager getOntologyManager()
+	{
 
-        ReadDataManager dm = EndpointImpl.api().getDataManager();
-        
-        Statement ontologyDeclaration = dm.searchOne(ontologyURI, RDF.TYPE, OWL.ONTOLOGY);
-        if(ontologyDeclaration==null)
-        {
-        	logger.error("Ontology "+ontologyURI+" does not exist.");
-        	return null;
-        	
-        }
-        	
-        RepositoryResult<Statement> ontologyStmts = null;
-        Repository tmpRepository = null;
-        RepositoryConnection tmpConnnection = null;
-        
-        try {
-        	ontologyStmts = dm.getStatements(null, null, null, false, ontologyDeclaration.getContext());
-
-            tmpRepository = new SailRepository(new MemoryStore());
-            tmpRepository.initialize();
-            tmpConnnection = tmpRepository.getConnection();
-            tmpConnnection.add(ontologyStmts);
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream(); 
-            RDFWriter writer = Rio.createWriter(RDFFormat.RDFXML, out);           
-
-            tmpConnnection.export(writer);
-            
-        	o = manager.loadOntologyFromOntologyDocument(new StringDocumentSource(out.toString()));
-        	tmpConnnection.close();
-        	tmpRepository.shutDown();
-           	//manager.loadOntologyFromOntologyDocument(new DataManagerOntologySource(ontologyStmts, ontologyURI));
-
-        } catch (RepositoryException e) {
-        	throw new RuntimeException(e);
-        }
-        catch (RDFHandlerException e) {
-        	throw new RuntimeException(e);
-        }
-        finally {
-        	ReadDataManagerImpl.closeQuietly(ontologyStmts);
-        	ReadWriteDataManagerImpl.closeQuietly(tmpConnnection);
-        }
-
-        return o;
+		OntologyManager om = new OntologyManagerImpl();
+		return om;
 	}
 
-	
+	/**
+	 * 
+	 */
+	@Override
+	public OWLOntology loadOntology(URI ontologyURI)
+			throws OWLOntologyCreationException {
+
+		return loadOntology(ontologyURI, false);
+	}
+
+	@Override
+	public OWLOntology loadOntology(URI ontologyURI, boolean excludeImports) throws OWLOntologyCreationException {
+
+		OWLOntology o = null;
+		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+
+		ReadDataManager dm = EndpointImpl.api().getDataManager();
+
+		Statement ontologyDeclaration = dm.searchOne(ontologyURI, RDF.TYPE, OWL.ONTOLOGY);
+		if(ontologyDeclaration==null)
+		{
+			logger.error("Ontology "+ontologyURI+" does not exist.");
+			return null;
+
+		}
+
+		RepositoryResult<Statement> ontologyStmts = null;
+		Repository tmpRepository = null;
+		RepositoryConnection tmpConnnection = null;
+
+		try {
+			ontologyStmts = dm.getStatements(null, null, null, false, ontologyDeclaration.getContext());
+
+			tmpRepository = new SailRepository(new MemoryStore());
+			tmpRepository.initialize();
+			tmpConnnection = tmpRepository.getConnection();
+			tmpConnnection.add(ontologyStmts);
+
+			ByteArrayOutputStream out = new ByteArrayOutputStream(); 
+			RDFWriter writer = Rio.createWriter(RDFFormat.RDFXML, out);           
+
+			tmpConnnection.export(writer);
+
+			if(excludeImports){
+				manager.clearIRIMappers();
+				manager.setSilentMissingImportsHandling(true);
+			}
+
+
+			o = manager.loadOntologyFromOntologyDocument(new StringDocumentSource(out.toString()));
+			tmpConnnection.close();
+			tmpRepository.shutDown();
+			//manager.loadOntologyFromOntologyDocument(new DataManagerOntologySource(ontologyStmts, ontologyURI));
+
+		} catch (RepositoryException e) {
+			throw new RuntimeException(e);
+		}
+		catch (RDFHandlerException e) {
+			throw new RuntimeException(e);
+		}
+		finally {
+			ReadDataManagerImpl.closeQuietly(ontologyStmts);
+			ReadWriteDataManagerImpl.closeQuietly(tmpConnnection);
+		}
+
+		return o;
+	}
+
+
 	@Override
 	public boolean storeOntology(OWLOntology ontology, URI ontologyURI, boolean overwrite) throws OWLOntologyStorageException, OWLOntologyCreationException {
-
-		
 		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
 		ReadWriteDataManager dm = null;
 		try {
 			manager.createOntology(IRI.create(ontologyURI));
+			manager.setOntologyFormat(ontology, new RDFXMLOntologyFormat());
 			StringDocumentTarget target = new StringDocumentTarget();
 			manager.saveOntology(ontology, target);
 
@@ -144,16 +163,17 @@ public class OntologyManagerImpl implements OntologyManager {
 		finally {
 			ReadWriteDataManagerImpl.closeQuietly(dm);
 		}
-		
+
 		return true;
 	}
 
-	
+
+
 	@Override
 	public boolean removeOntology(URI ontologyURI) {
 
 		ReadWriteDataManager dm = null;
-		
+
 		try {
 
 			dm =  ReadWriteDataManagerImpl.openDataManager(Global.repository);
@@ -170,8 +190,23 @@ public class OntologyManagerImpl implements OntologyManager {
 		finally {
 			ReadWriteDataManagerImpl.closeQuietly(dm);
 		}
-        
-        return true;
+
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.fluidops.iwb.api.OntologyManager#getOntologyURIs()
+	 */
+	@Override
+	public List<URI> getOntologyURIs() {
+		List<URI> ontoURIs = new ArrayList<URI>();
+		ReadDataManager dm = EndpointImpl.api().getDataManager();
+		List<Statement> ontologyDeclarations = dm.getStatementsAsList(null, RDF.TYPE, OWL.ONTOLOGY,false);
+		ValueFactoryImpl valFactory =ValueFactoryImpl.getInstance();
+		for(Statement st :ontologyDeclarations){
+			ontoURIs.add(valFactory.createURI(st.getSubject().stringValue()));
+		}
+		return ontoURIs;
 	}
 
 }

@@ -192,12 +192,12 @@ public class LazyEditTabComponentHolder extends SemWikiComponentHolder {
 			public String getOnClick() {
 				return "catchPostEventIdEncode('" + getId()
 						+ "',9,getDomElementById('" + editTextArea.getComponentid()
-						+ "').value,'msg');";
+						+ "').value,'_msg');";
 			}
 
 			public void handleClientSideEvent(FEvent evt) {
 				if (evt.type == FEventType.POST_EVENT)
-					showPreview(evt.getPostParameter("msg"));
+					showPreview(evt.getPostParameter("_msg"));
 			}
 
 			private void showPreview(String newContent) {
@@ -406,7 +406,7 @@ public class LazyEditTabComponentHolder extends SemWikiComponentHolder {
 		
 		public void updatePreview(String newContent) {
 			previewContainer.removeAll();
-			String renderedPreview = SemWikiUtil.getRenderedViewContent(newContent, semWiki.getSubject(), semWiki.getVersion(), this);
+			String renderedPreview = SemWikiUtil.getRenderedViewContent(newContent, semWiki.getSubject(), semWiki.getVersion(), this, semWiki.getPageContext());
 			this.renderedPreview = renderedPreview;
 			previewContainer.populateView();
 		}

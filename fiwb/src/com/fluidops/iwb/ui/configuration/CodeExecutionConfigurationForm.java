@@ -30,35 +30,37 @@ import com.fluidops.ajax.components.FComponent;
 import com.fluidops.ajax.components.FForm;
 import com.fluidops.ajax.components.FLabel;
 import com.fluidops.ajax.components.FPopupWindow;
-import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.api.operator.Operator;
 import com.fluidops.iwb.api.operator.OperatorException;
 import com.fluidops.iwb.api.operator.OperatorFactory;
 import com.fluidops.iwb.api.operator.OperatorNode;
 import com.fluidops.iwb.model.ParameterConfigDoc;
+import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.service.CodeExecution;
 import com.fluidops.iwb.service.CodeExecution.Config;
-import com.fluidops.iwb.service.CodeExecution.WidgetCodeConfig;
-import com.fluidops.iwb.ui.configuration.ValueDropdownConfigurationFormElement.ValueDropdownFormElementConfig;
+import com.fluidops.iwb.ui.configuration.ValueDropdownConfigurationFormElement.ValueFormElementConfig;
+import com.fluidops.iwb.util.workflow.ArgumentResolver;
+import com.fluidops.iwb.widget.BaseExecutionWidget;
+import com.fluidops.iwb.widget.BaseExecutionWidget.ExecutionWidgetConfig;
 import com.fluidops.iwb.widget.CodeExecutionWidget;
 import com.fluidops.util.StringUtil;
-
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
- * Configuration form for CodeExecutionWidget with user input.
+ * Configuration form for {@link CodeExecutionWidget} and {@link ScriptExecutionWidget}
+ * in order to generate the popup form for the user input
  * 
  * @author christian.huetter
  */
 public class CodeExecutionConfigurationForm extends ConfigurationFormBase
 {
-	private WidgetCodeConfig widgetConfig;
+	private ExecutionWidgetConfig widgetConfig;
 	private Config codeConfig;
 	private FLabel msg;
 	private FComponent comp;
-	private CodeExecutionWidget codeExecutionWidget;
+	private BaseExecutionWidget<?> codeExecutionWidget;
 	
 	private LinkedHashMap<String, FormElementConfig> formElements;
 	
@@ -90,9 +92,9 @@ public class CodeExecutionConfigurationForm extends ConfigurationFormBase
 	}
 
 	public CodeExecutionConfigurationForm(String id,
-			WidgetCodeConfig widgetConfig, Config codeConfig,
+			ExecutionWidgetConfig widgetConfig, Config codeConfig,
 			FLabel msg, FButton fButton,
-			CodeExecutionWidget codeExecutionWidget)
+			BaseExecutionWidget<?> codeExecutionWidget)
 	{
 		super(id);
 		this.widgetConfig = widgetConfig;
@@ -143,84 +145,122 @@ public class CodeExecutionConfigurationForm extends ConfigurationFormBase
 	@Override
 	protected void submitData(OperatorNode data)
 	{
-		Operator op;
+		final Operator op;
 		if (data == null)
 			op = Operator.createNoop();
 		else
 			op = OperatorFactory.toOperator(data);
 		
-		// create a copy of the code config to allow consecutive code executions
-		Config codeConfigCopy = Config.copy(codeConfig);
-		
-		// replace argument placeholders with user input
-		for (int i = 0; i < codeConfigCopy.args.length; i++)
-		{
-			String argName = CodeExecutionWidget.extractPlaceholderName(codeConfigCopy.args[i]);
-			if (argName != null)
-			{
-				FormElementConfig elem = formElements.get(argName);
-				if (elem == null)
-					throw new IllegalArgumentException("No form element found for argument '" + argName + "'.");
-				
-				if (this.configClassOnly)
-					codeConfigCopy.args[i] = handleConfigClassOperator(op, elem);
-				else 
-					codeConfigCopy.args[i] = handleOperator(op, elem);
-				
-				if (elem.parameterConfig.type() == Type.LIST)
-					codeConfigCopy.signature[i] = List.class;
-				else
-					codeConfigCopy.signature[i] = elem.targetType;
-			}
-		}
-		
+		ArgumentResolver codeExecutionHelper = this.codeExecutionWidget.getCodeExecutionHelper();
+		Config codeConfigCopy = codeExecutionHelper.evaluateUserInput(codeConfig, new ConfigurationFormHelper(formElements, configClassOnly, op) );
 		getPage().getPopupWindowInstance().hide();
 		codeExecutionWidget.execute(widgetConfig, codeConfigCopy, msg, comp);				
 	}
 	
 	/**
-	 * Default case: Extract and evaluate the given element from the operator structure
+	 * Provides functionality for retrieving values out of {@link FormElementConfig}s 
+	 * using the {@link Operator} framework.
+	 * Used to translate user inputs to parameters for the {@link CodeExecution}
+	 * @author tobias
+	 *
 	 */
-	private Object handleOperator(Operator op, FormElementConfig elem)
+	public static class ConfigurationFormHelper
 	{
-		// operator is nested
-		if (op.isStructure())
-		{
-			Operator item = op.getStructureItem(elem.fieldName);
-			return evaluateOperator(item, elem);
+		
+		private LinkedHashMap<String, FormElementConfig> formElements;
+		private boolean useConfigClassOperator;
+		private Operator op;
+		
+		
+		public ConfigurationFormHelper(LinkedHashMap<String, FormElementConfig> formElements, boolean configClassOnly, Operator op) {
+			super();
+			this.formElements = formElements;
+			this.useConfigClassOperator = configClassOnly;
+			this.op = op;
 		}
-		// operator is a noop
-		else
-			return null;
-	}
 
-	/**
-	 * Special case: Evaluate operator directly because there is only one element of type CONFIG
-	 */
-	private Object handleConfigClassOperator(Operator op, FormElementConfig elem)
-	{
-		// simple case without nesting
-		return evaluateOperator(op, elem);
-	}
 
-	/**
-	 * Evaluate the operator to the target type specified by the form element.
-	 */
-	private Object evaluateOperator(Operator op, FormElementConfig elem)
-	{
-		// no user input for current argument
-		if (op == null || op.isNoop())
+		public Object getArgument(String name)
 		{
-			if (elem.required())
-				throw new IllegalArgumentException("Argument '" + elem.fieldName + "' is required.");
-			
-			return null;
+			FormElementConfig elem = getElement(name);
+			return getObject(elem);
+		}
+
+
+		private Object getObject(FormElementConfig elem) {
+			if (useConfigClassOperator)
+				return handleConfigClassOperator(op, elem);
+			else 
+				return handleOperator(op, elem);
 		}
 		
-		try {
-			return op.evaluate(elem.targetType);
-		} catch (OperatorException e) {
-			throw Throwables.propagate(e);
+		public Class<?> getTargetType(String name)
+		{
+			FormElementConfig elem = getElement(name);
+			Object argument = getObject(elem);
+			final Class<?> signatureClass;
+			if (elem.parameterConfig.type() == Type.LIST)
+				signatureClass = List.class;
+			else if (argument == null)					
+				signatureClass = elem.targetType;
+			else
+				signatureClass = argument.getClass();
+			return signatureClass;
+		}
+
+
+		private FormElementConfig getElement(String name) {
+			FormElementConfig elem = formElements.get(name);
+			if(elem == null)
+				throw new IllegalArgumentException("No form element found for argument '" + name + "'.");
+			return elem;
+		}
+		
+		
+		/**
+		 * Default case: Extract and evaluate the given element from the operator structure
+		 */
+		private Object handleOperator(Operator op, FormElementConfig elem)
+		{
+			// operator is nested
+			if (op.isStructure())
+			{
+				Operator item = op.getStructureItem(elem.fieldName);
+				return evaluateOperator(item, elem);
+			}
+			// operator is a noop
+			else
+				return null;
+		}
+
+		/**
+		 * Special case: Evaluate operator directly because there is only one element of type CONFIG
+		 */
+		private Object handleConfigClassOperator(Operator op, FormElementConfig elem)
+		{
+			// simple case without nesting
+			return evaluateOperator(op, elem);
+		}
+
+		/**
+		 * Evaluate the operator to the target type specified by the form element.
+		 */
+		private Object evaluateOperator(Operator op, FormElementConfig elem)
+		{
+			// no user input for current argument
+			if (op == null || op.isNoop())
+			{
+				if (elem.required())
+					throw new IllegalArgumentException("Argument '" + elem.fieldName + "' is required.");
+				
+				return null;
+			}
+			
+			try {
+				return op.evaluate(elem.targetType);
+			} catch (OperatorException e) {
+				throw Throwables.propagate(e);
+			}
 		}
 	}
 	
@@ -248,10 +288,10 @@ public class CodeExecutionConfigurationForm extends ConfigurationFormBase
 	 * @param widgetConfig
 	 * @return form elements
 	 */
-	public static LinkedHashMap<String, FormElementConfig> extractFormElements(CodeExecution.WidgetCodeConfig widgetConfig)
+	public static LinkedHashMap<String, FormElementConfig> extractFormElements(ExecutionWidgetConfig widgetConfig)
 	{
 		LinkedHashMap<String, FormElementConfig> formElements = new LinkedHashMap<String, FormElementConfig>();
-		for (CodeExecution.UserInputConfig userInput : widgetConfig.userInput)
+		for (BaseExecutionWidget.UserInputConfig userInput : widgetConfig.userInput)
 		{
 			ParameterConfigDoc parameterConfig = FormElementConfig.toParameterConfigDoc("", userInput.componentType, userInput.required);
 			
@@ -260,12 +300,21 @@ public class CodeExecutionConfigurationForm extends ConfigurationFormBase
 			switch (userInput.componentType)
 			{
 				case SIMPLE:
+					if(userInput.selectValues!=null && !userInput.selectValues.isEmpty()) {
+						targetType = Value.class;
+					} else {
+						targetType = String.class;
+					}
+					break;
 				case TEXTAREA:
 					targetType = String.class;
 					break;
 				case LIST:
-					targetType = String.class; //results in List<String>
-					break;
+                    if(userInput.selectValues==null)
+                        targetType = String.class; //results in List<String>
+                    else
+                        targetType = Value.class;
+                    break;
 				case CONFIG:
 					if (StringUtil.isNullOrEmpty(userInput.componentClass)) {
 						throw new IllegalArgumentException("componentClass must not be null or empty for input components of type CONFIG.");
@@ -298,8 +347,10 @@ public class CodeExecutionConfigurationForm extends ConfigurationFormBase
 				presetValue = OperatorFactory.toOperator(OperatorFactory.textInputToOperatorNode(userInput.presetValue, targetType));
 			
 			FormElementConfig formElement = null;
-			if (userInput.componentType == Type.DROPDOWN)
-				formElement = new ValueDropdownFormElementConfig(userInput.name, label, parameterConfig, targetType, presetValue, userInput.selectValues);
+			if (userInput.componentType == Type.DROPDOWN 
+					|| (userInput.componentType == Type.SIMPLE && targetType.equals(Value.class))
+				    || (userInput.componentType == Type.LIST && targetType.equals(Value.class)))
+				formElement = new ValueFormElementConfig(userInput.name, label, parameterConfig, targetType, presetValue, userInput.selectValues);
 			else
 				formElement = new FormElementConfig(userInput.name, label, parameterConfig, targetType, presetValue);
 			formElements.put(userInput.name, formElement);

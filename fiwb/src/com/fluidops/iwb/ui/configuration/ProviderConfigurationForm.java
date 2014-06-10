@@ -30,6 +30,7 @@ import org.openrdf.model.URI;
 import com.fluidops.ajax.components.FAbstractTextInputWithAutosuggestion.ElementType;
 import com.fluidops.ajax.components.FCheckBox;
 import com.fluidops.ajax.components.FComboBox;
+import com.fluidops.ajax.components.FDialog;
 import com.fluidops.ajax.components.FPopupWindow;
 import com.fluidops.ajax.components.FTextInput2;
 import com.fluidops.iwb.api.EndpointImpl;
@@ -46,6 +47,7 @@ import com.fluidops.util.Rand;
 import com.fluidops.util.StringUtil;
 import com.fluidops.util.UnitConverter;
 import com.fluidops.util.UnitConverter.Unit;
+import com.fluidops.util.scripting.DynamicScriptingSupport;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 
@@ -114,8 +116,9 @@ public class ProviderConfigurationForm extends ConfigurationFormBase {
 	@Override
 	protected void submitData(OperatorNode data) {
 		
+		// for an empty form create an empty operator (e.g. an empty configuration)
 		if (data==null)
-			return;		// do nothing
+			data = OperatorFactory.voidOperatorNode();
 		
 		// validation
 		URI _providerID = EndpointImpl.api().getNamespaceService().guessURI(providerID.getValue());
@@ -124,8 +127,7 @@ public class ProviderConfigurationForm extends ConfigurationFormBase {
             throw new IllegalArgumentException("providerID cannot be resolved to a valid URI");	// should never happen, validated in form
 		
 		if (!isEditMode() && providerExists(_providerID)) {
-			// TODO use fresh popup for error message
-			getPage().getPopupWindowInstance().showError("Provider with id '" + providerID.getValue() + "' already exists.");
+			FDialog.showMessage(getPage(), "Error", "Provider with id '" + providerID.getValue() + "' already exists.", "Ok");
             return;
 		}
 		
@@ -343,7 +345,7 @@ public class ProviderConfigurationForm extends ConfigurationFormBase {
 
 		try {
 			for (String providerClass : EndpointImpl.api().getProviderService().getProviderClasses()) 
-				res.add((Class<? extends AbstractFlexProvider<?>>)Class.forName(providerClass));
+				res.add((Class<? extends AbstractFlexProvider<?>>)DynamicScriptingSupport.loadClass(providerClass));
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {
@@ -371,6 +373,7 @@ public class ProviderConfigurationForm extends ConfigurationFormBase {
         return false;
     }
     
+	@SuppressWarnings("unchecked")
 	private boolean providerExists(URI id) {
 		try {
 			@SuppressWarnings("rawtypes")

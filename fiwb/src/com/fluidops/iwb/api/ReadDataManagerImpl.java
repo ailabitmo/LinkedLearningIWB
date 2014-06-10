@@ -18,12 +18,16 @@
 
 package com.fluidops.iwb.api;
 
+import static java.lang.String.format;
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.Iterations;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -45,7 +49,6 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -83,7 +86,6 @@ import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
-import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -103,6 +105,8 @@ import org.openrdf.sail.memory.MemoryStoreConnection;
 import org.openrdf.sail.nativerdf.NativeStore;
 
 import com.fluidops.iwb.api.Context.ContextState;
+import com.fluidops.iwb.api.helper.RDFMappingUtil;
+import com.fluidops.iwb.api.query.QueryBuilder;
 import com.fluidops.iwb.cache.ContextCache;
 import com.fluidops.iwb.cache.InstanceCache;
 import com.fluidops.iwb.cache.InversePropertyCache;
@@ -110,17 +114,16 @@ import com.fluidops.iwb.cache.LabelCache;
 import com.fluidops.iwb.cache.PropertyCache;
 import com.fluidops.iwb.cache.PropertyCache.PropertyInfo;
 import com.fluidops.iwb.cache.TypeCache;
-import com.fluidops.iwb.model.MultiPartMutableTupleQueryResultImpl;
 import com.fluidops.iwb.model.AbstractMutableTupleQueryResult;
+import com.fluidops.iwb.model.MultiPartMutableTupleQueryResultImpl;
 import com.fluidops.iwb.model.MutableTupleQueryResultImpl;
-import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.Vocabulary;
 import com.fluidops.iwb.monitoring.MonitoringUtil;
 import com.fluidops.iwb.monitoring.ReadMonitorRepositoryConnection;
-import com.fluidops.iwb.provider.ProviderUtils;
 import com.fluidops.iwb.provider.TableProvider.Table;
 import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.util.QueryStringUtil;
+import com.fluidops.iwb.util.SPARQLGrammar;
 import com.fluidops.iwb.util.analyzer.Analyzer;
 import com.fluidops.util.ObjectTable;
 import com.fluidops.util.Pair;
@@ -159,15 +162,15 @@ public class ReadDataManagerImpl implements ReadDataManager
      * 
      * @author cp
      */
-    static protected class PrefixAdder
+    public static class PrefixAdder
     {
         static Pattern prefixCheck = Pattern.compile(".*PREFIX .*",
                 Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-        static Pattern prefixPattern = Pattern.compile(
-                "PREFIX\\s*(\\w*):\\s*<(\\S*)>", Pattern.CASE_INSENSITIVE
-                        | Pattern.DOTALL);
-
+        static Pattern prefixPattern = Pattern.compile(format("PREFIX\\s*(%s(%s*%s)?)?:", 
+        		SPARQLGrammar.PN_CHARS_BASE, SPARQLGrammar.union(SPARQLGrammar.PN_CHARS, "[.]"), SPARQLGrammar.PN_CHARS),
+        		Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        
 
         /**
          * Includes all abbreviations listed in the map to the query
@@ -264,7 +267,11 @@ public class ReadDataManagerImpl implements ReadDataManager
 	                while (sc.findInLine(prefixPattern) != null)
 	                {
 	                    MatchResult m = sc.match();
-	                    res.add(m.group(1));
+	                    
+	                    if(m.group(1)== null)
+	                    	res.add("");
+	                    else
+	                    	res.add(m.group(1));
 	                }
 	                if (!sc.hasNextLine())
 	                    break;
@@ -1269,12 +1276,10 @@ public class ReadDataManagerImpl implements ReadDataManager
             throws RepositoryException, MalformedQueryException,
             QueryEvaluationException
     {
+    	QueryBuilder<GraphQuery> queryBuilder = QueryBuilder.createGraphQuery(query).resolveNamespaces(resolveNamespaces).resolveValue(resolveValue).infer(infer);
 		// evaluate query
-		GraphQuery preparedQuery = (GraphQuery) prepareQueryInternal(query,
-				resolveNamespaces, resolveValue, true, infer,
-				SparqlQueryType.CONSTRUCT);
-		GraphQueryResult res = preparedQuery.evaluate();
-        return res;
+		GraphQuery preparedQuery = queryBuilder.build(this);
+		return preparedQuery.evaluate();
     }
     
     @Override
@@ -1297,14 +1302,10 @@ public class ReadDataManagerImpl implements ReadDataManager
     public boolean sparqlAsk(String query, boolean resolveNamespaces, Value resolveValue, boolean infer)
     		throws RepositoryException, MalformedQueryException, QueryEvaluationException
     {
-    	Query askQuery = (Query)prepareQueryInternal(query, true, resolveValue, true, infer, SparqlQueryType.ASK);
-    	if (askQuery instanceof org.openrdf.query.BooleanQuery)
-    	{
-    		BooleanQuery askQueryBoolean = (BooleanQuery) askQuery;
-    		return askQueryBoolean.evaluate();
-    	}
-    	else
-    		throw new RuntimeException("Expected ASK query, found: " + query);
+		QueryBuilder<BooleanQuery> queryBuilder = QueryBuilder
+				.createBooleanQuery(query).resolveNamespaces(resolveNamespaces)
+				.resolveValue(resolveValue).infer(infer);
+		return queryBuilder.build(this).evaluate();
     }
     
     @Override
@@ -1334,103 +1335,35 @@ public class ReadDataManagerImpl implements ReadDataManager
             boolean resolveNamespaces, Value resolveValue, boolean resolveUser, boolean infer)
             throws MalformedQueryException, QueryEvaluationException
     {
-        // evaluate query
-        try
-        {
-            TupleQuery preparedQuery = (TupleQuery)
-            		prepareQueryInternal(query, resolveNamespaces, resolveValue, resolveUser, infer, SparqlQueryType.SELECT);
-
-            TupleQueryResult res = preparedQuery.evaluate();
-            return res;
-        }
-        catch (RepositoryException e)
-        {
+        QueryBuilder<TupleQuery> queryBuilder = QueryBuilder.createTupleQuery(query).resolveNamespaces(resolveNamespaces).resolveValue(resolveValue).infer(infer);
+        TupleQuery preparedQuery = null;
+        try {
+        	preparedQuery = queryBuilder.build(this);
+        } catch (RepositoryException e) {
         	monitorReadFailure();
-            logger.error("Error in executing query: "+query,e);
+            logger.error("Error in building query: " + query,e);
             throw new RuntimeException(e);
         }
-    }    
+        
+        return preparedQuery.evaluate();
+    }
     
     @Override
     public Query prepareQuery(String query,
             boolean resolveNamespaces, Value resolveValue, boolean infer)
             throws RepositoryException, MalformedQueryException, IllegalAccessException
     {
-    	Operation q = prepareQueryInternal(query, resolveNamespaces, resolveValue, true, infer, null);    	
+    	
+		QueryBuilder<? extends Operation> queryBuilder = QueryBuilder
+				.create(query).resolveNamespaces(resolveNamespaces)
+				.resolveValue(resolveValue).infer(infer);
+		Operation q = queryBuilder.build(this);    	
     	// we explicitly forbid anything that is not a Query (e.g. UPDATE)
     	if (!(q instanceof Query))
     		throw new IllegalAccessException("Query type not allowed for external use: " + q.getClass().getName());
     	return (Query) q;
-    }
-
-    
-    /**
-     * Prepares a query, also supports update queries. See 
-     * {@link ReadDataManager#prepareQuery(String, boolean, Value, boolean)} for
-     * a detailed documentation.
-     * 
-     * If the SPARQL query type is known in advance, it can be passed
-     * as a parameter. Otherwise it is determined from the query 
-     * string.
-     * 
-     * @param query
-     * @param resolveNamespaces
-     * @param resolveValue
-     * @param resolveUser
-     * @param infer
-     * @param queryType the sparql query type or null if unknown
-     * @return
-     * @throws RepositoryException
-     * @throws MalformedQueryException
-     */
-    protected Operation prepareQueryInternal(String query,
-            boolean resolveNamespaces, Value resolveValue,
-            boolean resolveUser, boolean infer, SparqlQueryType queryType)
-            throws RepositoryException, MalformedQueryException
-    {
-    	// replace context-specific patterns in query (where necessary)
-    	query = replaceSpecialVariablesInQuery(query, resolveValue, resolveUser);
-
-        // replace namespace prefixes
-        if (resolveNamespaces)
-        {
-            Map<String, String> map = EndpointImpl.api().getNamespaceService()
-            .getRegisteredNamespacePrefixes();
-
-            query = PrefixAdder.addPrefixes(query, map);
-        }
-                
-        query = query.trim();
-        
-    	// Note msc: some connections (e.g. HttpRepositoryConnection) do
-        // not support the prepareQuery() method; therefore, we try
-        // to call the most specific method, which is supported
-        queryType = queryType==null ? ReadDataManagerImpl.getSparqlQueryType(query, false) : queryType;
-        Operation preparedQuery;
-        switch (queryType) {
-        case SELECT: 	preparedQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query); break;
-        case CONSTRUCT:	preparedQuery = conn.prepareGraphQuery(QueryLanguage.SPARQL, query); break;
-        case ASK: 		preparedQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query); break;
-        case UPDATE:	preparedQuery = conn.prepareUpdate(QueryLanguage.SPARQL, query); break;
-        default: 		throw new IllegalArgumentException("Query type not supported: " + queryType + ", query: " + query);
-        }
-        
-        // enable inferencing        
-        try  {
-        	preparedQuery.setIncludeInferred(infer); 
-        } catch (UnsupportedOperationException ignore) {
-        	// ignore => operation currently not supported in Sesame SPARQLRepository
-        }
-        
-        // set query timeout
-        try  {
-        	if (preparedQuery instanceof Query)
-        		((Query)preparedQuery).setMaxQueryTime(Config.getConfig().queryTimeout());
-        } catch (UnsupportedOperationException ignore) {
-        	// ignore => operation currently not supported in Sesame SPARQLRepository
-        }
-        return preparedQuery;
-    }   
+    }    
+     
 
     @Override
     public ObjectTable sparqlSelectAsObjectTable(String query, boolean resolveNamespaces, Value resolveValue, boolean infer) throws MalformedQueryException, QueryEvaluationException
@@ -2203,7 +2136,7 @@ public class ReadDataManagerImpl implements ReadDataManager
     /**
      * RDF string to Java Object
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked" })
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="REC_CATCH_EXCEPTION", 
     		justification="Exception caught for robustness.")
     private <T> T convert(Value s, Class<T> t, Map<Value, Object> resourceStack)
@@ -2269,9 +2202,6 @@ public class ReadDataManagerImpl implements ReadDataManager
              * s, this, t );
              */
 
-            // pojo class - use with care. Implementation does NOT
-            // 1) handle cycles -> yields StackOverFlowException
-            // 2) propagate updates to the pojo
             T instance = t.newInstance();
 
             // create object only if it is necessary
@@ -2279,30 +2209,30 @@ public class ReadDataManagerImpl implements ReadDataManager
                 resourceStack = new HashMap<Value, Object>();
             resourceStack.put(s, instance);
 
-            String defaultNS = EndpointImpl.api().getNamespaceService()
-                    .defaultNamespace();
             for (Field f : t.getFields())
             {
+            	if ( Modifier.isStatic( f.getModifiers() ) )
+            		continue;
+            	if ( Modifier.isFinal( f.getModifiers() ) )
+            		continue;
+            	
                 if (List.class.isAssignableFrom(f.getType()))
                 {
-                    ParameterConfigDoc configDoc = f.getAnnotation(ParameterConfigDoc.class);
-                    Class listTypeValue = String.class;
-                    if (configDoc != null)
-                        listTypeValue = configDoc.listType();
+                    @SuppressWarnings("rawtypes")
+					Class listTypeValue = String.class;
+                	if ( f.getGenericType() instanceof ParameterizedType )
+                		listTypeValue = (Class<?>)((ParameterizedType)f.getGenericType()).getActualTypeArguments()[0];
                     
-                    if (f.getName().startsWith("inverse"))
+                    if (f.getAnnotation(RDFMapping.class) == null ? false : f.getAnnotation(RDFMapping.class).inverse())
                     {
-                        List<String> x = getInverseProps(s, valueFactory
-                                .createURI(defaultNS, f.getName().substring(
-                                        "inverse".length())), listTypeValue,
-                                false);
+                        List<String> x = getInverseProps(s, RDFMappingUtil.uri(f), listTypeValue, false);
                         f.set(instance, x);
                     }
                     else
                     {
-                        List<String> x = getProps((Resource) s, valueFactory
-                                .createURI(defaultNS, f.getName()),
-                                listTypeValue, false);
+                        List<T> x = new ArrayList<T>();
+                        for (Value v : getProps((Resource) s, RDFMappingUtil.uri(f)))
+                            x.add((T) convert(v, listTypeValue, resourceStack));
                         f.set(instance, x);
                     }
                 }
@@ -2310,13 +2240,9 @@ public class ReadDataManagerImpl implements ReadDataManager
                 {
                     if (f.getName().equals("__resource"))
                         f.set(instance, s);
-                    else if (f.getName().equals("__label"))
-                        f.set(instance, getLabel(s));
-                    else if (f.getName().startsWith("inverse"))
+                    else if (f.getAnnotation(RDFMapping.class) == null ? false : f.getAnnotation(RDFMapping.class).inverse())
                     {
-                        Object x = getInversePropInternal(s, valueFactory
-                                .createURI(defaultNS, f.getName().substring(
-                                        "inverse".length())), f.getType(),
+                        Object x = getInversePropInternal(s, RDFMappingUtil.uri(f), f.getType(),
                                 resourceStack);
                         f.set(instance, x);
                     }
@@ -2325,8 +2251,7 @@ public class ReadDataManagerImpl implements ReadDataManager
                         // for Resources, traverse deeper, for Literals, there
                         // is no substructure
                         Object x = getPropInternal(
-                                getProp((Resource) s, valueFactory.createURI(
-                                        defaultNS, f.getName())), f.getType(),
+                                getProp((Resource) s, RDFMappingUtil.uri(f)), f.getType(),
                                 resourceStack);
                         f.set(instance, x);
                     }
@@ -2635,10 +2560,9 @@ public class ReadDataManagerImpl implements ReadDataManager
     public List<Statement> getStatementsAsList(Resource subject, 
             URI predicate, Value object, boolean infer, Resource... contexts) 
     {
-    	RepositoryResult<Statement> r = null;
+
     	try {
-		    r = conn.getStatements(subject, predicate, object, infer, contexts);
-		    return r.asList();
+		    return Iterations.asList(conn.getStatements(subject, predicate, object, infer, contexts));
 		} 
 		catch (RepositoryException e) 
 		{
@@ -2647,9 +2571,6 @@ public class ReadDataManagerImpl implements ReadDataManager
             closeConnection();
 			throw new RuntimeException(e);
 		}
-    	finally {
-    		closeQuietly(r);
-    	}
     }
 
 	
@@ -3087,31 +3008,7 @@ public class ReadDataManagerImpl implements ReadDataManager
         return null;   
     }
     
-    /**
-     * Parses a given query expression and returns a Sesame ParsedOperation instance, which provides access to query algebra elements.
-     * 
-     * @param query
-     * @param resolveNamespaces
-     * @return
-     * @throws MalformedQueryException
-     */
-    public static ParsedOperation parseQuery(String query, boolean resolveNamespaces) throws MalformedQueryException {
-    	
-    	// replace namespace prefixes
-        if (resolveNamespaces)  {
-            Map<String, String> map = EndpointImpl.api().getNamespaceService().getRegisteredNamespacePrefixes();
-            query = PrefixAdder.addPrefixes(query, map);
-        }
-        
-        // we have to make sure that the special variables like ?? and $user$ are replaced in
-        // the query, otherwise this might not properly resolve the query type; note that
-        // RDF.TYPE is just a valid dummy URL (any URL would do instead, also)
-        query = replaceSpecialVariablesInQuery(query, RDF.TYPE, true);
-        
-        return QueryParserUtil.parseOperation(
-                QueryLanguage.SPARQL, query, null);
-    	
-    }
+    
     
     /**
      * Decides query type based on Sesame preparsing, either one
@@ -3126,7 +3023,7 @@ public class ReadDataManagerImpl implements ReadDataManager
     public static SparqlQueryType getSparqlQueryType(String query, boolean resolveNamespaces) throws MalformedQueryException
     {
 
-    	ParsedOperation parsedOperation = parseQuery(query, resolveNamespaces);
+    	ParsedOperation parsedOperation = QueryBuilder.parseQuery(query, resolveNamespaces);
 
         if (parsedOperation instanceof ParsedTupleQuery)
             return SparqlQueryType.SELECT;
@@ -3141,48 +3038,7 @@ public class ReadDataManagerImpl implements ReadDataManager
                     + parsedOperation.getClass() + " for query " + query);
     }
     
-    /**
-     * Replaces special variables inside query, namely ??, ?:useruri and $user$
-     */
-    public static String replaceSpecialVariablesInQuery(String query, Value resolveValue, boolean resolveUser)
-    {
-        if (query==null)
-            return null;
-        
-        // replace "??"
-        if (resolveValue!=null)
-        {
-            if (resolveValue instanceof URI)
-                query = query.replaceAll("\\?\\?", "<"
-                        + Matcher.quoteReplacement(((URI)resolveValue).toString()) + ">");
-            else if (resolveValue instanceof Literal)
-                query = query.replaceAll("\\?\\?", "\""
-                        + Matcher.quoteReplacement(resolveValue.stringValue()) + "\"");
-        }
-        
-        // only resolve user if $user$ or ?:useruri tokens are actually in the query
-        // as UserManager#getUserURI might be an expensive lookup operation in some
-        // implementations. Note that replacing $user$ depends on resolveUser.
-        // Note that argument resolveUser in almost any control flow path is true
-        // TODO consider clean up of resolveUser from signatures and replace always
-        resolveUser = (resolveUser && query.contains("$user$")) || query.contains("?:useruri");
-        
-        if (resolveUser)
-        {   
-        	URI userUri = EndpointImpl.api().getUserManager().getUserURI(null);
-        	
-        	// replace "$user$"
-	        if (userUri!=null)
-	            query = query.replaceAll("\\$user\\$", "<" + Matcher.quoteReplacement(userUri.toString()) + ">");
-	        
-	        // resolve special ?:useruri token (bug 9742)
-	        // TODO to be made more generic once we implement bug 11319
-	        if (userUri!=null)
-	        	query = query.replace("?:useruri", ProviderUtils.uriToQueryString(userUri));
-        }       
-        
-        return query;
-    }
+   
     
 	/**
 	 * Replaces a URI by another URI in a set of statements, considering only object and
@@ -3405,6 +3261,13 @@ public class ReadDataManagerImpl implements ReadDataManager
 		} finally {
 			ReadDataManagerImpl.closeQuietly(res);
 		}
+	}
+
+	@Override
+	public <T> T run(RepositoryConnectionTask<T> task) throws MalformedQueryException, RepositoryException {
+		if (task==null)
+			throw new IllegalArgumentException("Provided task must not be null");
+		return task.run(conn);
 	}
 	
 }

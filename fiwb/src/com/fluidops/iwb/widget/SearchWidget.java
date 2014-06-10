@@ -21,6 +21,7 @@ package com.fluidops.iwb.widget;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
@@ -44,7 +45,7 @@ import com.fluidops.iwb.ajax.FValueDropdown;
 import com.fluidops.iwb.ajax.FValueHoldingTextInput;
 import com.fluidops.iwb.ajax.SearchTextInput;
 import com.fluidops.iwb.api.EndpointImpl;
-import com.fluidops.iwb.api.ReadDataManagerImpl;
+import com.fluidops.iwb.api.query.QueryBuilder;
 import com.fluidops.iwb.autocompletion.AutoCompleteFactory;
 import com.fluidops.iwb.autocompletion.AutoSuggester;
 import com.fluidops.iwb.keywordsearch.KeywordSearchAPI;
@@ -52,11 +53,13 @@ import com.fluidops.iwb.keywordsearch.SearchProviderFactory;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
+import com.fluidops.iwb.provider.ProviderUtils;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.widget.config.ComponentType;
 import com.fluidops.util.Rand;
 import com.fluidops.util.StringUtil;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 
 
@@ -468,6 +471,8 @@ public class SearchWidget extends AbstractWidget<SearchWidget.Config>
 			List<InputTuple> tuples)
 			throws ParseException
 	{
+		
+		Map<String, Value> queryParams = Maps.newHashMap();
 		for (InputTuple tuple : tuples)
 		{
 			String input;
@@ -490,17 +495,17 @@ public class SearchWidget extends AbstractWidget<SearchWidget.Config>
 			
 			if (searchType == ParameterType.LITERAL || searchType == ParameterType.LUCENE)
 			{
-				input = "\"" + input + "\"";
+				// in future we might need to make sure that literal does not have a datatype,
+				// otherwise queries might not yield results, i.e. "hello" != "hello"^^xsd:string
+				queryParams.put(tuple.name, ProviderUtils.toLiteral(input));
 			} else if (searchType == ParameterType.URI)
 			{
-				input = EndpointImpl.api().getNamespaceService().guessURIOrCreateInDefaultNS(input).stringValue();
-				input = "<" + input + ">";
+				URI uri = EndpointImpl.api().getNamespaceService().guessURIOrCreateInDefaultNS(input);
+				queryParams.put(tuple.name, uri);
 			}			
-            // replace user input variable   
-			queryPattern = queryPattern.replace("?:" + tuple.name, input);
 		}
         // replace page context variable       	
-    	queryPattern = ReadDataManagerImpl.replaceSpecialVariablesInQuery(queryPattern, pc.value, false);
+    	queryPattern = QueryBuilder.replaceSpecialVariablesInQuery(queryPattern, pc.value, queryParams);
     	
 		return queryPattern;
 	}

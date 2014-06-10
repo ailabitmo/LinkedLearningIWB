@@ -37,6 +37,7 @@ import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.NotificationType;
 import com.fluidops.iwb.widget.config.WidgetBaseConfig;
+import com.fluidops.util.Rand;
 import com.fluidops.util.StringUtil;
 
 /**
@@ -49,7 +50,22 @@ import com.fluidops.util.StringUtil;
 @TypeConfigDoc("The callout widget displays a button. A click on the button triggers a dialog window with the callout content.")
 public class CalloutWidget extends AbstractWidget<CalloutWidget.Config> {
 
+	/**
+	 * The CSS class common for all callout widgets. Can be used for styling in CSS files.
+	 */
 	private static String cssClass = "calloutWidget";
+	/**
+	 * The id different for every callout widget button for direct access in javascript. 
+	 * It is used to manipulate the onclick function of the button. 
+	 * (Important for multiple callouts on a page)
+	 */
+	private String buttonId = "imgButton"+Rand.getIncrementalFluidUUID();
+	/**
+	 * The CSS class different for every callout widget for direct access in javascript.
+	 * It is used to make the widget component draggable. 
+	 * (Important for multiple callouts on a page)
+	 */
+	private String componentClass = "calloutWidget"+Rand.getIncrementalFluidUUID();
 	
 	public static class Config extends WidgetBaseConfig {
 
@@ -176,7 +192,11 @@ public class CalloutWidget extends AbstractWidget<CalloutWidget.Config> {
 			@Override
 			public String render(){
 				addClientUpdate( new FClientUpdate( Prio.VERYEND, "jQuery(document).ready(function($){" +
-			            "$('."+cssClass+"').draggable({ cursor: 'move', cancel: '.flDialogContent div' });});" ) );
+			                    " var "+buttonId+"; $('."+componentClass+"').draggable({ cursor: 'move', cancel: '.flDialogContent div', "+
+			                     //avoid click event during dragging
+			                    " start: function(event, ui) { "+buttonId+" =  $( '#"+buttonId+"' )[0].onclick; $( '#"+buttonId+"' )[0].onclick =''; },"+
+			                    " stop: function(event, ui) { setTimeout(function(){ $( '#"+buttonId+"' )[0].onclick = "+buttonId+";}, 300)  }"+
+			            		" });});" ) );
 				return super.render();
 			}
 		}; 
@@ -188,7 +208,7 @@ public class CalloutWidget extends AbstractWidget<CalloutWidget.Config> {
 			callout.add(title);
 		}
 
-		final FImageButton openButton = new FImageButton("opimg", imageSource) {
+		final FImageButton openButton = new FImageButton(buttonId, imageSource) {
 
 			@Override
 			public void onClick() {
@@ -203,6 +223,7 @@ public class CalloutWidget extends AbstractWidget<CalloutWidget.Config> {
 		callout.add(dialogContainer);
 		//allow css customizing of the widget
 		callout.appendClazz(cssClass);
+		callout.appendClazz(componentClass);
 		dialogContainer.setDialogClass("calloutWindow");
 
 		// set size

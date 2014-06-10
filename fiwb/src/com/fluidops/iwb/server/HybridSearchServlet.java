@@ -48,7 +48,6 @@ import com.fluidops.ajax.FSession;
 import com.fluidops.ajax.components.FHTML;
 import com.fluidops.ajax.components.FPage;
 import com.fluidops.ajax.components.FPopupWindow;
-import com.fluidops.iwb.Global;
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
@@ -138,7 +137,32 @@ public class HybridSearchServlet extends IWBHttpServlet
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		handle(req, resp);
 	}
-    
+	    
+	@Override
+	protected SearchPageContext createPageContext(HttpServletRequest req,
+			HttpServletResponse resp) {
+        // the main object passed between processing steps
+		PageContext superPc=super.createPageContext(req, resp);
+        SearchPageContext tempPc= new SearchPageContext();
+		tempPc.title = getPageTitle();
+		tempPc.setRequest(superPc.getRequest());
+		tempPc.httpResponse = superPc.httpResponse;
+		tempPc.repository=superPc.repository;
+				
+        // page context
+		tempPc.contextPath = req.getContextPath();
+		// Generic resource associated with the search result page.
+		// To be changed to a meaningful unique identifier of the query request.
+		tempPc.value = Vocabulary.SYSTEM.SEARCH_VALUE_CONTEXT;
+		return tempPc;
+		
+	}
+
+	@Override
+	protected SearchPageContext getPageContext() {
+		return (SearchPageContext)super.getPageContext();
+	}
+
 	/**
 	 * Retrieve the query from request, do the token based security check and
 	 * evaluate the query.
@@ -176,21 +200,11 @@ public class HybridSearchServlet extends IWBHttpServlet
 			return;
 		}
 
-        // the main object passed between processing steps
-        SearchPageContext pc = new SearchPageContext();
-
-        // page context
-		pc.contextPath = req.getContextPath();
-		// Generic resource associated with the search result page.
-		// To be changed to a meaningful unique identifier of the query request.
-		pc.value = Vocabulary.SYSTEM.SEARCH_VALUE_CONTEXT;
+		SearchPageContext pc = getPageContext();
 
 		// register FPage
 		pc.page = page;
 		pc.session = session;
-		pc.setRequest(req);
-		pc.httpResponse = resp;
-		pc.repository = Global.repository;
 
 		// get and decode query
 		pc.query = getQueryFromRequest(req);
@@ -200,6 +214,7 @@ public class HybridSearchServlet extends IWBHttpServlet
 		}
         
 		pc.query = pc.query.trim();
+		PageContext.setThreadPageContext(pc);
 		
 		List<String> queryTargets = SearchProviderFactory.getDefaultQueryTargets(); 
 		
@@ -354,31 +369,15 @@ public class HybridSearchServlet extends IWBHttpServlet
 		// keyword query
 		else
 		{
-			pc.queryLanguage = "KEYWORD";
-			pc.queryType = "KEYWORD";
 			
-			MultiPartMutableTupleQueryResultImpl queryRes = null;
-			
-			TupleQueryResult currentQueryResult;
+			try {
+				handleKeywordQuery(pc, queryTargets);
 				
-			List<KeywordSearchProvider> providers = SearchProviderFactory
-					.getInstance()
-					.getKeywordSearchProviders(queryTargets);
-	
-			for(KeywordSearchProvider provider : providers) {
-				try {
-					currentQueryResult = provider.search(pc.query);
-					queryRes = ReadDataManagerImpl.mergeQueryResults(queryRes, currentQueryResult, provider.getShortName());
-				} catch(ParseException e) {
-					error(resp, 400, "Malformed keyword query:\n\n" + pc.query + "\n\n" + e.getMessage());
-					return;
-				} catch(Exception e) {
-					errorRecords.add(createErrorRecord(e, provider, pc));
-				}
+			} catch (ParseException e) {
+				error(resp, 400, "Malformed keyword query:\n\n" + pc.query + "\n\n" + e.getMessage());
+			} catch (SearchException e) {
+				errorRecords.add(createErrorRecord(e, pc));
 			}
-				
-			pc.queryResult = (queryRes!=null) ? queryRes : createEmptyKeywordQueryResult();
-	
 		}
 			
 		resp.setStatus(HttpServletResponse.SC_OK);
@@ -412,6 +411,44 @@ public class HybridSearchServlet extends IWBHttpServlet
         // print response
         EndpointImpl.api().getPrinter().print(pc, resp);
     }
+	
+	
+	/**
+	 * Helper method that processes KEYWORD queries using the 
+	 * {@link KeywordSearchProvider}s which are available for
+	 * the given query targets.
+	 */
+	void handleKeywordQuery(SearchPageContext pc, List<String> queryTargets) throws ParseException, SearchException {
+		pc.queryLanguage = "KEYWORD";
+		pc.queryType = "KEYWORD";
+		
+		MultiPartMutableTupleQueryResultImpl queryRes = null;
+		
+		TupleQueryResult currentQueryResult;
+			
+		List<KeywordSearchProvider> providers = SearchProviderFactory
+				.getInstance()
+				.getKeywordSearchProviders(queryTargets);
+
+		for(KeywordSearchProvider provider : providers) {
+			try {
+				currentQueryResult = provider.search(pc.query);
+				queryRes = ReadDataManagerImpl.mergeQueryResults(queryRes, currentQueryResult, provider.getShortName());
+			} catch (ParseException e) { 
+				throw e;
+			} catch (Exception e) {
+				throw new SearchException(e, provider);
+			}
+		}
+			
+		pc.queryResult = (queryRes!=null) ? queryRes : createEmptyKeywordQueryResult();
+	}
+	
+	
+	private static ErrorRecord createErrorRecord(SearchException e, SearchPageContext pc) {
+		// special exception to transport information
+		return createErrorRecord( (Exception) e.getCause(), e.searchProvider, pc);
+	}
 	
 	private static ErrorRecord createErrorRecord (Exception e, SearchProvider provider, SearchPageContext pc) {
 		int errorCode = 500;
@@ -586,5 +623,27 @@ public class HybridSearchServlet extends IWBHttpServlet
 	}
 	
 	
+	@Override
+	protected String getPageTitle() {
+		return "Hybrid Search Servlet";
+	}  
+	
     
+	/**
+	 * A special exception which contains additional information
+	 * about the {@link SearchProvider}. This exception allows
+	 * to create {@link ErrorRecord}s using 
+	 * {@link HybridSearchServlet#createErrorRecord(SearchException, SearchPageContext)
+	 */
+	static class SearchException extends Exception {
+
+		private static final long serialVersionUID = -144313072352868756L;
+		public final SearchProvider searchProvider;
+		
+		public SearchException(Exception cause, SearchProvider provider) {
+			super(cause);
+			this.searchProvider = provider;
+		}
+		
+	}
 }

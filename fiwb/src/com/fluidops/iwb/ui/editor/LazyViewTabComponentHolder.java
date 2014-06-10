@@ -53,7 +53,7 @@ public class LazyViewTabComponentHolder extends SemWikiComponentHolder {
 	@Override
 	protected void initializeView(FContainer container) {	
 		
-		String renderedContent = SemWikiUtil.getRenderedViewContent(semWiki.getWikiText(), semWiki.getSubject(), semWiki.getVersion(), container);
+		String renderedContent = SemWikiUtil.getRenderedViewContent(semWiki.getWikiText(), semWiki.getSubject(), semWiki.getVersion(), container, semWiki.getPageContext());
 		container.setStringTemplateClazz(STRINGTEMPLATE);
 		container.setStringTemplateParameter("renderedViewContent", renderedContent);		
 	}

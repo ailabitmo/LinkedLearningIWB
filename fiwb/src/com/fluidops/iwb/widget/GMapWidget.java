@@ -35,12 +35,15 @@ import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
+import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.widget.config.WidgetBaseConfig;
 import com.fluidops.util.StringUtil;
 import com.google.common.collect.Lists;
 /**
  * GMap widget
- * 
+ * A valid Google API Key is required for using Google Maps Service. 
+ * The API Key has to be defined using googleApiKey parameter in the system configuration.
+
  * @author ango, marlon.braun
  */
 @TypeConfigDoc( "GMap adds a Google Map Widget to an entity page using the Google Maps JavaScript API V3. This map can be populated by database resources depicted as markers." )
@@ -90,6 +93,12 @@ public class GMapWidget extends AbstractWidget <GMapWidget.Config>
 	@Override
 	public FComponent getComponent(final String id) {
 
+		String ApiKey = com.fluidops.iwb.util.Config.getConfig().getGoogleApiKey();
+		
+		if(StringUtil.isNullOrEmpty(ApiKey))
+			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.GENERIC, 
+					"Google API Key needs to be provided in your system configuration to be able to use Google Maps Service");
+			
 		final Config c = get();
 
 		List<AddressMarker> addressMarkers = new LinkedList<AddressMarker>();
@@ -351,7 +360,8 @@ public class GMapWidget extends AbstractWidget <GMapWidget.Config>
 	@Override
 	public List<String> jsURLs( )
 	{
-		return Lists.newArrayList("http://maps.google.com/maps/api/js?sensor=false");
+		return Lists.newArrayList("//maps.googleapis.com/maps/api/js?key="+
+				com.fluidops.iwb.util.Config.getConfig().getGoogleApiKey()+"&sensor=false");
 	}
 }
 

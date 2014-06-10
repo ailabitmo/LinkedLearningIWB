@@ -39,6 +39,7 @@ import com.fluidops.ajax.components.FTabPane2Lazy;
 import com.fluidops.iwb.api.Context;
 import com.fluidops.iwb.api.Context.ContextLabel;
 import com.fluidops.iwb.api.EndpointImpl;
+import com.fluidops.iwb.page.PageContext;
 import com.fluidops.iwb.user.UserManager.ValueAccessLevel;
 import com.fluidops.iwb.util.DateTimeUtil;
 import com.fluidops.iwb.widget.SemWikiWidget;
@@ -110,16 +111,21 @@ public class SemWiki extends FContainer {
     private Set<Resource> typeIncludes;    
 	
     private final Repository repository;
+    private final PageContext pc;
 
     
-	public SemWiki(String id, URI value, Repository repository, String versionStr) {
+	public SemWiki(String id, URI value, Repository repository, String versionStr, PageContext pc) {
 		super(id);
 		this.subject = value;
 		this.repository = repository;
 		this.version = SemWikiUtil.toDateVersion(versionStr);
 		this.accessLevel = EndpointImpl.api().getUserManager().getValueAccessLevel(value);
+		this.pc = pc;
 	}
 	
+	PageContext getPageContext() {
+		return pc;
+	}
 	
 	public String getWikiText() {
 		return wikiText;
@@ -215,11 +221,11 @@ public class SemWiki extends FContainer {
 		
 		// if a specific version (= revision) was requested, show an appropriate title
 		if (this.version != null) {
-			tabPane.setTitle("<font color=\"darkgray\">Displaying version from " + DateTimeUtil.getDate(this.version, "EEE, d MMM yyyy HH:mm:ss") + " (editing disabled).</font>");
+			tabPane.setTitle("<font class =\"pageRedirectMessage\" >Displaying version from " + DateTimeUtil.getDate(this.version, "EEE, d MMM yyyy HH:mm:ss") + " (editing disabled).</font>");
 		}
 		// if this page was redirected to, show an appropriate title
 		if (this.redirectedFrom != null) {
-			tabPane.setTitle("<font color=\"darkgray\">Redirected from " + EndpointImpl.api().getDataManager().getLabel(redirectedFrom) + "</font>");
+			tabPane.setTitle("<font class =\"pageRedirectMessage\" >Redirected from " + EndpointImpl.api().getDataManager().getLabel(redirectedFrom) + "</font>");
 		}
 			
 		
@@ -405,5 +411,20 @@ public class SemWiki extends FContainer {
         else // fallback
             addClientUpdate( new FClientUpdate(Prio.VERYEND, "document.location=document.location;"));
     }
+
+	@Override
+	public String[] jsURLs() {
+
+		// make jsURLs mechanism work if the SemWiki widget is not the first view in the platform.
+		// in this case the inner components are not initialized, thus the jsUrls cannot be retrieved.
+		// Note that the inner components are rendered lazily, i.e. calling initialize here does
+		// not do any rendering (it only reads the raw wiki content and creates the inner lazy
+		// components). The relevant JS URLs are retrieved from LazyViewTabComponentHolder.
+		// see bug 11163 for details
+		if (!initialized)
+			initialize();
+		
+		return super.jsURLs();
+	}
    
 }

@@ -18,6 +18,7 @@
 
 package com.fluidops.iwb.provider;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,7 +28,6 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -36,11 +36,16 @@ import org.openrdf.model.URI;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 import com.fluidops.ajax.components.FForm.Validation;
+import com.fluidops.iwb.datasource.DataSource;
+import com.fluidops.iwb.datasource.DataSourceService;
+import com.fluidops.iwb.datasource.DataSourceServiceImpl;
 import com.fluidops.iwb.model.Capability;
+import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.PojoConfigurable;
 import com.fluidops.iwb.model.PojoConfigurableHelper;
-import com.fluidops.iwb.ui.ProviderDomain;
+import com.fluidops.iwb.ui.configuration.HiddenIfUnset;
 import com.fluidops.iwb.util.Configurable;
+import com.google.common.collect.Lists;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -53,6 +58,48 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 public abstract class AbstractFlexProvider<T extends Serializable> implements PojoConfigurable<T>, Configurable, Serializable
 {
+	
+	public static class DataSourceProviderConfig {
+
+		@ParameterConfigDoc(
+				desc = "The identifier of an existing Data Source",
+				required = true				
+				)
+		@HiddenIfUnset
+		public URI dataSource;
+	    
+		
+		/**
+		 * Convenience method to lookup the {@link DataSource} for this configuration
+		 * in the registered {@link DataSourceService}. This method automatically
+		 * invokes {@link DataSource#refresh()} on the {@link DataSource} to
+		 * refresh the source.
+		 * 
+		 * @param expectedDataSourcetype the class of the expected {@link DataSource}
+		 * @return a non-null {@link DataSource} matching the identifier
+		 * 
+		 * @throws IOException if an error occurs in {@link DataSource#refresh()}
+		 * @throws IllegalStateException if there is no data source registered for the given identifier
+		 * @throws IllegalArgumentException if the DataSource is not compatible with the expected data source type
+		 */
+		@java.lang.SuppressWarnings("unchecked")
+		public <T extends DataSource> T lookupAndRefreshDataSource(Class<T> expectedDataSourcetype) throws IOException, IllegalStateException, IllegalArgumentException {
+			
+			if (dataSource==null)
+				throw new IllegalStateException("Data Source identifier is null.");
+			
+			DataSource d = DataSourceServiceImpl.getInstance().getDataSource(dataSource);
+			if (d==null)
+				throw new IllegalStateException("No data source registered: " + dataSource);
+			if (!expectedDataSourcetype.isAssignableFrom(d.getClass()))
+				throw new IllegalArgumentException("Not a '" + expectedDataSourcetype.getName() + "': " + d.getClass());
+			
+			d.refresh();
+						
+			return (T)d;
+		}
+	}
+	
     private static final Logger logger = Logger.getLogger(AbstractFlexProvider.class.getName());
 
 	private static final long serialVersionUID = -1293426854287867763L;
@@ -115,7 +162,7 @@ public abstract class AbstractFlexProvider<T extends Serializable> implements Po
                 }
                 else if ( List.class.isAssignableFrom( f.getType() ) )
                 {
-                    List lst = (List)f.get( special );
+                    List<?> lst = (List<?>)f.get( special );
                     if ( lst != null && !lst.isEmpty() )
                         // primitive value AND special != null, nothing to do
                         continue;
@@ -147,7 +194,7 @@ public abstract class AbstractFlexProvider<T extends Serializable> implements Po
      */
     public List<Statement> list()
     {
-    	List<Statement> res = new LinkedList();
+    	List<Statement> res = Lists.newLinkedList();
  
         boolean success = false;
         try
@@ -170,14 +217,6 @@ public abstract class AbstractFlexProvider<T extends Serializable> implements Po
      */
     public abstract Class<? extends T> getConfigClass();
     
-    
-    /**
-     * classify providers into domains like music, datacentern, etc.
-     */
-    public ProviderDomain getProviderDomain()
-    {
-        return ProviderDomain.General;
-    }
     
     /**
      * given a config pojo, add new statements to res - exceptions are handled in list

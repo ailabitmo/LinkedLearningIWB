@@ -55,41 +55,42 @@ import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResults;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
 import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
+import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
-import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.openrdf.query.resultio.sparqlxml.SPARQLBooleanXMLWriter;
 import org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
-import org.openrdf.query.resultio.text.csv.SPARQLResultsCSVWriter;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
-import org.openrdf.rio.n3.N3Writer;
-import org.openrdf.rio.ntriples.NTriplesWriter;
+import org.openrdf.rio.Rio;
 import org.openrdf.rio.rdfxml.RDFXMLWriter;
-import org.openrdf.rio.trig.TriGWriter;
-import org.openrdf.rio.trix.TriXWriter;
-import org.openrdf.rio.turtle.TurtleWriter;
 
 import com.fluidops.ajax.FSession;
 import com.fluidops.ajax.components.FPage;
@@ -101,6 +102,9 @@ import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
 import com.fluidops.iwb.api.ReadWriteDataManager;
 import com.fluidops.iwb.api.ReadWriteDataManagerImpl;
+import com.fluidops.iwb.api.query.FromStringQueryBuilder;
+import com.fluidops.iwb.api.query.QueryBuilder;
+import com.fluidops.iwb.model.Vocabulary;
 import com.fluidops.iwb.page.PageContext;
 import com.fluidops.iwb.server.RedirectService.RedirectType;
 import com.fluidops.iwb.ui.templates.ServletPageParameters;
@@ -110,6 +114,7 @@ import com.fluidops.util.StringUtil;
 import com.fluidops.util.TemplateBuilder;
 import com.fluidops.util.concurrent.TaskExecutor;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 
 
@@ -135,6 +140,7 @@ import com.google.common.collect.Lists;
  *  <li>SPARQL/XML / application/sparql-results+xml</li>
  *  <li>SPARQL/JSON / application/sparql-results+json</li>
  *  <li>SPARQL/CSV / text/csv</li>
+ *  <li>SPARQL/TSV / text/tab-separated-values</li>
  * </ul>
  * 
  * b) Graph Queries (e.g. Construct queries):
@@ -142,6 +148,7 @@ import com.google.common.collect.Lists;
  * <ul>
  *  <li>RDF/XML / application/rdf+xml</li>
  *  <li>N-Triples / text/plain</li>
+ *  <li>N-Quads / text/x-nquads</li>
  *  <li>Turtle / text/turtle</li>
  *  <li>N3 / text/rdf+n3</li>
  *  <li>TriX / application/trix</li>
@@ -160,8 +167,8 @@ import com.google.common.collect.Lists;
  *  		e.g. RDF/XML (see {@link org.openrdf.rio.RDFFormat} for supported formats</li>
  *  <li><b>4. Parameter "forceDownload":</b>Add the content-disposition header (to force save as)</li>
  *  <li><b>5. Parameter "queryType":</b> if the "queryType" is set to 'context' the value of the parameter "query" is an array of contexts
- *            (comma-separated URIs or 'All' for all context enclosed in '['/']') to export.
- *            In this case the contexts will be exported in the requested format. Example: [http://example.org/myCtx]</li>
+ *            (comma-separated URIs or 'All' for all context enclosed in '['']') to export.
+ *            In this case the contexts will be exported in the requested format. Requires SELECT query privileges. Example: [http://example.org/myCtx]</li>
  * </ul>
  * 
  * Legacy Support: <p>
@@ -226,16 +233,16 @@ public class SparqlServlet extends IWBHttpServlet {
 			req = ((XssSafeHttpRequest)req).getXssUnsafeHttpRequest();
 		}
 		
-		String query = null;
+		String queryString = null;
 		try {			
 			
 			ServletOutputStream outputStream = resp.getOutputStream();
 
-			query = getQueryFromRequest(req);
+			queryString = getQueryFromRequest(req);
 			
 			boolean openLocalAccess = Config.getConfig().getOpenSparqlServletForLocalAccess() && (req.getRemoteAddr().equals("127.0.0.1") || req.getRemoteAddr().equals("localhost")); 
-			
-			if (query==null) {
+		
+			if (queryString==null) {
 				if(!openLocalAccess && !EndpointImpl.api().getUserManager().hasQueryRight(SparqlQueryType.SELECT, null)) {
 					resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not enough rights to execute query.");
 	            	return;
@@ -252,51 +259,40 @@ public class SparqlServlet extends IWBHttpServlet {
 				return;
 			} 
 
-//			query = URLDecoder.decode(query, "UTF-8");
-
-			String securityToken = req.getParameter("st");
-
-	        //////////////////SECURITY CHECK/////////////////////////
+			//check if the query is about exporting context data
 			String qType = req.getParameter("queryType");
-	        SparqlQueryType queryType = qType!=null ? null : ReadDataManagerImpl.getSparqlQueryType(query, true);
-	        if (!openLocalAccess && !EndpointImpl.api().getUserManager().hasQueryPrivileges(query, queryType, securityToken)) {
+			if("context".equals(qType)) {
+				if(!openLocalAccess && !EndpointImpl.api().getUserManager().hasQueryRight(SparqlQueryType.SELECT, null)) {
+					resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not enough rights to execute query.");
+	            	return;
+				}
+				Boolean exportContextMetaData = Boolean.parseBoolean(req.getParameter("exportContextMetaData"));
+				exportContexts(queryString, req, resp, outputStream, exportContextMetaData);
+				return;
+			}
+			
+	        //////////////////SECURITY CHECK/////////////////////////
+			String securityToken = req.getParameter("st");
+			FromStringQueryBuilder<? extends Operation> queryBuilder = QueryBuilder.create(queryString);
+	        final SparqlQueryType queryType = queryBuilder.getQueryType();
+	        if (!openLocalAccess && !EndpointImpl.api().getUserManager().hasQueryPrivileges(queryString, queryType, securityToken)) {
 	            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not enough rights to execute query.");
 	            return;
 	        }
 			
 			// redirect format=auto to search servlet (for SELECT+CONSTRUCT)
 			String format = req.getParameter("format");
-			if (format!= null && format.equals("auto")) {
-				if (queryType == SparqlQueryType.SELECT || queryType == SparqlQueryType.CONSTRUCT) {
-					// Apparently, the jetty limit on request header buffer size is 6144, which is filled by (contentLength*2 + something else).
-					// Content length 2965 was sufficient for the query to pass.
-					// Moved the threshold down in case if additional properties are to be passed (e.g., multiple query targets).
-					if(req.getContentLength()<2800) {
-						resp.sendRedirect(req.getContextPath() + "/search/?q=" + StringUtil.urlEncode(query) 
-								+ "&infer=" + StringUtil.urlEncode(req.getParameter("infer")) + "&queryLanguage=SPARQL&queryTarget=RDF");
-						return;
-					} else {
-						RequestDispatcher dispatcher = req.getRequestDispatcher("/search/?queryLanguage=SPARQL&queryTarget=RDF");
-					    try {
-							dispatcher.forward(req, resp);
-						} catch (ServletException e) {
-							resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not forward request to search servlet.");
-						}
-						return;
-					}
-				}
+			if ("auto".equals(format) &&  (queryType == SparqlQueryType.SELECT || queryType == SparqlQueryType.CONSTRUCT)) {
+				handleForward(req, resp);
+				return;
 			}
 			
-			//check if the query is a context to export	
-			if(qType!=null && qType.equals("context"))
-				exportContexts(query, req, resp, outputStream);
-			else
-				handleQuery(query, queryType, req, resp, outputStream);
+			handleQuery(queryBuilder, req, resp, outputStream);
 			
 		
 		}
 		catch (MalformedQueryException e) {
-			error(resp, 400, "Malformed query: \n\n" + query + "\n\n" + e.getMessage());
+			error(resp, 400, "Malformed query: \n\n" + queryString + "\n\n" + e.getMessage());
 			return;
 		} 
 		catch (IOException e) {
@@ -311,10 +307,11 @@ public class SparqlServlet extends IWBHttpServlet {
 	 * @param req
 	 * @param resp
 	 * @param outputStream
+	 * @param exportContextMetaData 
 	 * @throws IOException
 	 */
 	private void exportContexts(String contexts, HttpServletRequest req,
-			HttpServletResponse resp, ServletOutputStream outputStream) throws IOException
+			HttpServletResponse resp, ServletOutputStream outputStream, Boolean exportContextMetaData) throws IOException
 	{
 		Resource[] contextsArray = buildContextsArray(contexts);
 		RepositoryConnection con = null;
@@ -322,14 +319,33 @@ public class SparqlServlet extends IWBHttpServlet {
 		try
 		{
 			writer = selectWriter(req, resp, resp.getOutputStream());		
-            if (writer==null)
-            	throw new IOException("Unsupported format");     
-			con = Global.repository.getConnection();
-			con.exportStatements(null, null, null, false, writer, contextsArray );
+			if (writer==null)
+				throw new IOException("Unsupported format");     
+
+			ReadDataManager dm = ReadDataManagerImpl.getDataManager(Global.repository);
+
+			writer.startRDF();
+
+			try {
+				RepositoryResult<Statement> res = dm.getStatements(null, null, null, false, contextsArray );
+
+				writeRepositoryResultToOutput(writer, res);
+
+				if(exportContextMetaData) {
+
+					for(Resource c : contextsArray) {
+						res = dm.getStatements(c, null, null, false, Vocabulary.SYSTEM_CONTEXT.METACONTEXT);
+						writeRepositoryResultToOutput(writer, res);
+					}
+				}
+			} finally {
+				writer.endRDF();
+			}
+			
 		}
 		catch (Exception e)
 		{
-			throw new IOException("could not export data for contexts: " + Arrays.toString(contextsArray), e);
+			throw new IOException("could not export data for contexts: " + Arrays.toString(contextsArray) + ". Reason: " + e.getMessage(), e);
 		}
 		finally
 		{		
@@ -418,13 +434,9 @@ public class SparqlServlet extends IWBHttpServlet {
 			return;
 		}
 				
-		PageContext pc = new PageContext();
-				
-		pc.title = "SPARQL Query Interface";
+		PageContext pc = getPageContext();	
 		pc.page = page;
-		pc.contextPath = EndpointImpl.api().getRequestMapper().getContextPath();
-		pc.setRequest(req);
-		pc.httpResponse = resp;
+		pc.title = "SPARQL Query Interface";
 		
 		resp.setContentType("text/html");
 		resp.setStatus(200);
@@ -443,11 +455,8 @@ public class SparqlServlet extends IWBHttpServlet {
 		
 		//TODO: check ACL query rights and, if allowed, generate security token
 		TemplateBuilder tb = new TemplateBuilder( "tplForClass", template);
-		out.print(
-				tb.renderTemplate(
-						templateParams
-				)
-				);
+		
+		out.write(tb.renderTemplate(templateParams).getBytes("UTF-8"));
 	}
 	
 	protected String getNamespacesAsJSONList() {
@@ -478,6 +487,69 @@ public class SparqlServlet extends IWBHttpServlet {
 	}
 	
 	/**
+	 * A set of request parameters which should not be applied when redirecting to the search servlet
+	 */
+	private static final Set<String> requestParamIgnoreKeys = Sets.newHashSet("endpoint", "format", "forceDownload", "mode");
+	
+	/**
+	 * Handles the forward to the {@link HybridSearchServlet} by performing a redirect or a forward.
+	 * A redirect is performed if the content length of the request is smaller than Jetty's buffer
+	 * limit, otherwise the request is directly forwarded.
+	 * 
+	 * All parameters are passed to the {@link HybridSearchServlet} as part of the request. Note
+	 * that the "repository" parameter is in addition mapped to "queryTarget".
+	 * 
+	 * Note that certain request parameters as defined in {@link #requestParamIgnoreKeys} are
+	 * not forwarded.
+	 * 
+	 * @param req
+	 * @param resp
+	 * @throws IOException
+	 */
+	protected void handleForward(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		
+		// determine the query target (used for repository manager)
+		String repositoryID=req.getParameter("repository");
+		String queryTarget;		
+		if(StringUtil.isNotNullNorEmpty(repositoryID))
+			queryTarget = StringUtil.urlEncode(repositoryID);
+		else
+			queryTarget = "RDF";
+		
+		// Apparently, the jetty limit on request header buffer size is 6144, which is filled by (contentLength*2 + something else).
+		// Content length 2965 was sufficient for the query to pass.
+		// Moved the threshold down in case if additional properties are to be passed (e.g., multiple query targets).
+		if(req.getContentLength()<2800) {
+			
+			StringBuilder forwardedParams = new StringBuilder();
+			/*
+			 * Sanitize the request parameters before redirect to
+			 * prevent HTTP response splitting vulnerabilities
+			 * 
+			 * @see http://de.wikipedia.org/wiki/HTTP_Response_Splitting
+			 */
+			for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
+				if (requestParamIgnoreKeys.contains(entry.getKey()))
+					continue;
+				for (String value : entry.getValue()) {
+					forwardedParams.append(String.format("&%s=%s", entry.getKey(), StringUtil.urlEncode(value)));
+				}
+			}
+			String location = req.getContextPath() + "/search/?queryLanguage=SPARQL&queryTarget=" + queryTarget + forwardedParams.toString();
+						
+			resp.sendRedirect(location);
+		} else {
+			
+			RequestDispatcher dispatcher = req.getRequestDispatcher("/search/?queryLanguage=SPARQL&queryTarget=" + queryTarget);
+		    try {
+				dispatcher.forward(req, resp);
+			} catch (ServletException e) {
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not forward request to search servlet.");
+			}
+		}
+	}
+	
+	/**
 	 * Handle the query:
 	 * 
 	 *  -  retrieves parameters <i>historic</i> and <i>value</i>
@@ -489,22 +561,20 @@ public class SparqlServlet extends IWBHttpServlet {
 	 * @param resp
 	 * @param outputStream
 	 */
-	protected void handleQuery(String query, SparqlQueryType queryType, HttpServletRequest req, HttpServletResponse resp, final ServletOutputStream outputStream) {
+	protected void handleQuery(FromStringQueryBuilder<? extends Operation> queryBuilder, HttpServletRequest req, HttpServletResponse resp, final ServletOutputStream outputStream) {
 			
-		// historical Repository
-		String _historic = req.getParameter("historic");
-		boolean historic = _historic!=null && Boolean.parseBoolean(_historic);
-		
 		// value to be used in queries instead of ??
         String _resolveValue = req.getParameter("value");
-        Value resolveValue = _resolveValue!=null ? ValueFactoryImpl.getInstance().createURI(_resolveValue) : null;
-        		
-		ReadDataManager queryDM = historic ? 
-				ReadDataManagerImpl.getDataManager(Global.historyRepository) : 
-					ReadDataManagerImpl.getDataManager(Global.repository);
-         
+        if (_resolveValue!=null)
+        	queryBuilder.resolveValue(ValueFactoryImpl.getInstance().createURI(_resolveValue));
+        
+        PageContext pc = getPageContext();
+        
+       // pc.title = "SPARQL Query Interface";
+        ReadDataManager queryDM = ReadDataManagerImpl.getDataManager(pc.repository);
+	
 		if (log.isTraceEnabled())
-			log.trace("Processing query: " + query);
+			log.trace("Processing query: " + queryBuilder.getQueryString());
 				
 		int currentRequest = nextRequestId.incrementAndGet();
 		
@@ -518,7 +588,7 @@ public class SparqlServlet extends IWBHttpServlet {
 		}
 		
 		try {
-			processQuery(query, queryType, currentRequest, resolveValue, queryDM, req, resp, outputStream);
+			processQuery(queryBuilder, currentRequest, queryDM, req, resp, outputStream);
 		} finally {
 			// release the lease (i.e. free the slot for other queries)
 			semaphore.release();
@@ -563,8 +633,8 @@ public class SparqlServlet extends IWBHttpServlet {
 	 * @param resp
 	 * @param out
 	 */
-	private void processQuery(String queryString, SparqlQueryType queryType, int reqId,
-			Value resolveValue, ReadDataManager dm, HttpServletRequest req,
+	private void processQuery(FromStringQueryBuilder<? extends Operation> queryBuilder, int reqId,
+			ReadDataManager dm, HttpServletRequest req,
 			HttpServletResponse resp, ServletOutputStream out)
 	{
 
@@ -573,16 +643,17 @@ public class SparqlServlet extends IWBHttpServlet {
         	boolean infer = false;
         	
         	if (req.getParameter("infer")!=null)
-        		infer = Boolean.parseBoolean(req.getParameter("infer"));        	
+        		queryBuilder.infer( Boolean.parseBoolean(req.getParameter("infer") ));        	
 	        
             resp.setStatus(HttpServletResponse.SC_OK);
+            final SparqlQueryType queryType = queryBuilder.getQueryType();
             switch (queryType) {
             case ASK:
-            	boolean bRes = dm.sparqlAsk(queryString, true, resolveValue, infer);         
+            	boolean bRes = ((BooleanQuery) queryBuilder.build(dm)).evaluate();         
 	            handleAskQueryResult(bRes, req, resp);
 	            break;
             case SELECT:
-	            TupleQueryResult tRes = dm.sparqlSelect(queryString, true, resolveValue, infer);
+	            TupleQueryResult tRes = ((TupleQuery) queryBuilder.build(dm)).evaluate();
 	            try {
 	            	handleTupleQueryResult(tRes, req, resp, dm);
 	            } finally {
@@ -590,7 +661,7 @@ public class SparqlServlet extends IWBHttpServlet {
 	            }
 	            break;
             case CONSTRUCT:
-	            GraphQueryResult gRes = dm.sparqlConstruct(queryString, true, resolveValue, infer);
+	            GraphQueryResult gRes = ((GraphQuery) queryBuilder.build(dm)).evaluate();
 	            try { 
 	            	handleGraphQueryResult(gRes, req, resp, dm);
 	            } finally {
@@ -601,29 +672,29 @@ public class SparqlServlet extends IWBHttpServlet {
             	ReadWriteDataManager wdm = null;
             	try {
             		wdm = ReadWriteDataManagerImpl.openDataManager(dm.getRepository());
-            		wdm.sparqlUpdate(queryString, resolveValue, infer, null);
+            		wdm.sparqlUpdate(queryBuilder.getQueryString(), null, infer, null);
             		resp.getOutputStream().print("Update executed successfully.");
             	} finally {
             		ReadWriteDataManagerImpl.closeQuietly(wdm);
             	}
             	break;
             default:
-            	error(resp, 500, "Querytype not suppported");
+            	error(resp, 500, String.format("Query type '%s' not suppported", queryType));
             }	       
 
 	    } catch (MalformedQueryException e) {
-	    	error(resp, 400, "Error occured while processing the query. \n\n" + queryString + "\n\n" + e.getMessage());
+	    	error(resp, 400, "Error occured while processing the query. \n\n" + queryBuilder.getQueryString() + "\n\n" + e.getMessage());
 		} catch (QueryEvaluationException e) {
-			error(resp, 500, "Error occured while processing the query. \n\n" + queryString + "\n\n" + e.getClass().getSimpleName() + ": " + e.getMessage());
+			error(resp, 500, "Error occured while processing the query. \n\n" + queryBuilder.getQueryString() + "\n\n" + e.getClass().getSimpleName() + ": " + e.getMessage());
 		} catch (IOException e) {
-			log.warn("I/O Error. \nQuery :" + queryString, e);
-			error(resp, 500, "Error occured while processing the query. \n\n" + queryString + "\n\n" + e.getClass().getSimpleName() + ": " + e.getMessage());
+			log.warn("I/O Error. \nQuery :" + queryBuilder.getQueryString(), e);
+			error(resp, 500, "Error occured while processing the query. \n\n" + queryBuilder.getQueryString() + "\n\n" + e.getClass().getSimpleName() + ": " + e.getMessage());
 		} catch (OpenRDFException e) {
 			// e.g. if client connection was closed, must not be an error
-			error(resp, 500, "Error occured while processing the query. \n\n" + queryString + "\n\n" + e.getClass().getSimpleName() + ": " + e.getMessage());
+			error(resp, 500, "Error occured while processing the query. \n\n" + queryBuilder.getQueryString() + "\n\n" + e.getClass().getSimpleName() + ": " + e.getMessage());
 		} catch (Exception e) {
-			log.error("Unexpected error occured while processing the query. \nQuery :" + queryString, e);
-			error(resp, 500, "Error occured while processing the query. \n\n" + queryString + "\n\n" + e.getClass().getSimpleName() + ": " + e.getMessage());
+			log.error("Unexpected error occured while processing the query. \nQuery :" + queryBuilder.getQueryString(), e);
+			error(resp, 500, "Error occured while processing the query. \n\n" + queryBuilder.getQueryString() + "\n\n" + e.getClass().getSimpleName() + ": " + e.getMessage());
 		}     
 		
 	}
@@ -708,11 +779,27 @@ public class SparqlServlet extends IWBHttpServlet {
         	setResponseContentType(resp, "application/rdf+xml", "utf-8");
         	addContentDispositionHeader(req, resp, "result." + RDFFormat.RDFXML.getDefaultFileExtension());
         	qrWriter = new RDFXMLWriter(resp.getOutputStream());    	            	
-        }    	                	       
+        }
         
         QueryResults.report(res, qrWriter);
 	}
 	
+	/**
+	 * Writes repository result to an output stream
+	 * @param writer
+	 * @param result
+	 * @throws OpenRDFException
+	 */
+	private void writeRepositoryResultToOutput(RDFWriter writer, RepositoryResult<Statement> result) throws OpenRDFException
+	{
+		try {
+			while(result.hasNext()) {
+				writer.handleStatement(result.next());
+			}
+		} finally {
+			result.close();
+		}
+	}
 	
 	/**
 	 * Handle legacy aggregation of tuple queries. Prints the aggregated result as CSV!
@@ -865,7 +952,7 @@ public class SparqlServlet extends IWBHttpServlet {
                 for(String bindingName:outputs)
                     outputStream.write((bindingSet.getBinding(bindingName).getValue().stringValue()+";").getBytes("UTF-8"));
                 outputStream.write("\n".getBytes("UTF-8"));
-            }                     
+            }
 
         }
 		
@@ -921,26 +1008,10 @@ public class SparqlServlet extends IWBHttpServlet {
             if (contentType==null)
             	throw new IOException("Illegal format specified: " + format);           
         }        
-        
-        
-        TupleQueryResultWriter qrWriter;
-        if (contentType==TupleQueryResultFormat.SPARQL)
-        {
-        	qrWriter = new SPARQLResultsXMLWriter(outputStream);
-        }
-        else if(contentType==TupleQueryResultFormat.JSON) {
-            qrWriter = new SPARQLResultsJSONWriter(outputStream);
-        }
-        else if(contentType==TupleQueryResultFormat.CSV)
-        {
-            qrWriter = new SPARQLResultsCSVWriter(outputStream);
-        }
-        else
-        	throw new IOException("Format " + format + " not supported.");
-        
+           
         setResponseContentType(resp, contentType.getDefaultMIMEType(), "utf-8");
         addContentDispositionHeader(req, resp, "result." + contentType.getDefaultFileExtension());
-        QueryResults.report(res, qrWriter);      
+        QueryResultIO.write(res, contentType, outputStream);  
 
         return false;
 	}
@@ -1007,34 +1078,7 @@ public class SparqlServlet extends IWBHttpServlet {
             	throw new IOException("Illegal format specified: " + format);           
         }        
         
-        RDFWriter qrWriter;   
-        if (contentType==RDFFormat.RDFXML)
-        {
-        	qrWriter = new RDFXMLWriter(outputStream);
-        }
-        else if(contentType==RDFFormat.TRIG) {
-            qrWriter = new TriGWriter(outputStream);
-        }
-        else if(contentType==RDFFormat.NTRIPLES)
-        {
-            qrWriter = new NTriplesWriter(outputStream);
-        }
-        else if(contentType==RDFFormat.N3)
-        {
-            qrWriter = new N3Writer(outputStream);
-        }
-        else if(contentType==RDFFormat.TURTLE)
-        {
-            qrWriter = new TurtleWriter(outputStream);
-        }
-        else if(contentType==RDFFormat.TRIX)
-        {
-            qrWriter = new TriXWriter(outputStream);
-        }       
-        else
-        	throw new IOException("Format " + format + " not supported.");
-
-        
+        RDFWriter qrWriter = Rio.createWriter(contentType, outputStream);
         setResponseContentType(resp, contentType.getDefaultMIMEType(), "utf-8");
         addContentDispositionHeader(req, resp, "result." + contentType.getDefaultFileExtension());
         
@@ -1153,5 +1197,9 @@ public class SparqlServlet extends IWBHttpServlet {
 		}
 	}
 	
+	@Override
+	protected String getPageTitle() {
+		return "Sparql Query Servlet";
+	}  
 	
 }

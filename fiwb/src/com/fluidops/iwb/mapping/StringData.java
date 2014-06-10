@@ -30,7 +30,11 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.tidy.Tidy;
 
 import com.fluidops.iwb.provider.TableProvider;
@@ -153,6 +157,60 @@ public class StringData extends Data
         return new TreeData( DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( text.getBytes( "UTF-8" ) ) ).getDocumentElement() );
 	}
 
+	/**
+	 * parse text as JSON and convert it to XML
+	 */
+	public TreeData asJSON() throws Exception
+	{
+		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		Element root = doc.createElement( "root" );
+		doc.appendChild( root );
+		Object json;
+		try
+		{
+			json = new JSONObject( text );
+		}
+		catch ( JSONException e )
+		{
+			try
+			{
+				json = new JSONArray( text );
+			}
+			catch ( JSONException ex )
+			{
+				json = text;
+			}
+		}
+		node( doc, root, json );
+		return new TreeData( doc );
+	}
+	
+	protected static void node( Document doc, Element node, Object json ) throws JSONException
+	{
+		if ( json instanceof JSONObject )
+			for ( String key : JSONObject.getNames((JSONObject)json) )
+			{
+				Object o = ((JSONObject)json).get(key);
+				Element newEl = doc.createElement(key);
+				node.appendChild( newEl );
+				node( doc, newEl, o );
+			}
+		else if ( json instanceof JSONArray )
+		{
+			for ( int i=0; i<((JSONArray)json).length(); i++ )
+			{
+				Object o = ((JSONArray)json).get(i);
+				Element newEl = doc.createElement("item");
+				node.appendChild( newEl );
+				node( doc, newEl, o );
+			}
+		}
+		else
+		{
+			node.appendChild( doc.createTextNode( ""+json ) );
+		}
+	}
+	
 	/**
 	 * wraps String.split
 	 */

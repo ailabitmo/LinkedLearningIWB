@@ -851,6 +851,9 @@ function flTabPane_show( id, pane )
 	
 	for (i=0; i<e.length; i++)
 	{
+		//ignore list items that are not part of the tabs (e.g. a SearchFilter)
+		if($(e[i]).hasClass("notab"))
+			continue;
 		e[i].className = pane==i ? 'flTabActive tabitem' + i : 'tabitem' + i;
 		//TODO fix THIS here
 		with ({tid : id, ti: i})
@@ -3176,6 +3179,36 @@ function setMenuItemsWidth() {
  *        functions for ToolTip2         *
  *                                       *
  *****************************************/
+
+//sets up jquery ui tooltip
+function setupToolTip(elementId, options) {
+	
+	//jquery element of the whole table
+	var jqueryEle = $(getDomElementById(elementId));
+	
+	//get all elements which contain a title attribute
+	var titleElements = $(jqueryEle).find("[title]");
+	
+	//enable the tooltip for each of them
+	titleElements.each(function(){
+		var titleElement = $(this); //dom element which contains title attribute
+		debugln("initializing tooltip for "+titleElement);
+		
+		//convert element with title to a tooltip element
+		titleElement.tooltip(options);
+		
+		//special case -> click
+		//as the onclick (e.g. sorting a by a table column) could
+		//change the content underneath, the rendered tooltip needs
+		//to be removed manually
+		titleElement.click(function(event){
+			debugln("removing tooltip");
+			//remove all rendered ui tooltip elements
+			$("DIV[role='tooltip']").remove();
+		});
+	});
+}
+
 function tt2dimension(x,y) {
 	if(typeof x == 'number' && typeof y == 'number') {
 		this.x = x;
@@ -3970,26 +4003,58 @@ function switchContent(div1, div2)
 */
 function showConfirmation(question, id, dialogTitle, okText, abortText){
 
-	var flDialog = getDiv('FPopupWindow', 'flDialog' );
-	flDialog.style.width = '40%';
-	
-	// make popup visible
-	getDomElementById('FPopupWindow').className = 'visible';
-	
-	// set title
-	var flDialogHeader = getDiv('FPopupWindow', 'flDialogHeader' );
-	flDialogHeader.innerHTML = dialogTitle;
-	
-	// add confirmation question and buttons to the popup
-	var flDialogContent = getDiv('FPopupWindow', 'flDialogContent' );
-
-	flDialogContent.innerHTML = "<div class=\"confirmationQuestion\">" + question + "</div>" +
-		"<div class=\"buttonbar\"><input type='button' value='"+okText+"' onclick=\"catchEventId('" + id + "',1);hidePopup()\">"+
-		"<input type='button' value='"+abortText+"' onclick='hidePopup()'></div>";
-	//TODO this is wrong here --> should call the FComponent onclick
-	centerPopUp();
+	 $( '<p>'+question+'</p>' ).dialog({
+		 title: dialogTitle,
+		 modal: true,
+		 dialogClass: "flDialog",
+		 position: { my: "center", at: "top+25%" },
+		 buttons: [
+		     {
+				 text: okText,
+			     click: function() {
+			    	 catchEventId(id,1);
+			    	 $( this ).dialog( "close" );
+			     } 
+		     },
+			 {
+				 text: abortText,
+				 click: function() {
+					 $( this ).dialog( "close" );
+				 }
+			 }
+	     ]
+	});
+    //TODO remove this
 	return false;
 
+}
+
+/**
+* Shows a message in a popup window. The fourth argument 'reloadOnClose' is an optional boolean
+* and reloads the window on close.
+*/
+function showMessage(dialogTitle, message, okText, reloadOnClose){
+	
+	 $( '<p>'+message+'</p>' ).dialog({
+		 title: dialogTitle,
+		 modal: true,
+		 dialogClass: "flDialog",
+		 position: { my: "center", at: "top+25%" },
+		 minWidth:500,
+		 buttons: [
+		     {
+				 text: okText,
+			     click: function() {
+			    	 $( this ).dialog( "close" );
+			     } 
+		     }
+	     ],
+	     close: function(ev, ui) {  
+ 	 		if(typeof reloadOnClose != 'undefined' && reloadOnClose==true){
+ 	 			window.location.reload();
+ 	 		}
+ 	 	}
+	});
 }
 
 /**
@@ -4216,11 +4281,8 @@ function uploadFile(inputID, progressBarID, progressStateID, showProgress) {
                     progressPercent.innerHTML = "100%";
                     var response = xhr.responseText;
                     var response2 = xhr.responseXML;
-                    if(response.length > 0)
-                    {
-                        document.location.reload();
-
-                    }
+                    // send a callback to the FUpload component: onUploadFinished
+                    catchEventId(fileInput.parentNode.id, 5, "Done")
                 }  
             };  
 

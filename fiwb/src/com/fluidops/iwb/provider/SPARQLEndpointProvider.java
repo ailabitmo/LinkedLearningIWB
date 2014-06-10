@@ -25,6 +25,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.repository.Repository;
 
+import com.fluidops.iwb.Global;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
 import com.fluidops.iwb.api.ReadWriteDataManager;
@@ -32,6 +33,7 @@ import com.fluidops.iwb.api.ReadWriteDataManagerImpl;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
+import com.fluidops.iwb.repository.PlatformRepositoryManager;
 import com.fluidops.iwb.util.RepositoryFactory;
 import com.fluidops.iwb.util.User;
 import com.fluidops.util.StringUtil;
@@ -56,8 +58,15 @@ public class SPARQLEndpointProvider extends AbstractFlexProvider<SPARQLEndpointP
 			pass = config.user.password(this);
 		}
 		
-	    Repository repository = RepositoryFactory.getSPARQLRepository(config.endpoint, user, pass);
-	    repository.initialize();
+	    Repository repository = null;
+	    // check whether the endpoint is an repositoryID , which is already known by the repository manager
+	    if (PlatformRepositoryManager.getInstance().getRegisteredRepositoryIDs().contains(config.endpoint)) {
+	    	  repository = PlatformRepositoryManager.getInstance().getRepository(config.endpoint);
+	    }
+	    else{
+	    	repository = RepositoryFactory.getSPARQLRepository(config.endpoint, user, pass);
+	    	repository.initialize();
+	    }
 	    
 	    ReadWriteDataManager dm=null; 
 	    try {

@@ -27,4 +27,4 @@ TripleEditor=com.fluidops.iwb.widget.TripleEditorWidget
 IFrame=com.fluidops.iwb.widget.IFrameWidget
 CodeExecution=com.fluidops.iwb.widget.CodeExecutionWidget
 ActionableResult=com.fluidops.iwb.widget.ActionableResultWidget
-OntologyViewer=ru.ifmo.ailab.OntoViewerWidget
+InstanceCreation=com.fluidops.iwb.widget.InstanceCreationWidget

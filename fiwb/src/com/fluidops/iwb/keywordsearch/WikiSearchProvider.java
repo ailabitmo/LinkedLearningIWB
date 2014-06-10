@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
+import org.openrdf.query.Binding;
 import org.openrdf.query.QueryResult;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.GraphQueryResultImpl;
@@ -34,21 +35,38 @@ import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
 import com.fluidops.iwb.api.ReadWriteDataManagerImpl;
 import com.fluidops.iwb.keywordsearch.SearchProviderFactory.TargetType;
 import com.fluidops.iwb.server.HybridSearchServlet;
+import com.fluidops.iwb.user.UserManager;
+import com.fluidops.iwb.user.UserManager.ValueAccessLevel;
 import com.fluidops.iwb.util.Config;
 
 /**
- * Search provider implementation for the Wiki indexing repository. 
- * Only processes SPARQL SELECT queries, transforms keyword queries to SPARQL using the wikiQuerySkeleton parameter. 
+ * Search provider implementation for the Wiki indexing repository. Only
+ * processes SPARQL SELECT queries, transforms keyword queries to SPARQL using
+ * the wikiQuerySkeleton parameter.<p>
+ * 
+ * This {@link WikiSearchProvider} filters the search results based on
+ * {@link UserManager#hasValueAccess(Value, ValueAccessLevel)} information, i.e.
+ * a resource is only present in the results, if the user has at least read
+ * access. Following the assumption of the {@link KeywordSearchProvider} the
+ * resource is always mapped to the {@link Binding} 'Subject' (see {@link KeywordSearchProvider#SUBJECT}).
  * 
  * @author andriy.nikolov
- *
+ * 
  */
-public class WikiSearchProvider extends AbstractSparqlSearchProvider implements KeywordSearchProvider {
+public class WikiSearchProvider extends SparqlSearchProviderImpl implements KeywordSearchProvider {
 	
+	/**
+	 * @param repository
+	 * @param shortName
+	 */
+	public WikiSearchProvider() {
+		super(Global.wikiLuceneRepository, TargetType.WIKI.toString());
+	}
+
 	@Override
 	public TupleQueryResult search(String keywordString) throws Exception
 	{
-		return searchUsingKeywordQuerySkeleton(keywordString, Config.getConfig().getWikiQuerySkeleton());
+		return new FilteredKeywordSearchTupleResult(searchUsingKeywordQuerySkeleton(keywordString, Config.getConfig().getWikiQuerySkeleton()));
 	}
 
 	@Override
@@ -56,7 +74,7 @@ public class WikiSearchProvider extends AbstractSparqlSearchProvider implements 
 			boolean infer) throws Exception
 	{
 		SparqlQueryType qt = (queryType != null) ? queryType : ReadDataManagerImpl.getSparqlQueryType(query, true);
-		ReadDataManager dm = ReadWriteDataManagerImpl.getDataManager(Global.wikiLuceneRepository);
+		ReadDataManager dm = ReadWriteDataManagerImpl.getDataManager(repository);
 		
 		switch(qt) {
 			case SELECT:
@@ -73,14 +91,4 @@ public class WikiSearchProvider extends AbstractSparqlSearchProvider implements 
 		}
 		
 	}
-
-	
-	@Override
-	public String getShortName() {
-		return TargetType.WIKI.toString();
-	}
-	
-	
-	
-
 }

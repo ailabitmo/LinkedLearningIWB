@@ -20,6 +20,7 @@ package com.fluidops.iwb.widget.config;
 
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
+import com.fluidops.iwb.ui.configuration.RepositorySelectValueFactory;
 
 public class WidgetQueryConfig extends WidgetBaseConfig
 {
@@ -45,5 +46,12 @@ public class WidgetQueryConfig extends WidgetBaseConfig
 	@ParameterConfigDoc(desc = "Custom message to be displayed if the resulting query is empty",
 			defaultValue=DEFAULT_NO_DATA_MESSAGE)
 	public String noDataMessage = DEFAULT_NO_DATA_MESSAGE;
+	
+	@ParameterConfigDoc(
+			desc = "ID of the repository to operate on",
+			required = false,
+			type = Type.DROPDOWN,
+			selectValuesFactory = RepositorySelectValueFactory.class)
+	public String repository;
 
 }

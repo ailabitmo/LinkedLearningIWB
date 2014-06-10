@@ -18,8 +18,6 @@
 
 package com.fluidops.iwb.ui;
 
-import static com.fluidops.iwb.util.Config.getConfig;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -46,8 +44,6 @@ import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.cms.Collector;
 import com.fluidops.iwb.cms.File;
 import com.fluidops.iwb.cms.extract.Basic;
-import com.fluidops.iwb.cms.extract.LuxidCollector;
-import com.fluidops.iwb.cms.extract.LuxidCollector.AnnotationPlan;
 import com.fluidops.iwb.cms.extract.OpenUpCollector;
 import com.fluidops.iwb.cms.util.Factory;
 import com.fluidops.iwb.cms.util.IWBCmsUtil;
@@ -147,12 +143,6 @@ public class CMS extends FContainer
 		Basic basicExtractor = new Basic();
 		collectorCombo.addChoice("Basic Extractor", basicExtractor);
 		if(OpenUp.mode().isEnabled()) collectorCombo.addChoice("OpenUp Extractor", new OpenUpCollector());
-		if(getConfig().getLuxidEnabled()) {
-			for (AnnotationPlan annotationPlan : AnnotationPlan.values()) {
-				collectorCombo.addChoice("Luxid Extractor " + annotationPlan.toString(), 
-						new LuxidCollector(annotationPlan));
-			}
-		}
 		collectorCombo.setSelected(basicExtractor);
 		return collectorCombo;
 	}

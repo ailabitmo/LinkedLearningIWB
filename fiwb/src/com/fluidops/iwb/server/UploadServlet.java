@@ -115,4 +115,9 @@ public class UploadServlet extends IWBHttpServlet
 		s = s.replaceAll( "\\\\\\\\", "\\\\" );
 		return s;
 	}
+	
+	@Override
+	protected String getPageTitle() {
+		return "Upload Servlet";
+	}  
 }

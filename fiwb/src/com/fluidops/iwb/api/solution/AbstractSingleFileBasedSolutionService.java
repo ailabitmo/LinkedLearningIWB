@@ -18,22 +18,23 @@
 
 package com.fluidops.iwb.api.solution;
 
-import static org.apache.log4j.Logger.*;
+import static org.apache.log4j.Logger.getLogger;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import com.fluidops.base.VersionInfo;
 import com.fluidops.util.StringUtil;
+import com.google.common.collect.Lists;
 
 
 /**
@@ -81,7 +82,7 @@ public abstract class AbstractSingleFileBasedSolutionService implements Solution
 	 * @param solution
 	 * @return
 	 */
-	protected SolutionInfo readSolutionInfo(File solution) {
+	public SolutionInfo readSolutionInfo(File solution) {
 		VersionInfo info = readVersionInfo(solution);
 		if (info == null) {
 			info = new VersionInfo();
@@ -121,15 +122,14 @@ public abstract class AbstractSingleFileBasedSolutionService implements Solution
 			File file;
 			try {
 				file = new File(solutionArtifact.toURI());
-				return install(file);
-			} catch (URISyntaxException e) {
-				// skip invalid URI
-				logger.error("failed to install solution from invalid URI: " + solutionArtifact + ": " + e.getMessage());
-				logger.debug("details: ", e);
+			} catch (Exception e) {
+				file = new File(solutionArtifact.getPath());
 			}
+			return install(file);
 		}
 		logger.info("Installing solution from URL " + solutionArtifact.toString());
-		return doInstall(solutionArtifact);
+		InstallationResult res = doInstall(solutionArtifact);
+		return res;
 	}
 
 	private void logResult(File solution, InstallationResult result)
@@ -154,21 +154,15 @@ public abstract class AbstractSingleFileBasedSolutionService implements Solution
 	}
 	
 	@Override
-	public URL[] detectSolutions() {
+	public List<URI> detectSolutions() {
 		File[] handledFiles = detectSolutionFiles();
 		if ((handledFiles == null) || (handledFiles.length == 0)) return null;
-		URL[] urls = new URL[handledFiles.length];
+		List<URI> uris = Lists.newArrayList();
 		for (int f = 0; f < handledFiles.length; f++) {
 			File file = handledFiles[f];
-			try {
-				urls[f] = file.toURI().toURL();
-			} catch (MalformedURLException e) {
-				// shouldn't happen, as files can always be converted to URLs
-				logger.error("failed to convert URL: " + e.getMessage());
-				logger.debug("details: ", e);
-			}
+			uris.add( file.toURI() );
 		}
-		return urls;
+		return uris;
 	}
 	
 	protected File[] detectSolutionFiles() {
@@ -185,5 +179,29 @@ public abstract class AbstractSingleFileBasedSolutionService implements Solution
 	@Override
 	public void addHandler(SolutionHandler<?> handler) {
 		solutionHandler.add(handler);
+	}
+	
+	@Override
+	public InstallationResult getSolutionStatus(URI solution)
+	{
+		throw new UnsupportedOperationException("Not implemented in " + getClass().getName());
+	}
+	
+	@Override
+	public List<URI> getSolutions()
+	{
+		throw new UnsupportedOperationException("Not implemented in " + getClass().getName());		
+	}
+	
+	@Override
+	public List<URI> getInstalledSolutions()
+	{
+		throw new UnsupportedOperationException("Not implemented in " + getClass().getName());		
+	}
+	
+	@Override
+	public SolutionInfo getSolutionInfo(URI solution)
+	{
+		throw new UnsupportedOperationException("Not implemented in " + getClass().getName());		
 	}
 }

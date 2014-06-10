@@ -22,16 +22,42 @@ import org.openrdf.query.TupleQueryResult;
 import com.fluidops.iwb.widget.QueryResultWidget;
 
 /**
- * interface for search extensions
+ * interface for search extensions.<p>
+ * 
+ * An underlying assumption for keyword query strings is that they contain the
+ * projections {@value #SUBJECT}, {@value #PROPERTY}, {@value #VALUE}, and
+ * {@value #TYPE}
+ * 
+ * 
  * @author tobias, christian.huetter
- *
+ * 
  */
 public interface KeywordSearchProvider extends SearchProvider
 {
 
 	/**
+	 * Binding name for the subject
+	 */
+	public static final String SUBJECT = "Subject";
+	
+	/**
+	 * Binding name for the property
+	 */
+	public static final String PROPERTY = "Property";
+	
+	/**
+	 * Binding name for the Value
+	 */
+	public static final String VALUE = "Value";
+	
+	/**
+	 * Binding name for the Type
+	 */
+	public static final String TYPE = "Type";
+	
+	/**
 	 * @param keywordString Keyword search String
-	 * @return result of search, must contain projections Subject, Property, Value, Type
+	 * @return result of search, must contain projections {@value #SUBJECT}, {@value #PROPERTY}, {@value #VALUE}, {@value #TYPE}
 	 * @see {@link QueryResultWidget}
 	 * @throws Exception
 	 */

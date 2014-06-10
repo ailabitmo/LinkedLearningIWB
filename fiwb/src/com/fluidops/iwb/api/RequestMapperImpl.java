@@ -25,7 +25,10 @@ import static com.fluidops.util.StringUtil.urlEncode;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -479,11 +482,29 @@ public class RequestMapperImpl implements RequestMapper
     @Override
 	public String getAHrefEncoded(Value value, String encodedLabel, String encodedTooltip)
 	{
-    	if (value instanceof Resource || com.fluidops.iwb.util.Config.getConfig().getLinkLiterals())
-    		return getAHref(getRequestStringFromValue(value), encodedLabel, encodedTooltip);
-    	else if (!StringUtil.isNullOrEmpty(encodedTooltip))
-    		return UIUtil.getSpan(encodedLabel, encodedTooltip);
-    	return encodedLabel;
+    	return getAHrefEncoded(value, encodedLabel, encodedTooltip, Collections.<String,String>emptyMap());
+	}
+
+	@Override
+	public String getAHrefEncoded(Value value, String encodedLabel,
+			String encodedTooltip, Map<String, String> getParams) {
+		if (value instanceof Resource || com.fluidops.iwb.util.Config.getConfig().getLinkLiterals()) {
+			StringBuilder requestStringFromValue = new StringBuilder(getRequestStringFromValue(value));
+			for (Entry<String, String> entry : getParams.entrySet()) {
+				//proper concatenation of params
+				if(requestStringFromValue.toString().contains("?"))
+					requestStringFromValue.append("&") ;
+				else
+					requestStringFromValue.append("?") ;
+				
+				requestStringFromValue.append(StringUtil.urlEncode(entry.getKey()))
+					.append("=")
+					.append(StringUtil.urlEncode(entry.getValue()));
+			}
+			return getAHref(requestStringFromValue.toString(), encodedLabel, encodedTooltip);
+		} else if (!StringUtil.isNullOrEmpty(encodedTooltip))
+			return UIUtil.getSpan(encodedLabel, encodedTooltip);
+		return encodedLabel;
 	}
     
     /**

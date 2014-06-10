@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.fluidops.util.GenUtil;
+import com.fluidops.util.SecurityUtils;
 
 /**
  * Various convenience functions to create File objects
@@ -161,6 +162,21 @@ public class IWBFileUtil {
 	    return new File(getDataFolder(), "backup");
 	}
 	
+	/**
+	 * Security method for file sandboxing in the platform. Can be used to check
+	 * if the fileName is in a platform directory.
+	 * 
+	 * @param fileName
+	 * @return true iff and only if either the current directory (
+	 *         {@link #getApplicationFolder()}) or the
+	 *         {@link #getIwbWorkingDir()} is a parent directory of the given
+	 *         fileName
+	 * @see SecurityUtils#isSafePath(File, String)
+	 */
+	public static boolean isInPlatformDirectory(String fileName) {
+		return SecurityUtils.isSafePath(getApplicationFolder(), fileName) 
+				|| SecurityUtils.isSafePath(getIwbWorkingDir(), fileName);
+	}
 	
 	/**
 	 * Create the provided file (with empty content) if it does not exist.

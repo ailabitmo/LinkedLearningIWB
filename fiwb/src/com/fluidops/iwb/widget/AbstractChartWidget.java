@@ -68,6 +68,11 @@ public abstract class AbstractChartWidget<T extends WidgetChartConfig> extends
 			groupByDatasetVariable = ((WidgetSerialChartConfig)config).groupByDatasetVariable;
 		}
 
+        FComponent widgetEmbeddingError = config.checkObligatoryFields(id, config, pc.value, getDefaultHeight());
+        
+        if(widgetEmbeddingError!=null)
+            return widgetEmbeddingError;
+        
 		TupleQueryResult res = null;
 		try {
 			/*
@@ -124,6 +129,12 @@ public abstract class AbstractChartWidget<T extends WidgetChartConfig> extends
 					config.query);
 		}
 	}
+
+	/**
+	 * Get the default height for the chart.
+	 * @return
+	 */
+	protected abstract String getDefaultHeight();
 
 	/**
 	 * This method generates the graph to be shown. the value of the parameter

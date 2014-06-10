@@ -20,6 +20,7 @@ package com.fluidops.iwb.deepzoom;
 
 import static com.fluidops.iwb.api.EndpointImpl.api;
 import info.aduna.io.FileUtil;
+import info.aduna.iteration.Iterations;
 
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -35,6 +36,7 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -152,9 +154,6 @@ public class CXMLServlet extends IWBHttpServlet
             return; 
         initialized = true;
         notWantedProps.add(RDFS.LABEL);
-        notWantedProps.add(Vocabulary.FOAF.DEPICTION);
-//      notWantedProps.add(EcmProvider.SAPMGR);
-//      notWantedProps.add(EcmProvider.IFS);
         notWantedProps.add(ValueFactoryImpl.getInstance().createURI(EndpointImpl.api().getNamespaceService().defaultNamespace()+"href"));
         
         notWantedObjs.add(ValueFactoryImpl.getInstance().createURI("http://www.w3.org/2002/07/owl#Thing"));
@@ -703,23 +702,22 @@ public class CXMLServlet extends IWBHttpServlet
             String img = null;
             
         	if ( IWBCmsUtil.isUploadedFile(uri) && ImageResolver.isImage(uri.stringValue()))
-        		img=IWBCmsUtil.getAccessUrl(uri);
+        		img = getImageURLForValue(uri);
         	else
         	{
-        		Set<Value> imgs = new HashSet<Value>();
 
-        		if(facets.get(Vocabulary.DBPEDIA_ONT.THUMBNAIL)!=null)
-        		{
-        			imgs.addAll(facets.get(Vocabulary.DBPEDIA_ONT.THUMBNAIL));
+        		// verify if there is an image in the facets using image properties
+        		// given by ImageResolver (e.g. foaf:img)
+        		for (URI imageProperty : ImageResolver.getDefaultImageResolver().getImageProperties()) {
+        			Set<Value> imgForProperty = facets.get(imageProperty);
+        			if (imgForProperty!=null && imgForProperty.size()>0) {
+        				img = getImageURLForValue(imgForProperty.iterator().next());
+          				break;		// found an image
+        			}
         		}
-        		else if(facets.get(Vocabulary.FOAF.IMG)!=null) 
-        		{
-        			imgs.addAll(facets.get(Vocabulary.FOAF.IMG));
-        		}
-        		if(imgs.size()>0)
-        			img = imgs.iterator().next().stringValue();
-        		else
-        			// id: indicates that ID card should be generated
+        		
+        		// fallback, no image found: indicates that ID card should be generated
+        		if (img==null)        			
         			img = "id:"+entity.stringValue()+".jpg";
         	}
             String filename = ImageLoader.filename(img);
@@ -896,6 +894,30 @@ public class CXMLServlet extends IWBHttpServlet
     }
     
     /**
+     * Returns the image URL for the given value
+     * 
+     * a) uploaded file ({@link IWBCmsUtil#isUploadedFile(URI)}) and {@link ImageResolver#isImage(String)}
+     *       => the {@link File#toURI()} URL representation
+     * b) the {@link Value#stringValue()} otherwise
+     * 
+     * @param value
+     * @return
+     */
+    private String getImageURLForValue(Value value) {
+    	if (value instanceof URI) {
+    		if (IWBCmsUtil.isUploadedFile((URI) value) && ImageResolver.isImage(value.stringValue())) {
+				try {
+					return IWBFileUtil.getFileInUploadFolder(((URI)value).getLocalName()).toURI().toURL().toExternalForm();
+				} catch (MalformedURLException e) {
+					logger.debug("Invalid url for value '" + value + "': " + e.getMessage());
+	    			return IWBCmsUtil.getAccessUrl((URI) value);	// fallback
+				}
+    		}
+    	}
+    	return value.stringValue();
+    }
+    
+    /**
      * Some facet names in Pivot are reserved.
      * For these we have to slightly modify the name
      */
@@ -967,7 +989,7 @@ public class CXMLServlet extends IWBHttpServlet
             List<Statement> statements = null;
             try
             {
-                statements = con.getStatements(uri, null, null, false).asList();
+                statements = Iterations.asList(con.getStatements(uri, null, null, false));
             }
             catch (RepositoryException e)
             {
@@ -1198,5 +1220,10 @@ public class CXMLServlet extends IWBHttpServlet
         return (query+Long.toString(lastupdate)).hashCode();
         
     }
+    
+	@Override
+	protected String getPageTitle() {
+		return "CXML Servlet";
+	}  
 
 }

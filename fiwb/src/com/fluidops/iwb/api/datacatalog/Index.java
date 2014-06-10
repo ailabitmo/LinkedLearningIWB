@@ -30,20 +30,34 @@ public interface Index
 	// index types
 	public static enum IndexType 
 	{
-		CLUSTERED,
-		HASHED,
-		OTHER,
-		STATISTIC,
+		UNIQUE,
+		PERFORMANCE,
+		PRIMARY,
 		UNKNOWN
 	}
-	
+
+	/**
+	 * @return idx plain name
+	 */
 	public String getName();
-	
+
+	/**
+	 * @return tableName.idxName
+	 */
 	public String getShortName();
-	
+
+	/**
+	 * @return schemaName.tableName.idxName
+	 */
 	public String getFullName();
-	
+
+	/**
+	 * @return the type of the Index (UNIQUE, PERFORMANCE, PRIMARY, UNKNOWN)
+	 */
 	public IndexType getType();
-	
+
+	/**
+	 * @return all columns referenced by the Index
+	 */
 	public List<Column> getColumns();
 }

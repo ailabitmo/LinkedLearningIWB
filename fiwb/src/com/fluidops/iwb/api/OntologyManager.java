@@ -18,18 +18,20 @@
 
 package com.fluidops.iwb.api;
 
+import java.util.List;
+
 import org.openrdf.model.URI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 /**
- * Ontology management API
- * The API provides methods for loading, storing and removing ontologies to/from the RDF database
- * Ontologies are accessed via the OWLAPI
+ * Ontology management API The API provides methods for loading, storing and
+ * removing ontologies to/from the RDF database Ontologies are accessed via the
+ * OWLAPI
  * 
  * @author pha
- *
+ * 
  */
 public interface OntologyManager {
 	/**
@@ -39,22 +41,38 @@ public interface OntologyManager {
 	 */
 	OWLOntology loadOntology(URI ontologyURI)
 			throws OWLOntologyCreationException;
-	
-	
+
 	/**
-	 * @param ontology, ontologyURI, overwrite
-	 * @return 
-	 * @throws OWLOntologyStorageException 
-	 * @throws OWLOntologyCreationException 
+	 * 
+	 * @param ontologyURI
+	 * @param excludeImports
+	 * @return
+	 * @throws OWLOntologyCreationException
 	 */
-	boolean storeOntology(OWLOntology ontology, URI ontologyURI, boolean overwrite) throws OWLOntologyStorageException, OWLOntologyCreationException;
-	
+	OWLOntology loadOntology(URI ontologyURI, boolean excludeImports)
+			throws OWLOntologyCreationException;
+
+	/**
+	 * @param ontology
+	 *            , ontologyURI, overwrite
+	 * @return
+	 * @throws OWLOntologyStorageException
+	 * @throws OWLOntologyCreationException
+	 */
+	boolean storeOntology(OWLOntology ontology, URI ontologyURI,
+			boolean overwrite) throws OWLOntologyStorageException,
+			OWLOntologyCreationException;
+
 	/**
 	 * @param ontologyURI
-	 * @return 
-	 * @throws OWLOntologyStorageException 
+	 * @return
+	 * @throws OWLOntologyStorageException
 	 */
 	boolean removeOntology(URI ontologyURI) throws OWLOntologyStorageException;
 
-
+	/**
+	 * 
+	 * @return list of ontology URIs in the system.
+	 */
+	List<URI> getOntologyURIs();
 }

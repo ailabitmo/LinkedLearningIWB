@@ -19,20 +19,29 @@
 package com.fluidops.iwb.page;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 
 import com.fluidops.ajax.FSession;
 import com.fluidops.ajax.components.FPage;
+import com.fluidops.iwb.api.EndpointImpl;
+import com.fluidops.iwb.api.NamespaceService;
 import com.fluidops.iwb.layout.WidgetContainer;
+import com.fluidops.iwb.repository.PlatformRepositoryManager;
 import com.fluidops.iwb.widget.Widget;
 import com.fluidops.util.PropertyMap;
+import com.fluidops.util.StringUtil;
+import com.google.common.collect.Maps;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -52,9 +61,15 @@ public class PageContext
 		PageContext childPageContext = new PageContext();
 		childPageContext.repository = parent.repository;
 		childPageContext.httpRequest = parent.getRequest();
-        childPageContext.value = parent.value;
-        childPageContext.contextPath = parent.contextPath;
-        return childPageContext;
+		childPageContext.value = parent.value;
+		childPageContext.contextPath = parent.contextPath;
+		childPageContext.additionalQueryParameters.putAll(childPageContext.additionalQueryParameters);
+        // copy over cached request parameters
+        childPageContext.cachedRequestParameters = parent.cachedRequestParameters;
+		//if the repository for the URI is explicitly given by a get parameter, the childPageContext.repository will be overwridden
+		String repositoryParam = parent.getRequestParameter("repository");
+		childPageContext.configureRepositoryForName(repositoryParam);
+		return childPageContext;
 	}
 	
 	public PageContext() {
@@ -65,6 +80,14 @@ public class PageContext
 		this.value = value;
 		this.repository = repository;
 	}
+	
+	/**
+	 * A thread local variable containing the current thread page context.
+	 * 
+	 * The threadPageContext is always cleared when leaving a Servlet via
+	 * {@link IWBHttpServlet#service())}
+	 */
+	private static final InheritableThreadLocal<PageContext> threadPageContext = new InheritableThreadLocal<>();
 
 	public String title;
 	public String contentType = "text/html";
@@ -85,6 +108,8 @@ public class PageContext
 	protected HttpServletRequest httpRequest;
 	@SuppressWarnings(value="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification="Accessed externally")
 	public HttpServletResponse httpResponse;
+	
+	final Map<String,Value> additionalQueryParameters = Maps.newHashMap();
 	
 	/**
 	 * Retrieve the HTTP request from the page context, which is either taken
@@ -146,5 +171,119 @@ public class PageContext
 		if (list==null || list.isEmpty())
 			return null;
 		return list.get(0);
+	}
+	
+	private transient Map<String,Value> cachedQueryParameters = null;
+	
+	/**
+	 * Return the query parameters to be used for parameterized queries
+	 * @return
+	 */
+	public Map<String,Value> getQueryParameters() {
+		
+		if (cachedQueryParameters!=null)
+			return cachedQueryParameters;
+		
+		// compute values from request using parsing
+		Map<String,Value> res = Maps.newHashMap();
+		String queryParams = getRequestParameter("queryParams");
+		if (queryParams!=null) {
+			res.putAll( parseQueryParamsFromJson(queryParams) );	
+		}
+					
+		res.putAll(additionalQueryParameters);
+		cachedQueryParameters = res;
+		return res;
+	}
+	
+	/**
+	 * Parse the request parameter queryParams to a Map<String, Value>
+	 * by using {@link NamespaceService#parseValue(String)} for {@link Value}
+	 * conversion. The queryParams is expected to a JSON object, e.g.
+	 * queryParams={myUri='<http://example.org/s>',myLiteral='"literal"'}
+	 * 
+	 * @param queryParams
+	 * @return
+	 * @throws IllegalArgumentException if the given queryParams does not 
+	 *           correspond to a valid JSON object
+	 */
+	private Map<String, Value> parseQueryParamsFromJson(String queryParams) throws IllegalArgumentException {
+		Map<String, Value> res = Maps.newHashMap();
+		NamespaceService ns = EndpointImpl.api().getNamespaceService();
+		try {
+			JSONObject jsonObj = new JSONObject(queryParams);
+			@java.lang.SuppressWarnings("unchecked")
+			Iterator<String> keys = jsonObj.keys();
+			while (keys.hasNext()) {
+				String key = keys.next();
+				String value = jsonObj.getString(key);
+				Value v = ns.parseValue(value);
+				if (v==null)
+					continue;
+				res.put(key, v);
+			}
+		} catch (JSONException e) {
+			throw new IllegalArgumentException("Request queryParams could not be parsed to Map<String,Value>: " + e.getMessage());
+		}
+		return res;	
+	}
+
+	/**
+	 * Sets an additional query parameter to be used in parametrized queries
+	 * to the current context.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public void setQueryParameter(String key, Value value) {
+		additionalQueryParameters.put(key, value);
+		cachedQueryParameters = null;	// invalidate cache
+	}
+	
+	/**
+	 * Configure the {@link #repository} if there exists a registered
+	 * {@link Repository} in the {@link PlatformRepositoryManager} for
+	 * the repository name taken from the request (Parameter: repository).
+	 * No action is performed otherwise, i.e. the repository is left as-is.
+	 * 
+	 * @param repositoryName a repository name, may be {@code null}
+	 */
+	public void configureRepositoryFromRequest(HttpServletRequest request) {
+		configureRepositoryForName(request.getParameter("repository"));
+	}
+	
+	/**
+	 * Configure the {@link #repository} if there exists a registered
+	 * {@link Repository} in the {@link PlatformRepositoryManager} for
+	 * the given repository name. No action is performed otherwise,
+	 * i.e. the repository is left as-is.
+	 * 
+	 * @param repositoryName a repository name, may be {@code null}
+	 */
+	void configureRepositoryForName(String repositoryName) {
+		if(!StringUtil.isNullOrEmpty(repositoryName)) {
+			Repository _repository = PlatformRepositoryManager.getInstance().getRepository(repositoryName);
+			if(_repository!=null)
+				this.repository=_repository;
+		}
+	}
+	
+	/**
+	 * Sets the {@link #threadPageContext} to the given {@link PageContext}.
+	 * 
+	 * @param pc
+	 */
+	public static void setThreadPageContext(PageContext pc) {
+		threadPageContext.set(pc);
+	}
+	
+	/**
+	 * Returns the {@link PageContext} known to this thread. Note that
+	 * this might be {@code null}
+	 * 
+	 * @return the {@link PageContext} or {@code null}
+	 */
+	public static PageContext getThreadPageContext() {
+		return threadPageContext.get();
 	}
 }

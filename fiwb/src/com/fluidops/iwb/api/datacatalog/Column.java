@@ -26,13 +26,33 @@ package com.fluidops.iwb.api.datacatalog;
  */
 public interface Column
 {
+	/**
+	 * @return the plain column name 
+	 */
 	public String getName();
 	
+	/**
+	 * @return tableName.columnName
+	 */
 	public String getShortName();
 	
+	/**
+	 * @return schemaName.tableName.columnName
+	 */
 	public String getFullName();
 	
+	/**
+	 * @return column's data type information for the column
+	 */
 	public ColumnDataType getColumnDataType();
 	
+	/**
+	 * @return column's ordinal ordering position, starting from 1
+	 */
 	public int getOrdinalPosition();
+	
+	/**
+	 * @return whether NULL is allowed
+	 */
+	public boolean isNullable();
 }

@@ -51,6 +51,21 @@ public class QueryStringUtil
 		return sb.toString();
 	}
 	
+	/**
+	 * Convert the {@link Value} (i.e. a {@link URI} or a {@link Literal})
+	 * to a string representation that can be used in queries.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static String toQueryString(Value value) {
+		if (value==null)
+			throw new IllegalArgumentException("Value must not be null.");
+		StringBuilder sb = new StringBuilder();
+		appendValue(sb, value);
+		return sb.toString();
+	}
+	
 	
 	/**
 	 * Append the given value (if value!=null) or the variable name as ?varName

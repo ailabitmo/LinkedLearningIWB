@@ -83,7 +83,8 @@ public class PrimaryKeyImpl implements PrimaryKey
 				if (columnUri instanceof URI)
 					tmpColumns.add(new ColumnImpl(graph,(URI)columnUri));
 			}
-			columns = ColumnImpl.assertValidAndOrder(tmpColumns);
+			columns=tmpColumns;
+		//	columns = ColumnImpl.assertValidAndOrder(tmpColumns);
 		}
 		catch (GraphUtilException e)
 		{

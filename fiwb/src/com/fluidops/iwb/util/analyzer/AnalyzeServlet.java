@@ -32,12 +32,20 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fluidops.config.Config;
 import com.fluidops.iwb.server.IWBHttpServlet;
 import com.fluidops.util.GenUtil;
 
 
 /**
  * Servlet to invoke result submit, i.e. by default results are written to file.<p>
+ * 
+ * Required configuration parameters:
+ * 
+ * <source>
+   analyzeMode=true
+   analyzer.memoryAnalysisEnabled=true
+ * </source>
  * 
  * Servlet Mapping to be added in web.xml<p>
  * 
@@ -72,6 +80,12 @@ public class AnalyzeServlet extends IWBHttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		if (!Config.getConfig().getBoolean("analyzer.memoryAnalysisEnabled", false)) {
+			response.sendError(HttpServletResponse.SC_CONFLICT, "Memory analysis not enabled. Set analyzer.memoryAnalysisEnabled=true in config.prop");
+			return;
+		}
+		
 	    response.setContentType("text/plain");
 		if (request.getParameter("out")==null)
 			writeBrowser(request, response);
@@ -91,9 +105,7 @@ public class AnalyzeServlet extends IWBHttpServlet {
 	protected void writeBrowser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		Writer writer = new OutputStreamWriter(response.getOutputStream());
-		writer.append("<pre>");
 		Analyzer.getInstance().writeAndClear(writer);
-		writer.append("</pre>");
 		writer.flush();
 				
 		response.setStatus(200);
@@ -131,4 +143,9 @@ public class AnalyzeServlet extends IWBHttpServlet {
 		out.flush();
 		out.close();
 	}
+	
+	@Override
+	protected String getPageTitle() {
+		return "Analyze Servlet";
+	}  
 }

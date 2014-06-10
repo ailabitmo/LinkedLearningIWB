@@ -65,6 +65,8 @@ public class WidgetEditTable extends FContainer{
         table.setOverFlowContainer(true);
         table.setEnableFilter(true);
         updateTable();
+        //sort configurations alphabetically by widget type
+        table.setSortColumn(0, 1);
         add(table);
 
         FButton addButton = new FButton("addButton", "Add Widget") {  

@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 
@@ -33,12 +34,16 @@ import com.fluidops.iwb.Global;
 import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
+import com.fluidops.iwb.api.query.FromStringQueryBuilder;
+import com.fluidops.iwb.api.query.QueryBuilder;
 import com.fluidops.iwb.api.valueresolver.ValueResolver;
+import com.fluidops.iwb.api.valueresolver.ValueResolverUtil;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.NotificationType;
+import com.fluidops.iwb.widget.config.BindingConfig;
 import com.fluidops.iwb.widget.config.WidgetQueryConfig;
 import com.fluidops.util.StringUtil;
 import com.google.common.collect.Maps;
@@ -90,7 +95,13 @@ import com.google.common.collect.Maps;
  * {{#widget: QueryResult 
  * | query = 'SELECT ?image ?time WHERE { ?? :image ?image . ?? :time ?time }'
  * | template = '<span style="width:30px">{{{image}}}</span><br/>{{{time}}}'
- * | valueResolver = 'time=MS_TIMESTAMP2DATE,image=IMAGE'
+ * | valueConfiguration = {{ 
+ *    {{ valueResolver = 'MS_TIMESTAMP2DATE'
+ *     | variableName = 'time'
+ *    }} |
+ *    {{ valueResolver = 'IMAGE'
+ *     | variableName = 'image'
+ *    }} }}
  * }}
  * </code>
  * 
@@ -140,12 +151,21 @@ public class QueryResultWidget extends AbstractWidget<QueryResultWidget.Config> 
     			type = Type.DROPDOWN)
     	public ResultFormat format = ResultFormat.COMMA_SEPARATED;
   	    	    	
+    	@Deprecated
+    	@ParameterConfigDoc(
+    			desc = "Map Value Resolver, e.g. 'myProjectionVar=HTML,b=IMAGE'. "
+    					+ "If not specified otherwise the DEFAULT value resolver is used. "
+    					+ "The parameter is depricated. Please use 'valueConfiguration' instead.")
+    	public String valueResolver; 
+    	
     	/**
-    	 * Optionally specify a mapping for each binding name (without ?), otherwise default is taken (mappings comma separated)
+    	 * Optionally specify a mapping for each binding name (without ?), otherwise default is taken
     	 */
     	@ParameterConfigDoc(
-    			desc = "Map Value Resolver, e.g. 'myProjectionVar=HTML,b=IMAGE'. If not specified otherwise the DEFAULT value resolver is used.")
-    	public String valueResolver; 
+    			desc = "Specifies the way the values associated with a query variable "
+    					+ "are displayed with the help of the Value Resolvers", 
+    			type=Type.LIST)
+        public List<BindingConfig> valueConfiguration;
     	
 		@ParameterConfigDoc(
 				desc = "Specifies whether the query should be evaluated on the historic repository", 
@@ -189,6 +209,7 @@ public class QueryResultWidget extends AbstractWidget<QueryResultWidget.Config> 
     }
 
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public FComponent getComponent(String id) {
         
@@ -197,13 +218,23 @@ public class QueryResultWidget extends AbstractWidget<QueryResultWidget.Config> 
 		if (c.query==null)
 			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.NO_QUERY);
 		
+		//don't allow defining value resolvers both in legacy parameter and in column configuration
+		if(StringUtil.isNotNullNorEmpty(c.valueResolver) && ValueResolverUtil.hasValueResolvers(c.valueConfiguration))
+			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.GENERIC, 
+					"Invalid configuration. The configuration parameter 'valueResolver' is deprecated: " +
+					"Please define value resolvers in the 'valueConfiguration' only."); 
+		
 		c.infer = c.infer!=null && c.infer;	
 		
-		String query = c.query.trim();
+		// builder for the query
+		FromStringQueryBuilder<TupleQuery> queryBuilder;
         
         // only select queries are supported, however PREFIX may be in the beginning
 		try {
-			SparqlQueryType type = ReadDataManagerImpl.getSparqlQueryType(query, true);
+			queryBuilder = (FromStringQueryBuilder<TupleQuery>) QueryBuilder
+					.create(c.query.trim()).resolveValue(pc.value)
+					.infer(c.infer);
+			SparqlQueryType type = queryBuilder.getQueryType();
 			if (!type.equals(SparqlQueryType.SELECT))
 				return WidgetEmbeddingError.getErrorLabel(id,ErrorType.NO_SELECT_QUERY);
 		} catch (MalformedQueryException e) {
@@ -216,7 +247,8 @@ public class QueryResultWidget extends AbstractWidget<QueryResultWidget.Config> 
 		
 		TupleQueryResult resIter=null;
 		try {
-			resIter = dm.sparqlSelect(query, true, pc.value, c.infer);
+			TupleQuery query = queryBuilder.build(dm);
+			resIter = query.evaluate();
 			
 			try {
 				initializeOutput(resIter.getBindingNames(), c);
@@ -288,20 +320,12 @@ public class QueryResultWidget extends AbstractWidget<QueryResultWidget.Config> 
 		return Config.class;
 	}
 	
-	
 	protected void initializeOutput(List<String> bindingNames, Config c) {
 		
 		// initialize default values
 		rf = c.format;
 		
-		if (c.valueResolver!=null) {
-			for (String mapping : c.valueResolver.split(",")) {
-				if (!mapping.contains("="))
-					throw new IllegalArgumentException("ValueResolver parameter specified incorrectly, comma separated mappings are expected.");
-				String[] m = mapping.trim().split("=");		// e.g. myProjectionVar=HTML
-				valueResolvers.put(m[0], m[1]);
-			}
-		}
+		valueResolvers = ValueResolverUtil.getValueResolvers(c.valueResolver, c.valueConfiguration);
 		
 		String template = c.template;
 		//if no template specified: set default

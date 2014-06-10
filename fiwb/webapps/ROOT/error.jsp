@@ -1,4 +1,5 @@
 <%@page import="java.io.*"%>
+<%@page import="org.apache.log4j.Logger"%>
 <html>
 	<%
 		/*
@@ -20,29 +21,14 @@
 				This can happen if a resource is currently unavailable. Please try again in a few seconds.<br/>
 			</p>
 			<p>
-				If the problem persists, please contact your administrator
-				with the <a href="#" onclick="javascript:document.getElementById('techinfo').style.display='block';">technical details</a>.
+				If the problem persists, please contact your administrator.
 			</p>
 
 		<div id="techinfo" style="display:none;">
-			Technical details:<pre>
 <%
-	// Now print the stack trace(s) that were the reason for this error.
-	// Maybe we could also add a feature to directly paste it into clipboard? - Uli
 	Throwable th = (Throwable)request.getAttribute("javax.servlet.error.exception");
-	while (th!=null)
-	{
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		th.printStackTrace(pw);
-		pw.flush();
-		out.write( sw.toString() );
-		out.write("\n");
-		
-		th = th.getCause();
-	}
+	Logger.getLogger(this.getClass()).error(th.getMessage(), th);
 %>
-			</pre>
 		</div>
 		</div>
 

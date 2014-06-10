@@ -18,10 +18,15 @@
 
 package com.fluidops.iwb.service;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,15 +41,16 @@ import com.fluidops.ajax.components.FComponent;
 import com.fluidops.iwb.annotation.CallableFromWidget;
 import com.fluidops.iwb.api.operator.OperatorUtil;
 import com.fluidops.iwb.api.operator.SPARQLResultTable;
-import com.fluidops.iwb.model.ParameterConfigDoc;
-import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.page.PageContext;
 import com.fluidops.iwb.util.QueryResultUtil;
 import com.fluidops.iwb.widget.ActionableResultWidget;
 import com.fluidops.iwb.widget.CodeExecutionWidget;
+import com.fluidops.iwb.widget.CodeExecutionWidget.WidgetCodeConfig;
 import com.fluidops.iwb.widget.TableResultWidget;
 import com.fluidops.util.StringUtil;
 import com.fluidops.util.scripting.DynamicScriptingSupport;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 
 
 /**
@@ -71,15 +77,38 @@ public class CodeExecution implements Service<CodeExecution.Config>
 	 * @see QueryResultUtil
 	 */
 	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification="Fields used externally")
-	public static class CodeExecutionContext {
+	public static class CodeExecutionContext implements ExecutionContext {
 		
-		public PageContext pc;					// the page context
-		public FComponent parentComponent;		// the parent component, e.g. FTable
+		/**
+		 * @deprecated Use {@link #getContextValue()} to retrieve the {@link URI} of the
+		 * resource from which this code execution has been invoked.
+		 */
+		@Deprecated
+		final public PageContext pc;					// the page context
+
+		@Deprecated
+		final public FComponent parentComponent;		// the parent component, e.g. FTable
+
 		public CodeExecutionContext(PageContext pc, FComponent parentComponent)
 		{
 			super();
 			this.pc = pc;
 			this.parentComponent = parentComponent;
+		}
+
+		/**
+		 * Retrieve the {@link URI} of the resource from which this code
+		 *         execution has been invoked.
+		 * 
+		 * @return The {@link URI} of the resource from which this code
+		 *         execution has been invoked, or a literal in some special
+		 *         cases such as empty nodes.
+		 */
+		@Override
+		public Value getContextValue() {
+			if (pc==null || pc.value==null)
+				throw new IllegalStateException("Context value is not available. Please report.");
+			return pc.value;
 		}
 
 		/**
@@ -104,109 +133,6 @@ public class CodeExecution implements Service<CodeExecution.Config>
 
 	}
 	
-	/**
-	 * Configuration for coded execution to be used from widgets
-	 * 
-	 * @author as
-	 */
-	//TODO: Move config class to package com.fluidops.iwb.widget.config
-	public static class WidgetCodeConfig
-	{
-    	@ParameterConfigDoc(
-    			desc = "Render type of a row actions (optional), e.g. btn, link, img:/path/to/img, or inline (with user input).", 
-    			defaultValue="btn")
-    	public String render = "btn";
-    	
-    	@ParameterConfigDoc(
-    			desc = "Label to be displayed, e.g. as button/link text or as tooltip for img.", 
-    			defaultValue="Run")
-    	public String label = "Run";
-		
-    	@ParameterConfigDoc(
-    			desc = "Class to be used, full qualified type, either java or groovy.")
-		public String clazz;
-		
-    	@ParameterConfigDoc(
-    			desc = "Method to be executed.")
-		public String method;
-		
-    	@ParameterConfigDoc(
-    			desc = "Arguments to be passed for execution. Arguments from user input can be referenced as '%name'.", 
-    			type=Type.LIST)
-		public List<Object> args = Collections.emptyList();	// see class documentation for examples
-		
-    	@ParameterConfigDoc(
-    			desc = "User input for method arguments.", 
-    			type=Type.LIST)
-		public List<UserInputConfig> userInput;
-		
-		// null=>show message, none=>don't show message, popup=>show message in popup, reload=>reload current page, uri=>redirect to uri
-    	@ParameterConfigDoc(
-    			desc = "Define the onFinish behaviour: {null, 'none', 'popup', 'reload', 'http://myUri', $this.prop$}.",
-    			defaultValue = "null")
-        public String onFinish = null;
-        
-    	@ParameterConfigDoc(
-    			desc = "Confirmation message.",
-    			defaultValue = "disabled")
-        public String confirm;
-        
-        // option to have the CodeExecutionContext available in the method, if true
-        // the corresponding method signature needs as first argument CodeExecutionContext
-    	@ParameterConfigDoc(
-    			desc = "Add the CodeExecutionContext as first argument",
-    			defaultValue = "false")
-        public Boolean passContext = false;
-    	
-    	public static WidgetCodeConfig copy(WidgetCodeConfig other) {
-    		WidgetCodeConfig res = new WidgetCodeConfig();
-    		res.args = other.args;
-    		res.userInput = other.userInput;
-    		res.clazz = other.clazz;
-    		res.confirm = other.confirm;
-    		res.label = other.label;
-    		res.method = other.method;
-    		res.onFinish = other.onFinish;
-    		res.passContext = other.passContext;
-    		res.render = other.render;
-    		return res;
-    	}
-	}
-
-	public static class UserInputConfig
-	{
-    	@ParameterConfigDoc(
-    			desc = "Name of the argument, e.g. 'label' for argument '%label'.",
-    			required = true)
-		public String name;
-    	
-    	@ParameterConfigDoc(
-    			desc = "Label for the argument, e.g. 'Nice name'.")
-    	public String displayName;
-    	
-    	@ParameterConfigDoc(
-    			desc = "Specifies whether the argument is required.",
-    			defaultValue = "true")
-    	public Boolean required = true;
-    	
-    	@ParameterConfigDoc(
-    			desc = "Type of the input component, e.g. 'SIMPLE' for a textfield.",
-    			required = true)
-		public Type componentType;
-    	
-    	@ParameterConfigDoc(
-    			desc = "Preset value used to pre-populate the input component, e.g. 'Hello World'.")
-		public String presetValue;
-    	
-    	@ParameterConfigDoc(
-    			desc = "Select values for components of type DROPDOWN, e.g. $SELECT ?o WHERE { ?? ?p ?o }$.",
-    			type = Type.LIST)
-    	public List<Value> selectValues;
-    	
-    	@ParameterConfigDoc(
-    			desc = "Qualified class name for components of type CONFIG, e.g. 'com.fluidops.MyConfig'.")
-		public String componentClass;
-	}
 	
 	/**
 	 * Execute the provided config using this service
@@ -262,9 +188,14 @@ public class CodeExecution implements Service<CodeExecution.Config>
         return c;
 	}
 	
-    public static class Config
+	/**
+	 * Code Execution Configuration
+	 */
+    public static class Config implements Serializable, Cloneable
     {
-        // the class name
+		private static final long serialVersionUID = -6191105784376426754L;
+
+		// the class name
         public String clazz;
         
         // the method name inside the class (must be static and
@@ -274,25 +205,87 @@ public class CodeExecution implements Service<CodeExecution.Config>
         // the signature of the method the call
         public Class<?>[] signature;
         
-        // the parameters of the method
-        public Object[] args;
+        /*
+		 * the parameters of the method. Transient because it's manually
+		 * serialized to handle the case of non-serializable arguments
+		 */
+        transient public Object[] args;
         
-    	public static Config copy(Config other)
+        /*
+		 * overwrite writeObject/readObject to handle arguments that are not
+		 * serializable. In this case the arguments are ignored for the
+		 * serialization
+		 */
+        private void writeObject(ObjectOutputStream oos) throws IOException {            
+            // check if arguments are all serializable
+            // use null as fallback for non-serializable values
+            if (hasSerializableArguments())
+            	oos.writeObject(args);
+            else
+            	oos.writeObject(null);
+            
+            oos.defaultWriteObject();
+        }
+        
+        private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        	args = (Object[]) ois.readObject();
+        	
+        	ois.defaultReadObject();
+        }
+
+		public boolean hasSerializableArguments() {
+            for (int i = 0; i < args.length; i++) {
+				if (!(args[i] instanceof Serializable)) {
+					logger.error("CodeExecution Config has non-serializable argument: " + args[i] + " (of type " + args[i].getClass() + ")");
+					return false;
+				}
+			}
+			return true;
+		}
+        
+		@Override
+    	public Config clone()
     	{
-    		Config res = new Config();
-    		
-    		res.clazz = other.clazz;
-    		res.method = other.method;
-    		
-    		res.signature = new Class<?>[other.signature.length];
-    		for (int i = 0; i < other.signature.length; i++)
-    			res.signature[i] = other.signature[i];
-    		
-    		res.args = new Object[other.args.length];
-    		for (int i = 0; i < other.args.length; i++)
-    			res.args[i] = other.args[i];
-    		
-    		return res;
+    		try
+    		{
+    			Config res = (Config) super.clone();
+    			
+    			//deep clone class array
+	    		res.signature = new Class<?>[this.signature.length];
+	    		for (int i = 0; i < this.signature.length; i++)
+	    			res.signature[i] = this.signature[i];
+	    		
+	    		//deep clone object array
+	    		res.args = new Object[this.args.length];
+	    		for (int i = 0; i < this.args.length; i++)
+	    			res.args[i] = this.args[i];
+	    		return res;
+			}
+    		catch (CloneNotSupportedException e)
+    		{
+				throw Throwables.propagate(e);
+			}
+    	}
+    	
+    	@Override
+    	public String toString()
+    	{
+    		StringBuilder sb = new StringBuilder();
+    		sb.append(clazz);
+    		sb.append(".");
+    		sb.append(method);
+    		sb.append("(");
+    		if (signature != null)
+    		{
+	    		for (int i = 0; i < signature.length; i++)
+	    		{
+	    			if (i > 0) sb.append(", ");
+	    			String sign = (signature[i] != null) ? signature[i].getSimpleName() : "null";
+	    			sb.append(sign);
+	    		}
+    		}
+    		sb.append(")");
+    		return sb.toString();
     	}
     }
 
@@ -310,8 +303,11 @@ public class CodeExecution implements Service<CodeExecution.Config>
     		throw new IllegalArgumentException("Config.clazz must not be null.");
     	if (StringUtil.isNullOrEmpty(in.method))
     		throw new IllegalArgumentException("Config.method must not be null.");
-    	in.args = in.args==null ? new Object[0] : in.args;
-    	in.signature = in.signature==null ? new Class<?>[0] : in.signature;
+    	//initialization with null checks
+    	if(in.args == null)
+    		in.args = new Object[0];
+    	if(in.signature==null)
+    		in.signature = new Class<?>[0];
     	
     	// enable dynamic class loader for groovy (must be done because of different thread)
     	DynamicScriptingSupport.installDynamicClassLoader();
@@ -397,7 +393,10 @@ public class CodeExecution implements Service<CodeExecution.Config>
     				continue;
     			}    			
     			// if the object fits, just add to new args
-    			if (getClassFromType(types[i]).isAssignableFrom(arg.getClass()))
+    			Class<?> typeClazz = getClassFromType(types[i]);
+    			if (List.class.isAssignableFrom(typeClazz))
+    				newArgs.add(tryConvert(arg, types[i]));
+    			else if (typeClazz.isAssignableFrom(arg.getClass()))
     				newArgs.add(arg);    			
     			else
     				newArgs.add( tryConvert(arg, types[i]));
@@ -426,17 +425,31 @@ public class CodeExecution implements Service<CodeExecution.Config>
     		Class<?> clazz = getClassFromType(type);
     		
     		if (arg instanceof List) {
-    			// if target type is not a list, take first item
-    			if (!List.class.isAssignableFrom(clazz)) {
-    				Object firstItem = ((List<Object>)arg).get(0);    				
+    			List<Object> list = ((List<Object>)arg);
+    			// if target type is not a list, take first item (check if list has single value)
+    			if (!List.class.isAssignableFrom(clazz)) {    				
+    				if (list.size()>1)
+    					throw new IllegalArgumentException("Error during conversion to single value: more than 1 values: " + list);
+    				Object firstItem = ((List<Object>)arg).get(0);   		
     				return firstItem instanceof Value ? OperatorUtil.toTargetType((Value)firstItem, clazz) : firstItem;
+    			}
+    			
+    			// else: expected type is list => check list consistency for values
+    			else {
+    				Class<?> genericType = getGenericInformationFromType(type);
+    				if (Value.class.isAssignableFrom(genericType))
+    					return toListValueTargetType(list, (Class<? extends Value>)genericType);
+    				return arg;
     			}
     		}
     		
     		if (arg instanceof Value) {
-    			if (clazz==String.class) {
-    				return ((Value)arg).stringValue();
+       			if (List.class.isAssignableFrom(clazz)) {
+    				Class<?> genericType = getGenericInformationFromType(type);
+    				if (Value.class.isAssignableFrom(genericType))
+    					return OperatorUtil.checkElementsAndGetList(Lists.newArrayList((Value)arg), genericType);
     			}
+    			return toTargetType((Value)arg, clazz);
     		}
     		
     		if (arg instanceof SPARQLResultTable) {
@@ -444,15 +457,15 @@ public class CodeExecution implements Service<CodeExecution.Config>
     			if (clazz.isAssignableFrom(SPARQLResultTable.class))
     				return arg;
     			if (Value.class.isAssignableFrom(clazz))
-    				return t.firstBinding();
+    				return toValueTargetType(t, (Class<? extends Value>) clazz);
     			if (List.class.isAssignableFrom(clazz)) {
     				Class<?> genericType = getGenericInformationFromType(type);
-    				if (Value.class.isAssignableFrom(genericType))
-    					return t.column(t.getBindingNames().get(0));
-    				else if (List.class.isAssignableFrom(genericType))
+    				if (List.class.isAssignableFrom(genericType))
     					return t.data();
+        			if (Value.class.isAssignableFrom(genericType))
+    					return OperatorUtil.checkElementsAndGetList(t.column(t.getBindingNames().get(0)), genericType);    				
     			}
-    			return OperatorUtil.toTargetType(t.firstBinding(), clazz);
+    			return toTargetType(t, clazz);
     		}    		
     		
     		return arg;
@@ -474,6 +487,54 @@ public class CodeExecution implements Service<CodeExecution.Config>
     		throw new IllegalArgumentException("Type " + type.toString() + " is not parametrized");
     	}
 
+    	
+    	private static Object toTargetType(Value value, Class<?> genericType) {
+    		try {
+    			return OperatorUtil.toTargetType(value, genericType);
+    		} catch (IllegalArgumentException e) {
+    			throw new IllegalArgumentException("Error during conversion to single value: " + e.getMessage());
+    		}
+    	}
+    	
+    	private static Object toTargetType(SPARQLResultTable t, Class<?> genericType) {
+    		try {
+    			return OperatorUtil.toTargetType(t.firstBindingAssumeSingleRow(), genericType);
+    		} catch (IllegalArgumentException e) {
+    			throw new IllegalArgumentException("Error during conversion to single value: " + e.getMessage());
+    		}
+    	}  
+    	
+    	private static Value toValueTargetType(SPARQLResultTable t, Class<? extends Value> genericType) {
+    		try {
+    			return OperatorUtil.toValueTargetType(t.firstBindingAssumeSingleRow(), genericType);
+    		} catch (IllegalArgumentException e) {
+    			throw new IllegalArgumentException("Error during conversion to single value: " + e.getMessage());
+    		}
+    	}
+    	
+    	/**
+    	 * Verify that the list is in accordance to the provided generic type. Uses
+    	 * {@link OperatorUtil#checkElementsAndGetList(List, Class)}. If the list
+    	 * contains non-Value objects, or if the list is not consistent with the
+    	 * genericType (URI vs. Literal), an {@link IllegalArgumentException} is
+    	 * thrown.
+    	 * 
+    	 * @param list
+    	 * @param genericType
+    	 * @return
+    	 */
+    	@SuppressWarnings("unchecked")
+		private static List<Value> toListValueTargetType(List<Object> list, Class<? extends Value> genericType) throws IllegalArgumentException {
+    		
+    		List<Value> valueList = Lists.newArrayList();
+    		for (Object o : list) {
+    			if (!(o instanceof Value))
+    				throw new IllegalArgumentException("Object " + o + " cannot be converted to Value.");
+    			valueList.add((Value) o);
+    		}
+    		
+    		return (List<Value>) OperatorUtil.checkElementsAndGetList(valueList, genericType);
+    	}
 
 		/**
     	 * Return all methods that match the given configuration, i.e. all methods with

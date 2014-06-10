@@ -22,16 +22,21 @@ import static com.fluidops.iwb.api.EndpointImpl.api;
 import static org.apache.log4j.Logger.getLogger;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.event.base.NotifyingRepositoryWrapper;
+import org.openrdf.repository.sail.config.ProxyRepositoryConfig;
 
 import com.fluidops.ajax.FSession;
 import com.fluidops.api.dynamic.DynamicServiceRegistry;
 import com.fluidops.api.dynamic.DynamicServiceUtil;
 import com.fluidops.api.security.ssl.SSLUtils;
+import com.fluidops.iwb.Global.PlatformRepositoryResolver;
 import com.fluidops.iwb.api.APIRemote;
 import com.fluidops.iwb.api.DBBulkServiceImpl;
 import com.fluidops.iwb.api.EndpointImpl;
@@ -46,6 +51,7 @@ import com.fluidops.iwb.api.solution.SolutionService;
 import com.fluidops.iwb.api.valueresolver.ValueResolverUtil;
 import com.fluidops.iwb.extensions.PrinterExtensionsImpl;
 import com.fluidops.iwb.keywordsearch.KeywordIndexAPI;
+import com.fluidops.iwb.repository.PlatformRepositoryManager;
 import com.fluidops.iwb.server.IwbServletContextListener;
 import com.fluidops.iwb.server.SparqlServlet;
 import com.fluidops.iwb.user.UserManagementAdministration;
@@ -127,7 +133,10 @@ public class IwbStart
         I18n.initialize();
         
         // for Information Workbench, by default we support only local authorization        
-        com.fluidops.config.Config.getConfig().setAuthConfigNameDefault("Local");
+        com.fluidops.config.Config.setAuthConfigNameDefault("Local");
+        // set default http ports
+        com.fluidops.config.Config.setHttpPortDefault(8888);
+		com.fluidops.config.Config.setHttpSslPortDefault(8443);
         
 		final String debugfiwb = System.getenv("debugfiwb");
 		if (debugfiwb != null && debugfiwb.equals("1"))
@@ -266,7 +275,18 @@ public class IwbStart
 		// whether it has already been set from outside
 		if (Global.historyRepository==null)
 			Global.historyRepository = Global.repository;
-				
+		
+		// init PlatformRepositoryManager and register default repositories as proxy repositories
+		PlatformRepositoryResolver repositoryResolver = Global.getRepositoryResolver();
+		PlatformRepositoryManager.createInstance(repositoryResolver);
+		PlatformRepositoryManager manager = PlatformRepositoryManager.getInstance();
+		manager.addAndInitializeRepository(new RepositoryConfig(repositoryResolver.getDefaultRepositoryName(),"Default Platform Repository",new ProxyRepositoryConfig(repositoryResolver.getDefaultRepositoryName())));;
+		manager.addAndInitializeRepository(new RepositoryConfig(repositoryResolver.getHistoryRepositoryName(),"Platform History Repository",new ProxyRepositoryConfig(repositoryResolver.getHistoryRepositoryName())));;
+		if(manager.getRepository(repositoryResolver.getDefaultRepositoryName())==null)
+			throw new IllegalStateException("Failed to register the default local repository in the repository manager");
+		if(manager.getRepository(repositoryResolver.getHistoryRepositoryName())==null)
+			throw new IllegalStateException("Failed to register the history repository in the repository manager");
+		
 		// initialize user from userManagementInit.prop (if the file exists)		
 		UserManagementAdministration.initializeUserFromFile(
 				IWBFileUtil.getFileInConfigFolder("userManagementInit.prop"));
@@ -372,6 +392,15 @@ public class IwbStart
 		
 		logger.info("Shutting down dynamic services");
 		DynamicServiceRegistry.shutdown();
+		
+		//shutdown repository manager
+		try {
+			PlatformRepositoryManager.getInstance().shutDown();
+		} catch (Exception e) {
+			logger.warn("Failed shutting down platform manager: " + e.getMessage());
+			logger.debug("Details:", e);
+		}
+		
 	}
 	
 	public static void main(String[] args) throws Exception
@@ -381,15 +410,15 @@ public class IwbStart
 	
 	public static boolean installSolutions() throws Exception {
         SolutionService solutionService = (SolutionService) api().getSolutionService();
-        URL[] solutions = solutionService.detectSolutions();
-        if ((solutions == null) || (solutions.length == 0)) {
+        List<URI> solutions = solutionService.detectSolutions();
+        if ((solutions == null) || solutions.isEmpty()) {
         	GenUtil.delete(IWBFileUtil.getFileInWorkingDir(RESTART_ATTEMPTS_FILE_NAME));
         	return false;
         }
         
         CompositeInstallationResult compositeResult = new CompositeInstallationResult();
-        for (int s = 0; s < solutions.length; s++) {
-			URL solution = solutions[s];
+        for (URI solutionUri : solutions) {
+			URL solution = solutionUri.toURL();
 			InstallationResult result = solutionService.install(solution);
 			compositeResult.addResultForHandler(solution.toString(), result);
 		}

@@ -18,17 +18,15 @@
 
 package com.fluidops.iwb.api;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDFS;
@@ -53,12 +51,6 @@ public class WidgetSelectorImpl extends AbstractWidgetSelector
 {
     private static final Logger logger = Logger.getLogger(WidgetSelectorImpl.class);
 	
-    /**
-     * Set containing widget configurations, which have already been applied to the current page.
-     * Needed in order to avoid the same widget with the same parameter being applied twice.
-     */
-    private Set<WidgetConfig> appliedWidgetConfigs;
-    
 	public WidgetSelectorImpl()
 	{
 	}
@@ -67,8 +59,6 @@ public class WidgetSelectorImpl extends AbstractWidgetSelector
 	public void selectWidgets(PageContext pc)
 	{
 		pc.widgets = Sets.newLinkedHashSet();
-		
-		appliedWidgetConfigs = new HashSet<WidgetConfig>();
 		
 		// we sort the widget configuration to reflect the priority in 
 		// which they are applied:
@@ -130,9 +120,9 @@ public class WidgetSelectorImpl extends AbstractWidgetSelector
 			if (wc.applyToInstances)
 			{
 				// ... the current resource must be of type Resource ...
-				if (pc.value instanceof Resource)
+				if (pc.value instanceof URI)
 				{
-				    for(Value type : dm.getType((Resource) pc.value)) 
+				    for(Value type : dm.getType((URI) pc.value)) 
 				    {
 						// ... and the widget must match  one of its types
 				    	if(!wc.value.equals(type)) continue;
@@ -206,11 +196,12 @@ public class WidgetSelectorImpl extends AbstractWidgetSelector
 	 * @param widgetClass a widget class
 	 * @return
 	 */
-    private boolean added(WidgetConfig widgetConfig) {
+	@SuppressWarnings("rawtypes")
+    private boolean added(Collection<? extends Widget> widgets, Class widgetClass) {
 		
-		for (WidgetConfig wc : this.appliedWidgetConfigs)
+		for (Widget w : widgets)
 		{
-			if (wc.widget.equals(widgetConfig.widget) && wc.input.toString().equals(widgetConfig.input.toString()))
+			if (w.getClass().equals(widgetClass))
 				return true;
 		}
 		
@@ -228,7 +219,7 @@ public class WidgetSelectorImpl extends AbstractWidgetSelector
 	@SuppressWarnings("rawtypes")
     private void addWidget(WidgetConfig wc, PageContext pc)
 	{
-		if (added(wc) || !isApplicable(wc, pc.value))
+		if (added(pc.widgets,wc.widget) || !isApplicable(wc, pc.value))
 			return;
 		
 		try
@@ -236,8 +227,6 @@ public class WidgetSelectorImpl extends AbstractWidgetSelector
 			Widget w = (Widget) wc.widget.newInstance();
 			w.setMapping(wc.input);
 			pc.widgets.add( w );
-			
-			appliedWidgetConfigs.add(wc);
 		}
 		catch (Exception e)
 		{

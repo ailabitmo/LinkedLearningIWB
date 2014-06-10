@@ -18,14 +18,19 @@
 
 package com.fluidops.iwb.ui.configuration;
 
+import java.net.URLEncoder;
+
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
 
 import com.fluidops.ajax.FClientUpdate;
 import com.fluidops.ajax.FClientUpdate.Prio;
 import com.fluidops.ajax.FEvent;
 import com.fluidops.ajax.components.FButton;
 import com.fluidops.ajax.components.FContainer;
+import com.fluidops.ajax.components.FDialog;
 import com.fluidops.ajax.components.FHTML;
+import com.fluidops.api.security.SHA512;
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.util.Rand;
 
@@ -39,9 +44,11 @@ import com.fluidops.util.Rand;
  */
 public class SparqlEditor extends FContainer {
 
+	private static final Logger logger = Logger.getLogger(SparqlEditor.class.getName());
 	
 	protected static final String SPARQL_IFRAME_ID = "sparql-iframe";
-	protected static final String EVENT_PARAM_NAME = "msg";
+	protected static final String SUBMIT_EVENT_PARAM_NAME = "submit";
+	protected static final String PREVIEW_EVENT_PARAM_NAME = "preview";
 	
 	protected String query = "";
 	protected String submitBtnLabel = "Done";
@@ -82,16 +89,34 @@ public class SparqlEditor extends FContainer {
 			{
 				addClientUpdate(new FClientUpdate(
 						Prio.VERYBEGINNING,
-								  "var frame = document.getElementById('" + frameId + "');"
-								+ " frame.contentWindow.flintEditor.getEditor().getCodeEditor().save(); "
-								+ " var query = frame.contentWindow.document.getElementById('flint-code').value;"
-								+ " catchPostEventIdEncode('"+SparqlEditor.this.getId()+"',9, query,'"+EVENT_PARAM_NAME+"');"));
+						  	getQueryStringJavascript()+" catchPostEventIdEncode('"+SparqlEditor.this.getId()+"',9, query,'"+SUBMIT_EVENT_PARAM_NAME+"');"));
 			}
 		};
-		add(submit, "floatLeft");		
+		add(submit, "floatLeft");	
+		
+		FButton preview = new FButton("preview", "Preview")
+		{
+			@Override
+			public void onClick()
+			{				
+				addClientUpdate(new FClientUpdate(
+						Prio.VERYBEGINNING,
+							getQueryStringJavascript()+" catchPostEventIdEncode('"+SparqlEditor.this.getId()+"',9, query,'"+PREVIEW_EVENT_PARAM_NAME+"');"));
+			}
+		};
+		add(preview, "floatLeft");	
 
 	}
 	
+	/**
+	 * @return
+	 */
+	protected String getQueryStringJavascript() {
+		return "var frame = document.getElementById('" + frameId + "');"
+				+ " frame.contentWindow.flintEditor.getEditor().getCodeEditor().save(); "
+				+ " var query = frame.contentWindow.document.getElementById('flint-code').value;";
+	}
+
 	/**
 	 * @param submitBtnLabel the submitBtnLabel to set
 	 */
@@ -114,14 +139,52 @@ public class SparqlEditor extends FContainer {
 	@Override
 	public void handleClientSideEvent(FEvent event) {
 		
-		// callback when the user clicked on the "Done" button
-		query = event.getPostParameter(EVENT_PARAM_NAME);
+		// case1: callback when the user clicked on the "Done" button
+		query = event.getPostParameter(SUBMIT_EVENT_PARAM_NAME);
+		if(query != null && submitListener!=null)
+		{
+			submitListener.onSubmit(query);
+			return;
+		}
 		
-		if (submitListener!=null)
-			submitListener.onSubmit(query);		
+		// case2: if the 'preview' button is clicked
+		query = event.getPostParameter(PREVIEW_EVENT_PARAM_NAME);
+		if(query != null ) {
+			showPreview();
+		}
 	}
 	
 	
+	/**
+	 * In case the entered query does not contain the '??' variable
+	 * the user is redirected to the search results page in a new tab,
+	 * otherwise an error message in a popup window is displayed.
+	 * 
+	 */
+	private void showPreview() {
+		
+		if (query.contains("??")) {
+			FDialog.showMessage(getPage(), "Info", "The preview of results for this query is not possible: reference to the current resource encountered ('??').", "Ok");
+			return;
+		} 
+		
+		String location = EndpointImpl.api().getRequestMapper().getContextPath()+"/sparql" +
+				"?query="+query+"&format=auto&infer=false";
+
+		String tokenBase = com.fluidops.iwb.util.Config.getConfig().getServletSecurityKey() + query;
+		String securityToken = null;
+		try {
+			securityToken = SHA512.encrypt(tokenBase);
+			location += "&st=" + URLEncoder.encode(securityToken.toString(), "UTF-8");
+			addClientUpdate(new FClientUpdate("window.open('"+ location +"', '_blank');"));
+
+		} catch (Exception e) {
+			logger.debug("Error while preparing preview of SPARQL query:" + e.getMessage(), e);
+			throw new IllegalStateException("Error while preparing preview of SPARQL query: " + e.getMessage(), e);
+		}			
+	}
+
+
 	/**
 	 * Interface to provide custom functionality once a user
 	 * has submitted a query using the button.

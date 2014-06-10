@@ -21,11 +21,13 @@ package com.fluidops.iwb.ajax;
 import org.openrdf.rio.RDFFormat;
 
 import com.fluidops.ajax.components.FComboBox;
+import com.fluidops.iwb.provider.RDFProvider.RDFFormatSelectValuesFactory;
 
 /**
  * contains all supported RDFFormats to select in a combobox
+ * 
+ * @see RDFFormatSelectValuesFactory
  */
-
 public class RDFFormatComboBox extends FComboBox
 {
 
@@ -33,12 +35,8 @@ public class RDFFormatComboBox extends FComboBox
     {
         super(id);
 
-        addChoice(RDFFormat.RDFXML.getName(), RDFFormat.RDFXML);
-        addChoice(RDFFormat.N3.getName(), RDFFormat.N3);
-        addChoice(RDFFormat.NTRIPLES.getName(), RDFFormat.NTRIPLES);
-        addChoice(RDFFormat.TRIG.getName(), RDFFormat.TRIG);
-        addChoice(RDFFormat.TURTLE.getName(), RDFFormat.TURTLE);
-        addChoice(RDFFormat.TRIX.getName(), RDFFormat.TRIX);
+        for (RDFFormat format : RDFFormatSelectValuesFactory.supportedRDFFormats())
+        	addChoice(format.getName(), format);
         setSelected(RDFFormat.RDFXML);
 
     }

@@ -37,6 +37,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.repository.Repository;
 
+import com.fluidops.config.Config;
 import com.fluidops.iwb.cache.ContextCache;
 import com.fluidops.iwb.cache.ImageFileCache;
 import com.fluidops.iwb.cache.InstanceCache;
@@ -50,16 +51,50 @@ import com.fluidops.iwb.cache.TypeCache;
 /**
  * Analyzing component to monitor connections and calls to underlying repositories.
  * 
- * To enable analyze set the configuration parameter "analyzeMode" to true. Then 
- * use the UI to navigate the wiki. Summarizing results can be stored to file by 
- * navigating to http://localhost:8888/analyze#
+ * To enable analyze set the configuration parameter "analyzeMode" to true. 
+ * 
+ * If in addition the {@link AnalyzeServlet} is configured, the UI can be used to 
+ * summarize results:  http://localhost:8888/analyze#
  * 
  * See {@link AnalyzeServlet} for a few details. 
  * 
+ * Configuration settings in config.prop (see static class constants for details documentation):
+ * 
+ *  - analyzer.memoryAnalysisEnabled (default: false)
+ *  - analyzer.removePrefixDeclarations (default: true)
+ *  - analyzer.summaryOnly (default: false)
+ *  - analyzer.analyzePrepareQuery (default: false)
+ *  
+ *  
  * @author as
  */
 public class Analyzer {
 
+	/**
+	 * Determines whether in memory analysis is enabled (trace information is kept in memory until it is cleared explicitly). Default: false
+	 */
+	public static final boolean memoryAnalysisEnabled = getConfiguration("analyzer.memoryAnalysisEnabled", false);
+	
+	/**
+	 * Removes the PREFIX declarations from queries to reduce noise. Default true;
+	 */
+	public static final boolean removePrefixDeclarations = getConfiguration("analyzer.removePrefixDeclarations", true);
+	
+	/**
+	 * Determines whether in {@link #writeAndClear(Writer)} a summary only is printed, i.e. if disabled, the
+	 * queries are not printed. Default false.
+	 */
+	public static final boolean summaryOnly = getConfiguration("analyzer.summaryOnly", false);
+			
+	/**
+	 * Setting that specified whether calls to "#prepareQuery" shall be analyzed. Default false
+	 */
+	public static final boolean analyzePrepareQuery = getConfiguration("analyzer.analyzePrepareQuery", false);
+	
+	
+	private static boolean getConfiguration(String setting, boolean def) {
+		return Boolean.parseBoolean(Config.getConfig().get(setting, Boolean.toString(def)));
+	}
 	
 	private static Analyzer instance = null;
 	public static Analyzer getInstance() {
@@ -71,6 +106,7 @@ public class Analyzer {
 	
 	public static void init() {
 		instance = new Analyzer();
+		ReplayLogger.initReplayLoggerDefault();
 	}
 	
 	public static boolean isAnalyze() {
@@ -94,20 +130,26 @@ public class Analyzer {
 	}
 	
 	protected void initAvailableCaches() {
+		
+		if (!memoryAnalysisEnabled)
+			return;
+		
 		availableCaches.add( TypeCache.getInstance() );
 		availableCaches.add( LabelCache.getInstance() );
 		availableCaches.add( ContextCache.getInstance() );
 		availableCaches.add( ImageFileCache.getInstance() );
 		availableCaches.add( InstanceCache.getInstance() );
 		availableCaches.add( InversePropertyCache.getInstance() );
-//		availableCaches.add( NodeNeighborhoodCache.getInstance() );		// not a repository cache, why?
-		availableCaches.add( PropertyCache.getInstance() );
-		
+		availableCaches.add( PropertyCache.getInstance() );		
 		
 	}
 	
 	
 	public void analyze(AnalyzingConnection conn, TupleExpr query, BindingSet bindings, long duration) {
+		
+		if (!memoryAnalysisEnabled)
+			return;
+		
 		List<CallElement> stack = processStack();
 		
 		if (!connections.containsKey(conn))
@@ -128,6 +170,17 @@ public class Analyzer {
 	
 	public void analyze(AnalyzingConnection conn, AnalyzingQuery preparedQuery, long duration) {
 		
+		String queryString = preparedQuery.queryString;
+		
+		if (removePrefixDeclarations)
+			queryString = removePrefixDeclarations(queryString);
+		
+		// Log the query
+		ReplayLogger.query(queryString);
+		
+		if (!memoryAnalysisEnabled) 
+			return;
+		
 		List<CallElement> stack = processStack();
 		
 		if (!connections.containsKey(conn))
@@ -135,18 +188,25 @@ public class Analyzer {
 		
 		String module = getModuleString(stack);
 		String component = getComponentString(stack);
-		String request = "evaluate() - evaluation of prepared query: " + preparedQuery;
+		String request = "evaluate() - evaluation of prepared query: " + queryString;
 
 		List<AnalyzeEntry> l = componentMap.get(component);
 		if (l == null) {
 			l = new ArrayList<AnalyzeEntry>();
 			componentMap.put(component, l);
 		}
-		l.add(new AnalyzeEntry(stack, module, request, duration));
+		l.add(new AnalyzeEntry(stack, module, request, duration));		
 	}
 	
 	
 	public void analyze(AnalyzingConnection conn, Resource subj, URI pred, Value obj, long duration) {
+
+		// log the statement
+		ReplayLogger.statement(subj, pred, obj);
+		
+		if (!memoryAnalysisEnabled)
+			return;
+		
 		List<CallElement> stack = processStack();
 			
 		if (!connections.containsKey(conn))
@@ -161,11 +221,15 @@ public class Analyzer {
 			l = new ArrayList<AnalyzeEntry>();
 			componentMap.put(component, l);
 		}
-		l.add(new AnalyzeEntry(stack, module, stmt, duration));
+		l.add(new AnalyzeEntry(stack, module, stmt, duration));		
 	}
 	
 	
 	public void analyze(AnalyzingConnection conn, String desc, long duration) {
+		
+		if (!memoryAnalysisEnabled)
+			return;
+		
 		List<CallElement> stack = processStack();
 		
 		if (!connections.containsKey(conn))
@@ -183,18 +247,29 @@ public class Analyzer {
 		l.add(new AnalyzeEntry(stack, module, stmt, duration));
 	}
 	
+	public void analyzePrepareQuery(AnalyzingConnection conn, String desc, String query, long duration) {
+		if (analyzePrepareQuery)
+			analyze(conn, desc+query, duration);
+	}
+	
 	public void callbackGetLabel(boolean useCache) {
+		if (!memoryAnalysisEnabled)
+			return;
 		callsToLabel++;
 		if (useCache)
 			callsToLabelCache++;
 	}
 	
 	public void callbackNewDatamanager(Repository r) {
+		if (!memoryAnalysisEnabled)
+			return;
 		datamanagerCount++;
 		repositories.add(r);		
 	}
 	
 	public void callbackNewConn(AnalyzingConnection conn) {
+		if (!memoryAnalysisEnabled)
+			return;
 		List<CallElement> stack = processStack();
 		connections.put( conn, new ConnEntry(conn, stack));
 	}
@@ -214,7 +289,8 @@ public class Analyzer {
 			long componentDuration = 0;
 			writer.append("Requests for component ").append(e.getKey()).append(": #").append(Integer.toString(e.getValue().size())).append("\r\n");
 			for (AnalyzeEntry a : e.getValue()) {
-				writer.append("\t").append(a.getModule()).append(" *** ").append(a.request).append(" *** Duration: " + a.getDuration() + "ms").append("\r\n");
+				if (!summaryOnly)
+					writer.append("\t").append(a.getModule()).append(" *** ").append(a.request).append(" *** Duration: " + a.getDuration() + "ms").append("\r\n");
 				totalDuration += a.getDuration();
 				componentDuration += a.getDuration();
 			}
@@ -364,6 +440,10 @@ public class Analyzer {
 		return value==null ? "null" : value.stringValue();
 	}
 	
+	private String removePrefixDeclarations(String query) {
+		
+		return query.replaceAll("PREFIX.*\\r\\n", "");
+	}
 	
 	protected static class CallElement {
 		protected LinkedList<String> methods = new LinkedList<String>();

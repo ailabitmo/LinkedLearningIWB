@@ -31,6 +31,7 @@ import org.openrdf.model.Value;
 import com.fluidops.ajax.XMLBuilder.Element;
 import com.fluidops.ajax.components.FComponent;
 import com.fluidops.iwb.api.EndpointImpl;
+import com.fluidops.iwb.api.valueresolver.ValueResolver;
 import com.fluidops.iwb.provider.ProviderUtils;
 
 /**
@@ -135,6 +136,24 @@ public class ParserFunctionUtil {
 		if (value instanceof URI)
 			return uriToString((URI)value);
 		return value.stringValue();
+	}
+	
+	/**
+	 * Returns a string representation of the given value,
+	 * which is determined by {@link ValueResolver#handle(Value)}.
+	 * If the valueResolver is null, this method falls back to
+	 * {@link #valueToString(Value)}.
+	 *
+	 * @param value a non-null {@link Value}
+	 * @param valueResolver
+	 * @return
+	 */
+	public static String valueToString(Value value, ValueResolver valueResolver) throws IllegalArgumentException {
+		if (value==null)
+			throw new IllegalArgumentException("Value mut not be null");
+		if (valueResolver==null)
+			return valueToString(value);
+		return valueResolver.handle(value);
 	}
 
 }

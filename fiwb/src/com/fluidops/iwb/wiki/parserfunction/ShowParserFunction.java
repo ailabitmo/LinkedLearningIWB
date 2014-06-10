@@ -33,6 +33,7 @@ import org.openrdf.model.Value;
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.NamespaceService;
 import com.fluidops.iwb.api.ReadDataManager;
+import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.operator.OperatorUtil;
 import com.fluidops.iwb.api.valueresolver.ValueResolver;
 import com.fluidops.iwb.api.valueresolver.ValueResolverRegistry;
@@ -111,8 +112,6 @@ public class ShowParserFunction extends AbstractTemplateFunction implements Page
 
 	}
 
-	// will be used later
-	@SuppressWarnings("unused")
 	private PageContext pc;
 
 	@Override
@@ -154,13 +153,13 @@ public class ShowParserFunction extends AbstractTemplateFunction implements Page
 	}
 	
 	private String renderShowOutgoing(URI resource, URI property, Map<String, String> options) {
-		ReadDataManager dm = EndpointImpl.api().getDataManager();		
+		ReadDataManager dm = ReadDataManagerImpl.getDataManager(pc.repository);		
 		List<Value> values = dm.getProps(resource, property);
 		return renderShow(values, options);
 	}
 	
 	private String renderShowIncoming(URI resource, URI property, Map<String, String> options) {
-		ReadDataManager dm = EndpointImpl.api().getDataManager();		
+		ReadDataManager dm = ReadDataManagerImpl.getDataManager(pc.repository);		
 		List<Value> values = Lists.newArrayList();
 		values.addAll(dm.getInverseProps(resource, property));
 		return renderShow(values, options);
@@ -185,8 +184,6 @@ public class ShowParserFunction extends AbstractTemplateFunction implements Page
 	 */
 	private String renderShow(List<Value> values, Map<String, String> options) {
 		
-		// TODO think about using pc.repository
-
 		SetView<String> unknownOptions = Sets.difference(options.keySet(), Property.getLiterals());
 
 		if (!unknownOptions.isEmpty()) {

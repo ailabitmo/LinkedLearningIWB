@@ -78,7 +78,7 @@ public class QueryAnalyzeUtil {
 		
 		try {
 			
-			ParsedOperation parsedOperation = ReadDataManagerImpl.parseQuery(queryString, true);
+			ParsedOperation parsedOperation = QueryBuilder.parseQuery(queryString, true);
 			
 			if(parsedOperation instanceof ParsedTupleQuery) {
 				((ParsedTupleQuery) parsedOperation).getTupleExpr().visit(queryVisitor);

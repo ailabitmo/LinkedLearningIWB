@@ -22,6 +22,7 @@ import static com.google.common.collect.Iterables.transform;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,45 +39,50 @@ import com.google.common.base.Joiner;
 
 
 /**
- * Operator representing a structure. The structure maintains
- * a list of OperatorNode instances (i.e. the children) associated
- * to their name. During evaluation the publicly accessible fields
- * of the provided targetType are populated with the evaluation
- * result of the child-operator node matching the field's name.
+ * Operator representing a structure. <p>
  * 
- * Example serialization (normalized):
+ * The structure maintains a list of OperatorNode instances (i.e. the children)
+ * associated to their name. During evaluation the publicly accessible fields of
+ * the provided targetType are populated with the evaluation result of the
+ * child-operator node matching the field's name.<p>
  * 
- * <code>
+ * Example serialization (normalized):<p>
+ * 
+ * <pre>
  * {{
  * myString = 'Hello World' |
  * myInt = 1 |
  * }}
- * </code>
+ * </pre>
  * 
- * Optionally, it is possible to specify a user class (i.e. a class
- * that is used for conversion as target class). This can be specified
- * with the "class" attribute. Not that this class must be compatible
- * with the actual targetType.
+ * Optionally, it is possible to specify a user class (i.e. a class that is used
+ * for conversion as target class). This can be specified with the "class"
+ * attribute. Not that this class must be compatible with the actual targetType.<p>
  * 
- * Example
+ * Example:
+ * <pre>
  * {{
  * class = 'com.fluidops.iwb.MyStruct'
  * a = 'a'
  * }}
+ * </pre>
  * 
- * When using this serialization with the targetType Object, the actual
- * runtime type of the object will be "MyStruct", i.e. the specified 
- * user class.
+ * When using this serialization with the targetType Object, the actual runtime
+ * type of the object will be "MyStruct", i.e. the specified user class.
  * 
  * @author as
- *
+ * 
  */
-class OperatorStructNode implements OperatorNode {
+public class OperatorStructNode implements OperatorNode {
 	
 	private static final long serialVersionUID = -7140085014950394044L;
 	
 	private final Map<String,OperatorNode> children = new LinkedHashMap<String, OperatorNode>();
 
+	OperatorStructNode() {
+		
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T evaluate(Class<T> targetType)  throws OperatorException
@@ -163,7 +169,14 @@ class OperatorStructNode implements OperatorNode {
 		return children.keySet();
 	}
 	
-	@Override
+	/**
+     * Returns all children of this structure node.
+     */
+    public Collection<OperatorNode> values() {
+        return children.values();
+    }
+
+    @Override
 	public void setValueContext(Value valueContext)	{
 		for (OperatorNode child : children.values())
 			child.setValueContext(valueContext);		

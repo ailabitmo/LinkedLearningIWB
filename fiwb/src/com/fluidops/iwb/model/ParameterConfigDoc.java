@@ -35,7 +35,8 @@ import com.fluidops.iwb.ui.configuration.VoidSelectValuesFactory;
  * 
  * @Example
  * <code>
- *        @ParameterConfigDoc(desc = "Parameters to be used", 
+ *        @ParameterConfigDoc(displayName = "My Parameter",
+ *        		desc = "Parameters to be used", 
  *        		required=false, 
  *        		defaultValue="", 
  *        		type=Type.LIST, 
@@ -50,6 +51,11 @@ import com.fluidops.iwb.ui.configuration.VoidSelectValuesFactory;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ParameterConfigDoc 
 {
+	/**
+	 * The display name of the parameter. If unset or empty, the name of the 
+	 * field this annotation is associated with will be used instead. 
+	 */
+	String displayName() default "";
 	/**
 	 * the description of the parameter
 	 */
@@ -83,6 +89,34 @@ public @interface ParameterConfigDoc
 	 */
 	Class<? extends SelectValuesFactory> selectValuesFactory() default VoidSelectValuesFactory.class;
 	
+	/**
+	 * Returns the default content for textual input components (e.g.
+	 * {@link Type#SIMPLE}, {@link Type#SPARQLEDITOR}, {@link Type#FILEEDITOR}).
+	 * This content is used as the default content if no preset value is
+	 * defined. By default this value is empty and therefore ignored.<p>
+	 * 
+	 * This setting has precedence over {@link #defaultContentStringTemplate()}.
+	 * 
+	 * @return default content
+	 */
+	String defaultContent() default "";
+	
+	/**
+	 * Returns the string template location that is used to resolve the default
+	 * content for textual input components (e.g. {@link Type#SIMPLE},
+	 * {@link Type#SPARQLEDITOR}, {@link Type#FILEEDITOR}). This content is used
+	 * as the default content if no preset value is defined. By default this value 
+	 * is empty and therefore ignored.<p>
+	 * 
+	 * Example: "path/to/MyStringTemplate" (without .st extension)<p>
+	 * 
+	 * Note that {@link #defaultContent()} takes precedence if it has a non-empty value.
+	 * 
+	 * @return the string template location
+	 */
+	String defaultContentStringTemplate() default "";
+	
+
 	/**
 	 * required validation for the input field. No validation is the default
 	 */
@@ -132,7 +166,12 @@ public @interface ParameterConfigDoc
 		/**
 		 * SPARQL Editor based on FLINT
 		 */
-		SPARQLEDITOR;
+		SPARQLEDITOR,
+		
+		/**
+		 * Simple editor for editing a file content
+		 */
+		FILEEDITOR;
 	}
 
 }

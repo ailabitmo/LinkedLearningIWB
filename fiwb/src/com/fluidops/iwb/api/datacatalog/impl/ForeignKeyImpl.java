@@ -118,4 +118,10 @@ public class ForeignKeyImpl implements ForeignKey
 				
 		return columnReferences;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return (columnReferences!=null)?columnReferences.toString():"no column references for ForeignKey!";
+	}
 }

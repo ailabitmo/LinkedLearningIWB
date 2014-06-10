@@ -40,8 +40,6 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
-import com.fluidops.iwb.api.EndpointImpl;
-import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.provider.ProviderUtils;
 
@@ -53,7 +51,7 @@ import com.fluidops.iwb.provider.ProviderUtils;
  * 
  * @author msc
  */
-public class TripleEditorSourceURIOnDemand implements TripleEditorSource, TripleEditorSourceURI 
+public class TripleEditorSourceURIOnDemand extends TripleEditorSourceBase implements TripleEditorSource, TripleEditorSourceURI 
 {
     private static final Logger logger = Logger.getLogger(TripleEditorSourceURIOnDemand.class.getName());
 	
@@ -77,10 +75,10 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 	 * statements for the TEPIs.
 	 */
 	private Map<TripleEditorPropertyInfo, CacheBasedTripleEditorStatementExtractor> tepi2extractor = null;
+	
 
-	
-	private ReadDataManager dm = EndpointImpl.api().getDataManager();
-	
+	private TripleEditorSourceInformation tesInfo;
+		
 	/**
 	 * Default constructor, invoked by reflection call.
 	 */
@@ -90,11 +88,13 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 	}
 
 	@Override
-	public void initialize(URI value, int previewSize, boolean includeInverseProperties) throws QueryEvaluationException 
-	{
-		this.value = value;
-		this.previewSize = previewSize;
+	public void initialize(URI uri, int initialValuesDisplayed,
+			boolean includeInverseProperties, TripleEditorSourceInformation inf)
+			throws QueryEvaluationException {
+		this.value = uri;
+		this.previewSize = initialValuesDisplayed;
 		this.includeInverseProperties = includeInverseProperties;
+		this.tesInfo = inf;
 		
 		// initialize the internal map with constructors for the properties
 		tepi2extractor = new HashMap<TripleEditorPropertyInfo, CacheBasedTripleEditorStatementExtractor>();
@@ -166,7 +166,7 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 		RepositoryResult<Statement> typeStmts = null;
 		try
 		{
-			typeStmts = dm.getStatements(value, RDF.TYPE, null, false);
+			typeStmts = dm().getStatements(value, RDF.TYPE, null, false);
 			while (typeStmts.hasNext())
 				typesOfInstance.add(typeStmts.next().getObject());
 		} 
@@ -216,7 +216,7 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 		{
 			Map<URI,Set<Value>> predToRange = new HashMap<URI,Set<Value>>();
 
-			qResIncoming = dm.sparqlSelect(queryIncoming, true);
+			qResIncoming = dm().sparqlSelect(queryIncoming, true);
 			while (qResIncoming.hasNext()) 
 			{
 				BindingSet bs = qResIncoming.next();
@@ -274,7 +274,7 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 		{
 			Map<URI,Set<Value>> predToDomain = new HashMap<URI,Set<Value>>();
 			
-			qResOutgoing = dm.sparqlSelect(queryOutgoing, true);
+			qResOutgoing = dm().sparqlSelect(queryOutgoing, true);
 			while (qResOutgoing.hasNext()) 
 			{
 				BindingSet bs = qResOutgoing.next();
@@ -434,7 +434,7 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 				TupleQueryResult qRes = null;
 				try 
 				{
-					qRes = dm.sparqlSelect(query, true);
+					qRes = dm().sparqlSelect(query, true);
 					while (qRes.hasNext()) 
 					{
 						BindingSet tuple = qRes.next();
@@ -500,10 +500,18 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 				// extract 5x more triples then requested to accelerate iterative user requests
 				// (next time, the triples will be taken from the cache)
 				int nrRequestedStatements = offset+5*limit;
-				String query =  "SELECT DISTINCT ?o ?c WHERE { " +
-												    "   %NODE% %PRED% ?o . " +
-													"	OPTIONAL { GRAPH ?c { %NODE% %PRED% ?o } } " +
-													"} ORDER BY ?o ?c OFFSET " + cache.size();
+				String query;
+				if (tesInfo.isOrderedListProperty(tepi.getUri()))
+					query =  "SELECT ?o ?c WHERE { " +
+						    "   %NODE% %PRED% ?n . ?n rdf:value ?o . " +
+							"   ?n System:index ?i . " +
+							"	OPTIONAL { GRAPH ?c { %NODE% %PRED% ?o } } " +
+							"} ORDER BY ?i OFFSET " + cache.size();
+				else
+					query =  "SELECT DISTINCT ?o ?c WHERE { " +
+						    "   %NODE% %PRED% ?o . " +
+							"	OPTIONAL { GRAPH ?c { %NODE% %PRED% ?o } } " +
+							"} ORDER BY ?o ?c OFFSET " + cache.size();
 				if (limit>=0)
 					query += " LIMIT "+ nrRequestedStatements;
 				
@@ -513,7 +521,7 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 				TupleQueryResult qRes = null;
 				try 
 				{
-					qRes = dm.sparqlSelect(query, true);
+					qRes = dm().sparqlSelect(query, true);
 					while (qRes.hasNext()) 
 					{
 						BindingSet tuple = qRes.next();
@@ -543,4 +551,5 @@ public class TripleEditorSourceURIOnDemand implements TripleEditorSource, Triple
 			return getValidSublistFromCache(offset,limit);
 		}
 	}
+
 }

@@ -18,40 +18,17 @@
 
 package com.fluidops.iwb.widget;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
-import com.fluidops.ajax.FClientUpdate;
-import com.fluidops.ajax.components.FButton;
-import com.fluidops.ajax.components.FComponent;
-import com.fluidops.ajax.components.FContainer;
-import com.fluidops.ajax.components.FImageButton;
-import com.fluidops.ajax.components.FLabel;
-import com.fluidops.ajax.components.FLinkButton;
-import com.fluidops.ajax.components.FPopupWindow;
 import com.fluidops.iwb.annotation.CallableFromWidget;
-import com.fluidops.iwb.api.EndpointImpl;
+import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.TypeConfigDoc;
 import com.fluidops.iwb.service.CodeExecution;
 import com.fluidops.iwb.service.CodeExecution.CodeExecutionContext;
-import com.fluidops.iwb.service.CodeExecution.Config;
-import com.fluidops.iwb.service.CodeExecution.UserInputConfig;
-import com.fluidops.iwb.service.CodeExecution.WidgetCodeConfig;
-import com.fluidops.iwb.ui.configuration.CodeExecutionConfigurationForm;
-import com.fluidops.iwb.ui.configuration.ConfigurationFormBase;
-import com.fluidops.iwb.ui.configuration.ConfigurationFormUtil;
-import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
-import com.fluidops.util.Rand;
-import com.fluidops.util.StringUtil;
-import com.fluidops.util.concurrent.TaskExecutor;
+import com.fluidops.iwb.util.workflow.CodeExecutionHelper;
+import com.fluidops.iwb.widget.BaseExecutionWidget.ExecutionWidgetConfig;
 
 /**
  * Code execution widget for java and groovy code.
@@ -170,184 +147,42 @@ import com.fluidops.util.concurrent.TaskExecutor;
  * @author (msc), (aeb), as, christian.huetter
  * @see CodeExecutionWidgetTest
  */
-@TypeConfigDoc("Widget to invoke pre-defined Java and Groovy methods with paramaters specified in wiki notation or provided by the user.")
-public class CodeExecutionWidget extends AbstractWidget<CodeExecution.WidgetCodeConfig>
+@TypeConfigDoc("Widget to invoke pre-defined Java and Groovy methods with parameters specified in wiki notation or provided by the user.")
+public class CodeExecutionWidget extends BaseExecutionWidget<CodeExecutionWidget.WidgetCodeConfig>
 {
 	
 	protected static final Logger logger = Logger.getLogger(CodeExecutionWidget.class.getName());
 	
-
+	/**
+	 * Configuration for coded execution to be used from widgets
+	 * 
+	 * @author as
+	 */
+	public static class WidgetCodeConfig extends ExecutionWidgetConfig
+	{
+    	@ParameterConfigDoc(
+    			desc = "Class to be used, full qualified type, either java or groovy.",
+    			required=true)
+		public String clazz;
+		
+    	@ParameterConfigDoc(
+    			desc = "Method to be executed.",
+    			required=true)
+		public String method;
+    	
+    	/* (non-Javadoc)
+    	 * @see com.fluidops.iwb.widget.BaseExecutionWidget.ExecutionWidgetConfig#clone()
+    	 */
+    	@Override
+    	public WidgetCodeConfig clone() {
+    		return (WidgetCodeConfig)super.clone();
+    	}
+	}
+	
 	@Override
-	protected FComponent getComponent(String id)
+	public CodeExecutionHelper getCodeExecutionHelper()
 	{
-		final WidgetCodeConfig config = get();
-		
-		final FContainer cont = new FContainer(id);
-		cont.appendClazz("CodeExecution");
-		
-		final CodeExecution.Config codeConfig;
-		try {	
-			CodeExecutionContext ceCtx = new CodeExecutionContext(this.pc, cont);
-			codeConfig = CodeExecution.widgetConfigToCodeConfig(config, ceCtx);
-		} catch (Exception e) {
-			logger.debug("Error while converting widget configuration: " + e.getMessage(), e);
-			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.INVALID_WIDGET_CONFIGURATION, e.getMessage());
-		}
-		
-		validate(config);
-		
-		final FLabel msg = new FLabel("codelbl");
-		msg.setHidden(true);
-		
-        FComponent comp;
-        if (config.render.equals("btn"))
-        {
-        	comp = new FButton( id, config.label )
-    		{
-    			@Override
-    			public void onClick()
-    			{
-    				handleOnClick(config, codeConfig, msg, this);
-    			}
-    		};
-        } 
-        else if (config.render.startsWith("img"))
-        {
-        	if (!config.render.contains(":")) 
-    			throw new IllegalArgumentException("Invalid specification of image location: " + config.render);
-    		
-    		String imgUrl = config.render.substring(config.render.indexOf(":")+1);    	    		
-        	String imgTooltip = config.label;
-        	
-        	comp = new FImageButton("ce"+Rand.getIncrementalFluidUUID(), imgUrl, imgTooltip) {
-        		@Override
-				public void onClick() {
-    				handleOnClick(config, codeConfig, msg, this);
-				}
-        	};  
-        }
-        else if (config.render.equals("link")) 
-        {
-        	comp = new FLinkButton( id, config.label )
-    		{
-    			@Override
-    			public void onClick()
-    			{
-    				handleOnClick(config, codeConfig, msg, this);
-    			}
-    		};
-        }
-        else if (config.render.equals("inline")) 
-        {
-    		if (config.userInput != null && !config.userInput.isEmpty())
-    		{
-    			comp = constructConfigurationForm(config, codeConfig, msg, null);
-    		}
-    		else
-    			return WidgetEmbeddingError.getErrorLabel(id,
-    					ErrorType.INVALID_WIDGET_CONFIGURATION, "Inline render mode requires user input to be configured.");
-        }
-        else
-			return WidgetEmbeddingError.getErrorLabel(id,
-					ErrorType.INVALID_WIDGET_CONFIGURATION, "Config.render "
-							+ config.render + " not supported");
-
-		// set confirmation question
-        // for user input, the configuration form will show the confirmation question
-		if (!StringUtil.isNullOrEmpty(config.confirm)
-				&& (config.userInput == null || config.userInput.isEmpty())
-				&& comp instanceof FButton)
-		{
-			((FButton) comp).setConfirmationQuestion(config.confirm);
-		}
-		
-        cont.add(comp);
-        cont.add(msg);
-        
-        return cont;
-	}
-
-	/**
-	 *  Validate user input configuration
-	 */
-	private void validate(final WidgetCodeConfig config) throws IllegalArgumentException
-	{
-		if (config.userInput != null)
-		{
-			for (UserInputConfig userInput : config.userInput)
-			{
-				if (StringUtil.isNullOrEmpty(userInput.name))
-					throw new IllegalArgumentException("Name of userInput must be neither null nor empty.");
-				
-				if (userInput.componentType == null)
-					throw new IllegalArgumentException("componentType of userInput '" + userInput.name + "' must not be null.");
-				
-				// check if there is at least one argument placeholder for the current userInput
-				boolean found = false;
-				for (Object arg : config.args)
-				{
-					String argName = extractPlaceholderName(arg);
-					if (argName != null && argName.equalsIgnoreCase(userInput.name))
-					{
-						found = true;
-						break;
-					}
-				}
-				
-				if (!found)
-					throw new IllegalArgumentException("No argument placeholder defined for userInput '" + userInput.name + "'.");
-			}
-		}
-	}
-
-	/**
-	 * Extract the name of the given argument placeholder.
-	 * @return placeholder name or null if argument is not a placeholder
-	 */
-	public static String extractPlaceholderName(Object arg)
-	{
-		if (arg == null)
-			return null;
-		
-		// is the argument a placeholder?
-		String argString = arg.toString();
-		if (argString != null && argString.startsWith("%"))
-		{
-			return argString.substring(1);
-		}
-		
-		return null;
-	}
-
-	/**
-	 * Decide whether to construct a configuration form or to execute the method directly.
-	 */
-	private final void handleOnClick(WidgetCodeConfig widgetConfig, Config codeConfig,
-			FLabel msg, FButton fButton)
-	{
-		if (widgetConfig.userInput != null && !widgetConfig.userInput.isEmpty())
-		{
-			// create configuration form
-			ConfigurationFormBase configForm = constructConfigurationForm(widgetConfig, codeConfig, msg, fButton);
-			
-			// show configuration form in a popup
-			FPopupWindow popup = fButton.getPage().getPopupWindowInstance();
-			ConfigurationFormUtil.showConfigurationFormInPopup(popup, widgetConfig.label, configForm);
-		}
-		else
-		{
-			execute(widgetConfig, codeConfig, msg, fButton);
-		}
-	}
-
-	/**
-	 * Create a configuration form to input data from the user.
-	 */
-	protected ConfigurationFormBase constructConfigurationForm(WidgetCodeConfig widgetConfig,
-			Config codeConfig, FLabel msg, FButton fButton)
-	{
-		return new CodeExecutionConfigurationForm("cf"+Rand.getIncrementalFluidUUID(),
-				widgetConfig, codeConfig, msg, fButton, this);
+		return new CodeExecutionHelper();
 	}
 
 	@Override
@@ -362,123 +197,17 @@ public class CodeExecutionWidget extends AbstractWidget<CodeExecution.WidgetCode
 		return "Call Java or Groovy";
 	}
 	
+	@Override
 	/**
-	 * script execution happens here
-	 * @param codeConfig
-	 * @return
-	 * @throws Exception
-	 */
-	protected Object executeScript(CodeExecution.Config codeConfig) throws Exception
-	{
-		return new CodeExecution().run(codeConfig);
-	}
-	
-	
-	/**
-	 * Execute the {@link CodeExecution.Config} using the {@link CodeExecution} service. Handles
-	 * config.onFinish option as documented (e.g. page reload etc)
 	 * 
 	 * @param config
-	 * @param codeConfig
-	 * @param msg
+	 * @param ceCtx
+	 * @return creates a code config out of a widget config
 	 */
-	public void execute(final WidgetCodeConfig config, final CodeExecution.Config codeConfig, final FLabel msg, final FComponent comp) {
-		try {
-
-			msg.setClazz("statusLoading");
-			msg.setText("");
-			msg.hide(false);
-			msg.populateView();
-			comp.setEnabled(false);
-			
-			final Future<Object> f = TaskExecutor.instance().submit(new Callable<Object>() {
-				@Override
-				public Object call() throws Exception {
-					return executeScript(codeConfig);
-				}
-			});		
-			
-			Object res = null;
-			try {
-				res = f.get(500, TimeUnit.MILLISECONDS);
-			} catch (TimeoutException e) {
-				// enable polling
-				msg.startPolling(2000L, null, new Runnable() {					
-					@Override
-					public void run() {						
-						if (f.isDone()) {
-							msg.stopPolling();
-							try {
-								executionDone(config, msg, f.get(), comp);
-							} catch (ExecutionException e) {
-								executionError(codeConfig, msg, e.getCause(), comp);  
-							} catch (Exception e) {
-								executionError(codeConfig, msg, e, comp);								
-							}
-						}
-					}
-				});
-			}			
-			
-			if (f.isDone()) {
-				executionDone(config, msg, res, comp);
-			} else {
-				logger.debug("Continuing code execution of " +codeConfig.method + " asynchronously");
-			}
-			
-		} 
-		catch (ExecutionException e) {
-			executionError(codeConfig, msg, e.getCause(), comp);  
-		} catch (Exception e) {
-			executionError(codeConfig, msg, e, comp);								
-		}
-	}
-
-	
-	void executionDone(WidgetCodeConfig config, FLabel msg, Object res, FComponent comp) {
-		msg.removeClazz("statusLoading");
-		comp.setEnabled(true);
-		
-		String msgTxt = (res == null) ? "Finished" : StringEscapeUtils.escapeHtml(res.toString());
-		if (StringUtil.isNullOrEmpty(config.onFinish))
-		{
-            msg.setText(msgTxt);
-            msg.hide(false);
-            msg.populateView();
-		}
-		else if (config.onFinish.equals("popup")) // show result in popup
-        {
-			final FPopupWindow p = msg.getPage().getPopupWindowInstance(msgTxt);
-			p.setTitle("Code Execution");
-			p.addCloseButton("Close");
-			p.populateAndShow();
-			msg.hide(false);
-        }
-		else if (config.onFinish.equals("reload")) // reload page
-        {
-        	// TODO: reload swallows all errors which is not nice
-            msg.addClientUpdate(FClientUpdate.reload());
-        }
-		else if (config.onFinish.equals("none"))
-		{
-			msg.hide(false);
-		}
-        else                    	 
-        {
-        	// forward to URI
-            URI u = EndpointImpl.api().getNamespaceService().guessURI(config.onFinish);
-            String redirect = EndpointImpl.api().getRequestMapper().getRequestStringFromValue(u);
-            msg.addClientUpdate(new FClientUpdate("document.location='" + redirect + "';"));
-        }
-	}
-
-	void executionError(CodeExecution.Config codeConfig, FLabel msg, Throwable e, FComponent comp) {
-		logger.warn("Error executing method " + codeConfig.method, e);
-		msg.removeClazz("statusLoading");
-		comp.setEnabled(true);
-		msg.setText("Error: " + (e.getMessage()!=null ? StringEscapeUtils.escapeHtml(e.getMessage()) : "unknown") );
-        msg.hide(false);
-        msg.populateView(); 
+	public CodeExecution.Config buildExecutionConfig(CodeExecutionContext ceCtx)
+	{
+		final CodeExecutionWidget.WidgetCodeConfig config = get();
+		return CodeExecution.widgetConfigToCodeConfig(config, ceCtx);
 	}
 	
 	@CallableFromWidget
@@ -527,7 +256,8 @@ public class CodeExecutionWidget extends AbstractWidget<CodeExecution.WidgetCode
 	 * }}
 	 * </code> 
      */
-    @CallableFromWidget
+    @SuppressWarnings("deprecation")
+	@CallableFromWidget
     public static void testMe2(CodeExecutionContext ceCtx, String value)
     {
 		ceCtx.parentComponent.doCallback("alert('Clicked on "
@@ -540,4 +270,11 @@ public class CodeExecutionWidget extends AbstractWidget<CodeExecution.WidgetCode
     {
     	System.out.println("Clicked on " + StringEscapeUtils.escapeHtml(value) );
     }
+
+	/* (non-Javadoc)
+	 * @see com.fluidops.iwb.widget.BaseExecutionWidget#buildExecutionConfig(com.fluidops.iwb.service.CodeExecution.CodeExecutionContext)
+	 */
+
+
+
 }

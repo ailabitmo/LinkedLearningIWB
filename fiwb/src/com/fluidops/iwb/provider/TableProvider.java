@@ -307,9 +307,25 @@ public abstract class TableProvider extends AbstractXMLFlexProvider
 		}
 		
 		/**
-		 * load table from JSBC query
+		 * load table from JDBC query
+		 * except for ClassNotFoundExceptions when the DB driver is loaded, all other exceptions
+		 * are logged but swallowed otherwise
 		 */
 		public static Table jdbc2table( String driverClass, String url, String username, String password, String query ) throws Exception
+		{
+			return jdbc2tableInternal(driverClass, url, username, password, query, true);
+		}
+		
+		/**
+		 * load table from JDBC query
+		 * all exceptions are thrown
+		 */
+		public static Table jdbc2tableEx( String driverClass, String url, String username, String password, String query ) throws Exception
+		{
+			return jdbc2tableInternal(driverClass, url, username, password, query, false);
+		}
+		
+		protected static Table jdbc2tableInternal( String driverClass, String url, String username, String password, String query, boolean swallowEx ) throws Exception
 	    {
 	        Table table = new Table();
 	        
@@ -327,7 +343,7 @@ public abstract class TableProvider extends AbstractXMLFlexProvider
 	            res = stmt.executeQuery( query );
 	            ResultSetMetaData md = res.getMetaData();
 	            for ( int i=1; i<=md.getColumnCount(); i++ )
-	                table.collabels.add( md.getColumnName(i) );
+	                table.collabels.add( md.getColumnLabel(i) );
 	            while ( res.next() )
 	            {
 	                List<String> row = new ArrayList<String>();
@@ -338,7 +354,10 @@ public abstract class TableProvider extends AbstractXMLFlexProvider
 	        }
 	        catch (Exception e)
 	        {
-	        	logger.warn(e.getMessage());
+	        	if ( swallowEx )
+	        		logger.warn(e.getMessage());
+	        	else
+	        		throw e;
 	        }
 	        finally
 	        {
@@ -781,7 +800,9 @@ public abstract class TableProvider extends AbstractXMLFlexProvider
 
 		/**
 		 * a new column "predicate" is inserted into the table.
-		 * it is filled with the first match of regexp applied on the value of "col"
+		 * it is filled with the first match of regexp applied on the value of "col".
+		 * if the regexp does not match, {@code null} is appended to avoid
+		 * unbalanced tables.
 		 * @param col			the col to apply the regexp on
 		 * @param regexp		the regexp
 		 * @param predicate		the new col name
@@ -801,6 +822,8 @@ public abstract class TableProvider extends AbstractXMLFlexProvider
     				Matcher m = p.matcher( row.get(i) );
     				if ( m.find() )
     					row.add( m.group() );
+    				else
+    					row.add( null );	// avoid unbalanced tables
             	}
 			}
 		}

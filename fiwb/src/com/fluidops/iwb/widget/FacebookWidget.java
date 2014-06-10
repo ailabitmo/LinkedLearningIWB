@@ -20,23 +20,18 @@ package com.fluidops.iwb.widget;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 
 import com.fluidops.ajax.components.FComponent;
-import com.fluidops.iwb.Global;
-import com.fluidops.iwb.api.ReadDataManager;
-import com.fluidops.iwb.api.ReadDataManagerImpl;
-import com.fluidops.iwb.model.Vocabulary;
 import com.fluidops.iwb.model.ParameterConfigDoc;
+import com.fluidops.iwb.model.ParameterConfigDoc.Type;
+import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.util.GenUtil;
+import com.fluidops.util.StringUtil;
 
 /**
  * Shows the facebook like-box for a valid facebook fan page id
@@ -65,6 +60,25 @@ public class FacebookWidget extends AbstractWidget<FacebookWidget.Config>
 				required = true)
 		public String facebookAccount;
 
+
+		@ParameterConfigDoc(
+				desc = "The type of the account: a company or a member profile",
+				required = false,
+				defaultValue = "Member",
+				type = Type.DROPDOWN)
+		public ProfileType profileType = ProfileType.Member;
+
+	}
+
+	/**
+	 * Specify the type of the facebook profile widget. It can be a fan page of a member profile. 
+	 * The way the data is retrieved depends on the type.
+	 *
+	 */
+	public static enum ProfileType
+	{
+		Member,
+		Page
 	}
 
 	@Override
@@ -72,74 +86,21 @@ public class FacebookWidget extends AbstractWidget<FacebookWidget.Config>
 	{
 
 		Config conf = get();
-
-		if(conf == null || conf.facebookAccount == null )
-		{	
-			if(pc.value instanceof Resource)
-
-			{
-				ReadDataManager dm = ReadDataManagerImpl.getDataManager(pc.repository);
-
-				List<Statement> res = dm.getStatementsAsList((Resource) pc.value, Vocabulary.FOAF.ONLINE_ACCOUNT, null, false);
-				if(res != null)
-				{	
-					String profileURL = null;
-					for(Statement st : res)
-					{
-						if(st.getObject().stringValue().contains("facebook"))
-						{
-							profileURL = st.getObject().stringValue();break;
-						}
-					}
-					if(profileURL!=null)
-					{
-						return selectFacebookWidget(profileURL, id);
-					}
-				}
-
-			}	
-			//if there is no facebookID try to find it in facebook 
-			//(which is only the case if the widget is defined for a type in widgets.xml and the resource doesn't have an account)
-
-			try {
-
-				URL	url = new URL("https://graph.facebook.com/search?q="+pc.title+"&type=page");
-
-				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-				conn.setRequestMethod("GET");
-
-				if( conn.getResponseCode()==HttpURLConnection.HTTP_OK) 
-				{
-					String  content = GenUtil.readUrl(conn.getInputStream());
-					JSONObject ob = (JSONObject) getJson(content);
-					JSONArray data = ob.getJSONArray("data");
-					JSONObject first = (JSONObject)data.get(0);
-					String fbid = first.getString("id");
-					if(fbid!=null)
-					{
-						conf.facebookAccount = fbid;
-
-						return selectFacebookWidget(conf.facebookAccount, id);
-					} else
-						throw new RuntimeException("no facebook profile is found or the connection to facebook failed");
-				} 
-
-			}
-			catch (Exception e) {
-				logger.warn(e.getMessage());
-				throw new RuntimeException("no facebook profile is found or the connection to facebook failed");
-			}
-		}
-		return selectFacebookWidget(conf.facebookAccount, id);
+		
+		if(conf == null || StringUtil.isNullOrEmpty(conf.facebookAccount))
+            return WidgetEmbeddingError.getErrorLabel(id,
+                    ErrorType.MISSING_INPUT_VARIABLE);
+		
+		return selectFacebookWidget(conf.facebookAccount, id, conf.profileType);
 
 	}
 
-	private FComponent selectFacebookWidget(String profileURL, String id) {
+	private FComponent selectFacebookWidget(String profileURL, String id, ProfileType profileType) {
 
 		try {	
              //check if the account is of type fanpage (like 'http://www.facebook.com/SAPSoftware' or 'http://www.facebook.com/pages/FluidOps/102807473121759')
 			
-			if(profileURL.contains("page")||isCompany())
+			if(profileType == ProfileType.Page )
 			{
 				Long checkNumber = null;
 
@@ -245,20 +206,6 @@ public class FacebookWidget extends AbstractWidget<FacebookWidget.Config>
 
 	}
 
-	private boolean isCompany() {
-
-		ReadDataManager dm = ReadDataManagerImpl.getDataManager(Global.repository);
-
-		Set<Resource> types = dm.getType((Resource) pc.value);
-
-		for(Resource r : types)
-		{
-			if(r.equals(Vocabulary.FOAF.COMPANY) || r.equals(Vocabulary.DBPEDIA_ONT.COMPANY))
-				return true;
-		}
-		return false;
-	}
-
 	private FComponent badge(String message, String pic, String profileURL, String id) 
 	{
 		final String title = message;
@@ -292,7 +239,7 @@ public class FacebookWidget extends AbstractWidget<FacebookWidget.Config>
 			public String render()
 			{  
 
-				return "<center><iframe src='http://www.facebook.com/plugins/likebox.php?href=http%3A%2F%2Fwww.facebook.com%2Fpages%2F"+pc.title+"%2F"+fbID+"&amp;" +
+				return "<center><iframe src='//www.facebook.com/plugins/likebox.php?href=http%3A%2F%2Fwww.facebook.com%2Fpages%2F"+pc.title+"%2F"+fbID+"&amp;" +
 				"width=300&amp;colorscheme=light&amp;show_faces=true&amp;stream=true&amp;header=false&amp;height=600' " +
 				"scrolling='no' frameborder='0' style='border:none; overflow:visible; " +
 				"max-width:100%; height:600px;' allowTransparency='true'></iframe></center>";

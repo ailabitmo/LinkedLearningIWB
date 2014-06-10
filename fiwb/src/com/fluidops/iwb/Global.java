@@ -19,9 +19,13 @@
 package com.fluidops.iwb;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.repository.sail.config.RepositoryResolver;
 
 import com.fluidops.iwb.extensions.PrinterExtensions;
+import com.fluidops.iwb.repository.PlatformRepositoryManager;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -68,7 +72,43 @@ public class Global
 	 * Extension class for additional and optional stuff, e.g. toolbar buttons and google tracking
 	 */
 	public static PrinterExtensions printerExtension;
-	
+
+
+	/**
+	 * Resolves the default and history repository which are configured through the config.prop 
+	 * and are not directly controlled by the {@link PlatformRepositoryManager}
+	 */
+	public static class PlatformRepositoryResolver implements RepositoryResolver{
+		private static final String defaultRepositoryName = "default";
+		private static final String historyRepositoryName = "history";
+
+		public String getDefaultRepositoryName() {
+			return defaultRepositoryName;
+		}
+		public String getHistoryRepositoryName() {
+			return historyRepositoryName;
+		}
+
+		@Override
+		public Repository getRepository(String repositoryID)
+				throws RepositoryException, RepositoryConfigException {
+
+			if(repositoryID.equals(defaultRepositoryName))
+				return Global.repository ;
+			else if(repositoryID.equals(historyRepositoryName))
+				return Global.historyRepository ;
+			else
+				return null;
+		}
+	}
+
+	private static PlatformRepositoryResolver repositoryResolver= new PlatformRepositoryResolver();
+
+	public static PlatformRepositoryResolver getRepositoryResolver() {
+		return repositoryResolver;
+	}
+
+
 	public static String repositoryName(Repository rep) {
 		if (repository.equals(rep))
 			return "Global.repository";

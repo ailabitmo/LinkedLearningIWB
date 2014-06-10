@@ -18,6 +18,8 @@
 
 package com.fluidops.iwb.widget;
 
+import static com.fluidops.iwb.util.RDFUtil.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.repository.Repository;
 
 import com.fluidops.ajax.FClientUpdate;
 import com.fluidops.ajax.FClientUpdate.Prio;
@@ -60,6 +63,8 @@ import com.fluidops.ajax.components.FLabel;
 import com.fluidops.ajax.components.FTextInput2;
 import com.fluidops.ajax.components.groupeddataview.EditFieldComponent;
 import com.fluidops.ajax.components.groupeddataview.GroupedDataModel;
+import com.fluidops.ajax.components.groupeddataview.GroupedDataModel.ChangeEntry;
+import com.fluidops.ajax.components.groupeddataview.GroupedDataModel.ChangeType;
 import com.fluidops.iwb.ajax.FFlexibleValueInput;
 import com.fluidops.iwb.ajax.FRdfLiteralTextArea;
 import com.fluidops.iwb.ajax.FValueDropdown;
@@ -82,6 +87,7 @@ import com.fluidops.iwb.api.editor.TripleEditorConstants;
 import com.fluidops.iwb.api.editor.TripleEditorPropertyInfo;
 import com.fluidops.iwb.api.editor.TripleEditorSource;
 import com.fluidops.iwb.api.editor.TripleEditorSourceFactory;
+import com.fluidops.iwb.api.editor.TripleEditorSourceInformation;
 import com.fluidops.iwb.api.editor.TripleEditorStatement;
 import com.fluidops.iwb.autocompletion.AutoCompleteFactory;
 import com.fluidops.iwb.autocompletion.AutoCompletionUtil;
@@ -91,6 +97,7 @@ import com.fluidops.iwb.cache.PropertyCache.PropertyInfo;
 import com.fluidops.iwb.keywordsearch.KeywordIndexAPI;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
+import com.fluidops.iwb.model.Vocabulary.SYSTEM;
 import com.fluidops.iwb.user.UserManager.ValueAccessLevel;
 import com.fluidops.iwb.util.UIUtil;
 import com.fluidops.iwb.util.validator.ConvertibleToUriValidator;
@@ -232,6 +239,15 @@ public class TripleEditorWidget extends
 //                type = Type.CONFIG)
         // for now we hide the tripleEditorSource from the UI, but leave the feature in place for customization via widget config
         public TripleEditorSourceConfig tripleEditorSource;
+        
+        // Specifies whether the edited data will be saved by some external object or by the widget itself  
+        // Disabled by default, if enabled, no save buttons will be displayed
+        public boolean externalSaveOnly = false;
+        
+        // Specifies whether the standard rounded-corner borders should be displayed for sections.
+        // Borders are hidden if this property is set to true.
+        // False by default.
+        public boolean hideBorders = false;
     }
     
     
@@ -312,6 +328,14 @@ public class TripleEditorWidget extends
                 desc = "Changes the input method from the default flexible text field (RDF_VALUE).",
                 type = Type.DROPDOWN)
         public InputMethod componentType;
+
+        //@ParameterConfigDoc(
+        //        desc = "Defines whether multiple inputs are saved with intermediary nodes with properties index and value.",
+        //        defaultValue = "false")
+		// NOTE: non-documented feature. Will not fully work when co-edited as
+		// regular RDF. Not supported with non-transactional editing and certain
+		// TripleEditorSource implementations.
+        public Boolean orderedList = false;
     }
 
     /**
@@ -539,7 +563,7 @@ public class TripleEditorWidget extends
     }
 
     abstract class SubTreeDataModel extends GroupedDataModel<StatementContainer>
-    {
+    {	
         protected HashMap<StatementContainer, Integer> hashCache;
 
         public SubTreeDataModel(GroupedDataModel<StatementContainer> parent,
@@ -619,8 +643,17 @@ public class TripleEditorWidget extends
             if (key.getAssociatedStatement().getObject() instanceof BNode)
             	return false;
             
-            // check for editability of context
-            return dm.isEditableStatement(key.getAssociatedStatement());
+			// check for editability of context
+			if (!isOrderedList(key.getAssociatedStatement().getPredicate()))
+				return dm.isEditableStatement(key.getAssociatedStatement());
+			else {
+				// check editability of helper node
+				URI listNode = getOrderedListNode(key
+						.getAssociatedStatement());
+				// note: this check is heuristically (technically, we would need
+				// to check three Triples).
+				return dm.isEditable(listNode);
+			}
         }
 
         @Override
@@ -798,12 +831,32 @@ public class TripleEditorWidget extends
                                 ((PredicateSubTreeDataModel) (c.node
                                         .getNewOrphanNode(c.change))).getKey()
                                         .getAssociatedStatement();
-                        add.add(stmt);
+                        
+						if (!isOrderedList(stmt.getPredicate()))
+                        	add.add(stmt);
+                        else
+                        {
+                        	// special handling for ordered lists
+							int max = orderedListMaxIndex.get(stmt
+									.getPredicate());
+	                        
+							Resource listNode = uri("listItem-"
+									+ Rand.getFluidUUID());
+							add.add(vf.createStatement(stmt.getSubject(),
+									stmt.getPredicate(), listNode));
+							add.add(vf.createStatement(listNode,
+									RDF.VALUE, stmt.getObject()));
+							add.add(vf
+									.createStatement(listNode,
+											SYSTEM.ORDERED_LIST_INDEX,
+											literal(max + 1)));
+							orderedListMaxIndex.put(stmt.getPredicate(),
+									max + 1);
+                        }
                         updateCardinalityChecker(stmt, predToCardinality, c.changeType);
                     }
                     else
                     { // empty, cancel/delete add
-                        
                         changes.remove(c);
                     }
 
@@ -813,8 +866,24 @@ public class TripleEditorWidget extends
                     Statement stmt =
                     ((StatementContainer) c.node.getKey())
                             .getAssociatedStatement();
-                    
-                    del.add(stmt);
+        			
+					if (!isOrderedList(stmt.getPredicate()))
+						del.add(stmt);
+        			else
+        			{
+        				// special handling for ordered lists
+						URI listNode = getOrderedListNode(stmt);
+
+						// this works under the assumption that
+						// properties configured as ordered lists
+						// actually contain ordered list vals, only.
+						del.add(readDataManager().searchOne(listNode,
+								SYSTEM.ORDERED_LIST_INDEX, null));
+						del.add(readDataManager().searchOne(listNode,
+								RDF.VALUE, null));
+						del.add(vf.createStatement(stmt.getSubject(),
+								stmt.getPredicate(), listNode));
+        			}                    
                     updateCardinalityChecker(stmt, predToCardinality, c.changeType);
                     break;
 
@@ -833,7 +902,20 @@ public class TripleEditorWidget extends
                             oldSt.getPredicate(), newVal);
 
                     if (!newSt.equals(oldSt)) {
-                        chg.add(new Pair<Statement, Statement>(oldSt, newSt));
+            			if ( ! isOrderedList(newSt.getPredicate()))
+                        	chg.add(new Pair<Statement, Statement>(oldSt, newSt));
+            			else
+            			{
+            				// special handling for ordered lists
+							URI _listNode = getOrderedListNode(oldSt);
+
+							Statement old1 = stmt(_listNode,
+									RDF.VALUE, oldSt.getObject());
+							Statement new1 = stmt(_listNode,
+									RDF.VALUE, newSt.getObject());
+	                    	
+	                    	chg.add( new Pair<Statement, Statement>(old1, new1) );
+            			}                    	
                     } else {
                         // Redundant change: cancel it 
                         changes.remove(c);
@@ -848,8 +930,8 @@ public class TripleEditorWidget extends
             	cardinalityChecker.validateConstraints();
             }
 
-            // try to commit changes to repository, cancel (by Exception) on
-            // failure
+            // try to commit changes to repository,
+            // cancel (by Exception) on failure
             Context ctx;
             try
             {
@@ -898,18 +980,22 @@ public class TripleEditorWidget extends
             }
         }
         
-        private void updateCardinalityChecker(Statement st, Map<URI, CardinalityChecker> predToCardinality, ChangeType changeType) {
+		private void updateCardinalityChecker(Statement st,
+				Map<URI, CardinalityChecker> predToCardinality,
+				ChangeType changeType) {
         	
         	// check if we need to track for this property at all (based on cardinality configuration)
         	PropertyConfig ps = predSettings.get(st.getPredicate());
         	if (ps==null || (ps.maxCardinality==null && ps.minCardinality==null))
-        		return;	
+        		return;
         	
         	CardinalityChecker cardinalityChecker = predToCardinality.get(st.getPredicate());
         	if (cardinalityChecker==null) { 
         		// TODO maybe use triple source later on to have advantage of cache
-        		int oldCardinality = dm.getStatementsAsList(st.getSubject(), st.getPredicate(), null, false).size();
-        		cardinalityChecker = new CardinalityChecker(st.getPredicate(), ps.maxCardinality, ps.minCardinality, oldCardinality);
+				int oldCardinality = dm.getStatementsAsList(st.getSubject(),
+						st.getPredicate(), null, false).size();
+				cardinalityChecker = new CardinalityChecker(st.getPredicate(),
+						ps.maxCardinality, ps.minCardinality, oldCardinality);
         		predToCardinality.put(st.getPredicate(), cardinalityChecker);
         	}
         	
@@ -919,8 +1005,49 @@ public class TripleEditorWidget extends
         	default:		;
         	}        		
         }
+
+		/**
+		 * Checks whether a predicate is configured to be handled as an ordered
+		 * list.
+		 * 
+		 * @param pred
+		 *            Predicate to check.
+		 * @return Ordered list property.
+		 */
+		protected boolean isOrderedList(URI pred) {
+			return orderedListMaxIndex.containsKey(pred);
+		}
         
-        
+		/**
+		 * Returns the list node (helper node) from a pseudo statement in an
+		 * ordered list.
+		 * 
+		 * @param pseudoStatement
+		 *            Statement containing original subject and rdf:value,
+		 *            skipping the helper node,
+		 * @return Helper node (resource that multiplexes the order index and
+		 *         rdf:value)
+		 */
+		protected URI getOrderedListNode(Statement pseudoStatement) {
+			// structure of ordered lists:
+			// ?? ?orderedListPred ?helperNode .
+			// ?helperNode System:index ?i .
+			// ?helperNode rdf:value ?actualVal .
+			//
+			// (pseudoStatement: ?? ?orderedListPred ?actualVal)
+			
+			List<Value> helperNodes = readDataManager().getProps(
+					pseudoStatement.getSubject(),
+					pseudoStatement.getPredicate());
+			for (Value helperNode : helperNodes) {
+				if (helperNode instanceof Resource)
+					if (readDataManager().searchOne((Resource) helperNode,
+							RDF.VALUE, pseudoStatement.getObject()) != null)
+						return (URI) helperNode;
+			}
+
+			return null;
+		}
 
     } // class TreeDataModel
 
@@ -1425,8 +1552,10 @@ public class TripleEditorWidget extends
 		@Override
         public FComponent getFancyViewComponent()
         {  
-			String incLinkNote = key.isInversePredicate() ? 
-    				" <span style='font-weight:normal;color:#808080;'>(incoming link)</span>" : "";
+			String predNote = key.isInversePredicate() ? 
+    				" <span style='font-weight:normal;color:#808080;'>(incoming link)</span>" : " ";
+			if (key.getValue() instanceof URI && isOrderedList((URI)key.getValue()))
+    				predNote += " <span style='font-weight:normal;color:#808080;'>(ordered list)</span>";
 			
 			// in case the value of the 'rdfs:comment' property should be displayed in the tooltip of the predicate:
 			String comment = null;
@@ -1434,7 +1563,7 @@ public class TripleEditorWidget extends
 				comment = EndpointImpl.api().getDataManager().getPropertyInfo((URI) key.getValue()).getComment();
 				
 			return new FHTML(Rand.getIncrementalFluidUUID(), 
-				UIUtil.getAHrefWithTooltip(key.getValue(), comment) + incLinkNote);
+				UIUtil.getAHrefWithTooltip(key.getValue(), comment) + predNote);
         }
 		
 		@Override
@@ -1692,6 +1821,12 @@ public class TripleEditorWidget extends
     
     private HashMap<URI, PropertyConfig> predSettings;
     
+	/**
+	 * For properties configured to act as ordered lists, lists the highest used
+	 * indices.
+	 */
+    private HashMap<URI, Integer> orderedListMaxIndex;
+    
     /**
      * Map keeping track for the sort order of custom properties (if available). Is used
      * for sorting properties in the order of specification in the config
@@ -1711,13 +1846,39 @@ public class TripleEditorWidget extends
 
         if (c == null)
             c = new Config();
+        
+        // initialize (or write error to log)        
+        res = null;
+        Value val;
+        if (c.uri==null)
+        {
+            if (pc.value instanceof Resource)
+            {
+                res = (Resource) pc.value;
+                val = pc.value;
+            }
+            else if (pc.value instanceof Literal)
+            {
+                val = pc.value;
+            }
+            else
+                throw new IllegalArgumentException(
+                        "unexpected page context: require resource");
+        }
+        else
+        {
+            res = c.uri;
+            val = res;
+        }
        
         // Shouldn't allow adding new properties if limitProperties is true
         c.addNewProperties = c.addNewProperties && !c.limitProperties;
         
         // read property configuration
         predSettings = new HashMap<URI, TripleEditorWidget.PropertyConfig>();
-        int sortIndex=0;
+        orderedListMaxIndex = new HashMap<URI, Integer>();
+        
+        int sortIndex = 0;
         for (TripleEditorWidget.PropertyConfig propConf : c.propertyConfiguration)
         {
             if (predSettings.containsKey(propConf.property))
@@ -1744,6 +1905,20 @@ public class TripleEditorWidget extends
             if(propConf.enforceConstraints == null)
                 propConf.enforceConstraints = false;
            
+			if (propConf.orderedList != null && propConf.orderedList == true) {
+				int max = -1;
+				for (Value object : readDataManager().getProps(res, pred)) {
+					if (!(object instanceof Resource))
+						continue;
+					Literal index = (Literal) readDataManager().getProp(
+							(Resource) object, uri("System:index"));
+					if (index != null)
+						max = Math.max(index.intValue(), max);
+				}
+
+				orderedListMaxIndex.put(pred, max);
+			}
+			
             predSettings.put(pred, propConf);
             predToIndex.put(pred, sortIndex);
             sortIndex++;
@@ -1751,30 +1926,6 @@ public class TripleEditorWidget extends
 
         // initializing instance cache for per-predicate settings
         inputFieldSettings = new HashMap<URI, InputFieldSettingsForPredicate>();
-        
-        // initialize (or write error to log)        
-        res = null;
-        Value val;
-        if (c.uri==null)
-        {
-            if (pc.value instanceof Resource)
-            {
-                res = (Resource) pc.value;
-                val = pc.value;
-            }
-            else if (pc.value instanceof Literal)
-            {
-                val = pc.value;
-            }
-            else
-                throw new IllegalArgumentException(
-                        "unexpected page context: require resource");
-        }
-        else
-        {
-            res = c.uri;
-            val = res;
-        }
 
         // fix inconsistent config (defaults), only URIs have an edit view for now
         if (!(val instanceof URI))
@@ -1788,18 +1939,36 @@ public class TripleEditorWidget extends
                         .hasValueAccess(val, ValueAccessLevel.WRITE_LIMITED))
             c.editMode = EditMode.READ_ONLY;
 
+        TripleEditorSourceInformation tInfo = new TripleEditorSourceInformation() {
+			
+        	@Override
+			public boolean isOrderedListProperty(URI pred) {
+				return orderedListMaxIndex.containsKey(pred);
+			}
+
+			@Override
+			public boolean hasOrderedListProperty() {
+				return orderedListMaxIndex.size() > 0;
+			}
+			
+			@Override
+			public Repository getRepository() {
+				return pc.repository;
+			}
+		};
         // initialize the triple source depending on the type
         if (val instanceof URI)
     		tripleSource = TripleEditorSourceFactory.tripleEditorSourceForURI((URI)val,
     				c.tripleEditorSource==null?null:c.tripleEditorSource.tripleEditorSourceForURI,
-    				c.numberOfInitialValues+1, c.showInverseProperties);
+    				c.numberOfInitialValues+1, c.showInverseProperties, tInfo);
+        
     	else if (val instanceof Literal)
     		tripleSource = TripleEditorSourceFactory.tripleEditorSourceForLiteral((Literal)val,
-    				c.tripleEditorSource==null?null:c.tripleEditorSource.tripleEditorSourceForLiteral);
+    				c.tripleEditorSource==null?null:c.tripleEditorSource.tripleEditorSourceForLiteral, tInfo);
     	else if (val instanceof BNode)
     		tripleSource = TripleEditorSourceFactory.tripleEditorSourceForBNode((BNode)val,
     				c.tripleEditorSource==null?null:c.tripleEditorSource.tripleEditorSourceForBNode,
-    				c.showInverseProperties);
+    				c.showInverseProperties, tInfo);
     	else
     		throw new IllegalStateException("Type " + val.getClass() + " not supported.");
 
@@ -2316,7 +2485,9 @@ public class TripleEditorWidget extends
 		try {
 			init();
 		} catch (QueryEvaluationException e1) {
-			return WidgetEmbeddingError.getErrorLabel("error"+Rand.getFluidUUID(), ErrorType.QUERY_EVALUATION, e1.getMessage());
+			return WidgetEmbeddingError.getErrorLabel(
+					"error" + Rand.getFluidUUID(), ErrorType.QUERY_EVALUATION,
+					e1.getMessage());
 		}
 		
 		// edit whole page at once, or on a per-predicate basis?
@@ -2334,6 +2505,8 @@ public class TripleEditorWidget extends
 		                c.saveGlobally,
 		                c.startInEditMode,
 		                c.dynamicEditing,
+		                c.externalSaveOnly,
+		                c.hideBorders,
 		                "<div>There are no triples related to this resource.</div>",
 		                EndpointImpl.api().getRequestMapper().getContextPath())
 		        {
@@ -2606,4 +2779,38 @@ public class TripleEditorWidget extends
 	        super.populateView();
 	    }		
     }
+    
+    /**
+     * Retrieves statements which should be added to the repository.
+     * Needed to support saving data from an external component.
+     * Used by the AdvancedNewInstanceWidget.
+     */
+    public List<Statement> getStatementsToAdd() {
+    	List<ChangeEntry> combinedChanges = dataView.getCombinedChanges();
+    	
+    	List<Statement> stmtsToAdd = Lists.newArrayList();
+    	
+    	for(ChangeEntry c : combinedChanges) {
+    		if(c.changeType.equals(ChangeType.ADD)) {
+    		
+	    		if (!((ValueInput) c.change).isEmpty())
+	            { 
+	    			// okay
+	                if (((ValueInput) c.change).getRdfValue() == null)
+	                    throw new IllegalStateException(
+	                            "Invalid input. Please correct the input of fields highlighted in red.");
+	
+	                // adding
+	                Statement stmt =
+	                        ((PredicateSubTreeDataModel) (c.node
+	                                .getNewOrphanNode(c.change))).getKey()
+	                                .getAssociatedStatement();
+	                stmtsToAdd.add(stmt);
+	            }
+    		}
+    	}
+    	
+    	return stmtsToAdd;
+    }
+    
 }

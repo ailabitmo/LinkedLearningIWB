@@ -21,14 +21,17 @@ package com.fluidops.iwb.widget;
 import java.util.List;
 
 import org.openrdf.model.URI;
+import org.openrdf.repository.Repository;
 
 import com.fluidops.ajax.components.FComponent;
 import com.fluidops.iwb.api.EndpointImpl;
+import com.fluidops.iwb.repository.PlatformRepositoryManager;
 import com.fluidops.iwb.ui.editor.LazyEditTabComponentHolder;
 import com.fluidops.iwb.ui.editor.SemWiki;
 import com.fluidops.iwb.ui.editor.SemWiki.WikiTab;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.widget.config.WidgetVoidConfig;
+import com.fluidops.util.StringUtil;
 import com.google.common.collect.Lists;
 
 /**
@@ -58,8 +61,16 @@ public class SemWikiWidget extends AbstractWidget<WidgetVoidConfig>
 		String tab = pc.getRequestParameter("action");
 		String version = pc.getRequestParameter("version");
 		String redirectedFrom = pc.getRequestParameter("redirectedFrom");
-
-		SemWiki sw = new SemWiki(id, (URI)pc.value, pc.repository, version);
+		
+		//if the repositoryID for the URI is explicitly given by a get parameter, the pc.repository will be overwritten
+		String repositoryID = pc.getRequestParameter("repository");
+		if(StringUtil.isNotNullNorEmpty(repositoryID)){
+			Repository repository = PlatformRepositoryManager.getInstance().getRepository(repositoryID);
+			if(repository!=null)
+				pc.repository=repository;
+		}
+		
+		SemWiki sw = new SemWiki(id, (URI)pc.value, pc.repository, version, pc);
 		if (tab!=null) {
 			if (tab.equals("edit"))
 				sw.setActiveTab(WikiTab.EDIT);

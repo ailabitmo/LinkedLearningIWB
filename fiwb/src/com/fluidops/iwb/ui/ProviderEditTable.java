@@ -82,7 +82,7 @@ public class ProviderEditTable extends FContainer {
 		
 		// Table for provider overview
 		table = new FTable("table");
-		table.setNumberOfRows(10);
+		table.setNumberOfRows(15);
 		table.setOverFlowContainer(true);
 		table.setEnableFilter(true);
 		updateTable();

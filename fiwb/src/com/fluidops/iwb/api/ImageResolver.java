@@ -31,11 +31,23 @@ import com.fluidops.iwb.Global;
 import com.fluidops.iwb.cache.ImageFileCache;
 import com.fluidops.iwb.cms.util.IWBCmsUtil;
 import com.fluidops.iwb.model.Vocabulary;
+import com.fluidops.iwb.util.IWBFileUtil;
 import com.fluidops.security.XssSafeHttpRequest;
 import com.fluidops.util.StringUtil;
+import com.google.common.collect.ImmutableList;
 
 public class ImageResolver
 {
+	
+	/**
+     * Get default image resolver (images.prop)
+     * 
+	 * @return image resolver
+	 */
+	public static ImageResolver getDefaultImageResolver() {
+		return new ImageResolver(IWBFileUtil.getFileInConfigFolder("images.prop").getPath(), false);
+	}
+	
     protected static final Logger logger = Logger.getLogger(ImageResolver.class.getName());
     
     /**
@@ -142,6 +154,13 @@ public class ImageResolver
         }
         
         return null; // resolving failed
+    }
+    
+    /**
+     * Return the image properties as defined by this ImageResolver instance
+     */
+    public List<URI> getImageProperties() {
+    	return ImmutableList.copyOf(imageProperties);
     }
     
     /**

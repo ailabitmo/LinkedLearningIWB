@@ -19,6 +19,7 @@
 package com.fluidops.iwb.api;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -163,6 +164,16 @@ public interface RequestMapper
      */
     public String getAHrefEncoded( Value value, String encodedLabel, String encodedTooltip );
     
+	/**
+	 * @see #getAHrefEncoded(Value, String, String)
+	 * @param value
+	 * @param encodedLabel
+	 * @param encodedTooltip
+	 * @param getParams additional get parameters which should be appended to the html link
+	 * @return
+	 */
+	String getAHrefEncoded(Value value, String encodedLabel,
+			String encodedTooltip, Map<String, String> getParams);
     
     
 	/**

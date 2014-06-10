@@ -717,12 +717,6 @@ public class ChartWidget extends AbstractWidget<ChartWidget.Config>
     {
         if (str != null)
         {
-            if (str.equals("GOOGLE"))
-                return ChartEngine.GOOGLE;
-            if (str.equals("JCHARTS"))
-                return ChartEngine.JCHARTS;
-            if (str.equals("JFREECHART"))
-                return ChartEngine.JFREECHART;
             if (str.equals("AMCHART"))
                 return ChartEngine.AMCHART;
         }

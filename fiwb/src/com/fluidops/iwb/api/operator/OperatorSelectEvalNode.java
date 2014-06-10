@@ -18,7 +18,6 @@
 
 package com.fluidops.iwb.api.operator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.model.Literal;
@@ -33,6 +32,7 @@ import org.openrdf.query.TupleQueryResult;
 import com.fluidops.iwb.Global;
 import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
+import com.google.common.collect.Lists;
 
 
 /**
@@ -71,7 +71,7 @@ import com.fluidops.iwb.api.ReadDataManagerImpl;
  * 
  * @author as
  */
-class OperatorSelectEvalNode implements OperatorNode, OperatorListType {
+public class OperatorSelectEvalNode implements OperatorNode, OperatorListType {
 
 	private static final long serialVersionUID = 6959074918360123363L;
 	
@@ -79,7 +79,7 @@ class OperatorSelectEvalNode implements OperatorNode, OperatorListType {
 	private Resource valueContext = null;
 	private Class<?> listGenericType = Object.class;
 	
-	public OperatorSelectEvalNode(String serialized)	{
+	OperatorSelectEvalNode(String serialized)	{
 		this.serialized = serialized;
 	}
 
@@ -105,7 +105,12 @@ class OperatorSelectEvalNode implements OperatorNode, OperatorListType {
 			
 			if (!res.hasNext() )
 				return null;
-			return convertToTarget(res.next(), targetType);				
+			
+			BindingSet b = res.next();
+			if (res.hasNext())
+				throw new OperatorException("Result cannot be cast to " + targetType.getSimpleName() + ", more than 1 value computed for expression." );
+			
+			return convertToTarget(b, targetType);				
 				
 		} catch (QueryEvaluationException e) {
 			throw new OperatorException("Error during query evalution: " + e.getMessage());
@@ -116,14 +121,23 @@ class OperatorSelectEvalNode implements OperatorNode, OperatorListType {
 		}	
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> T convertToTarget(BindingSet b, Class<T> targetType) throws OperatorException {
+		
+		try {
+			return convertToTargetInternal(b, targetType);
+		} catch (IllegalArgumentException e) {
+			throw new OperatorException("Error during conversion: " + e.getMessage(), e);
+		}		
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T> T convertToTargetInternal(BindingSet b, Class<T> targetType) throws IllegalArgumentException, OperatorException {
+		// TODO maybe improve by using OperatorUtil#isPrimitive
 		if (targetType.equals(Value.class) || targetType.equals(URI.class) || 
-				targetType.equals(Literal.class) || targetType.equals(Object.class))
-			return (T)valueOfFirstBinding(b);
-				
-		if (targetType.equals(String.class))
+				targetType.equals(Literal.class) || targetType.equals(Object.class)
+				|| targetType.equals(String.class)) {
 			return (T)OperatorUtil.toTargetType(valueOfFirstBinding(b), targetType);
+		}
 		
 		return asObject(b, targetType);
 	}
@@ -149,11 +163,15 @@ class OperatorSelectEvalNode implements OperatorNode, OperatorListType {
 	
 	@SuppressWarnings("unchecked")
 	private <L> List<L> asList(TupleQueryResult res, Class<L> listGenericType) throws QueryEvaluationException, OperatorException {
-		List<Object> l = new ArrayList<Object>(); 
-		while (res.hasNext()) {
-			l.add( convertToTarget(res.next(), listGenericType));
+		try {
+			List<Object> l = Lists.newArrayList();		
+			while (res.hasNext()) {
+				l.add( convertToTargetInternal(res.next(), listGenericType));
+			}
+			return (List<L>)l;
+		} catch (IllegalArgumentException e) {
+			throw new OperatorException("Error during conversion to list of " + listGenericType.getSimpleName() + ": " + e.getMessage());
 		}
-		return (List<L>)l;
 	}
 	
 	@Override

@@ -18,9 +18,12 @@
 
 package com.fluidops.iwb.wiki;
 
+import info.bliki.wiki.model.IWikiModel;
 import info.bliki.wiki.model.SemanticAttribute;
 import info.bliki.wiki.model.SemanticRelation;
+import info.bliki.wiki.template.AbstractTemplateFunction;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -40,10 +43,10 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.repository.Repository;
 
 import com.fluidops.ajax.FClientUpdate;
 import com.fluidops.ajax.components.FComponent;
-import com.fluidops.iwb.Global;
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.NamespaceService;
 import com.fluidops.iwb.api.ReadDataManager;
@@ -56,10 +59,11 @@ import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.widget.AbstractWidget;
 import com.fluidops.iwb.wiki.FluidWikiModel.TemplateResolver;
 import com.fluidops.iwb.wiki.parserfunction.IWBMagicWords;
-import com.fluidops.iwb.wiki.parserfunction.UrlGetParamParserFunction;
+import com.fluidops.iwb.wiki.parserfunction.PageContextAwareParserFunction;
 import com.fluidops.iwb.wiki.parserfunction.ParserFunctionsFactory;
 import com.fluidops.iwb.wiki.parserfunction.ShowParserFunction;
 import com.fluidops.iwb.wiki.parserfunction.SparqlParserFunction;
+import com.fluidops.iwb.wiki.parserfunction.UrlGetParamParserFunction;
 import com.fluidops.iwb.wiki.parserfunction.WidgetParserFunction;
 import com.fluidops.util.StringUtil;
 import com.google.common.collect.Lists;
@@ -98,13 +102,12 @@ public class Wikimedia
      * 
      * @return the HTML
      */
-    public static String getHTML( String wikitext, final URI id, FComponent parent, Date version)
+    public static String getHTML( String wikitext, final URI id, FComponent parent, Date version, PageContext pc)
     {
         if (wikitext==null || wikitext.length()==0)
             return "(No text defined for this topic)";
 
         final FluidWikiModel wikiModel = new FluidWikiModel(id, parent);
-        PageContext pc = pageContextFor(id, parent);
         ParserFunctionsFactory.registerPageContextAwareParserFunctions(wikiModel, pc);
         final WidgetParserFunction widgetParser = new WidgetParserFunction(parent);
         ParserFunctionsFactory.registerParserFunction(wikiModel, pc, widgetParser);
@@ -116,7 +119,14 @@ public class Wikimedia
         wikiModel.addTemplateResolver( new FluidTemplateResolver(wikiModel, version) );
         wikiModel.addTemplateResolver( new LegacyWidgetTemplateResolver(widgetParser) );   
         
-        String html = wikiModel.render( wikitext );
+        String html;
+        PageContext _oldPc = PageContext.getThreadPageContext();
+        try {
+        	PageContext.setThreadPageContext(pc);
+        	html = wikiModel.render( wikitext );
+        } finally {
+        	PageContext.setThreadPageContext(_oldPc);
+        }
         
         // handle "#REDIRECT [[myUri]]" directive:
         // a) redirect link must be given
@@ -138,19 +148,11 @@ public class Wikimedia
 		}
         
         // try to resolve template variables like $this.Host/cpuUsage
-        html = replaceTemplateVariables(html,id);
+        html = replaceTemplateVariables(html,id, pc.repository);
         
         return html;
     }
-    
-    private static PageContext pageContextFor(URI page, FComponent parent) {
-		PageContext childPageContext = new PageContext();
-		childPageContext.repository = Global.repository;
-		childPageContext.setRequest( parent.getPage().request );
-        childPageContext.value = page;
-        childPageContext.contextPath = EndpointImpl.api().getRequestMapper().getContextPath();
-        return childPageContext;
-    }
+
    
 	/**
 	 * Parses the given wikitext for occurrences of #widget definitions
@@ -189,7 +191,7 @@ public class Wikimedia
 	                    	return null;	
 									
 						FluidWikiModel.addParsedWidget( (Class<? extends AbstractWidget<?>>) Class.forName( widgetClassName ) );
-						
+						return "";
 					} catch (Exception e) {
 						logger.warn("Error while parsing widgets: " + e.getMessage());
 						logger.debug("Details: ", e);
@@ -224,30 +226,146 @@ public class Wikimedia
 		
 		FluidWikiModel wikiModel = new FluidWikiModel(id);
 		
-		wikiModel.addTemplateResolver(new TemplateResolver() {
-
-			@Override
-			public String resolveTemplate(String namespace,
-					String templateName,
-					Map<String, String> templateParameters, URI page,
-					FComponent parent) {
-				
-				if(templateName.startsWith("#"))
-					return null;
-				if(IWBMagicWords.isMagicWord(templateName))
-					return null;
-				URI templateURI = FluidWikiModel.resolveTemplateURI(templateName, namespace);
-				if(templateURI!=null)
-					res.add(templateURI);
-				return null;
-			}
-			
-		});
+		ParserFunctionsFactory.registerParserFunction(wikiModel, null, new IfIncludedTemplateFinder(res, id, "#ifexpr"));
+		ParserFunctionsFactory.registerParserFunction(wikiModel, null, new IfIncludedTemplateFinder(res, id, "#if"));
+		 
+		wikiModel.addTemplateResolver(new DefaultIncludedTemplateResolver(res)); 
+		wikiModel.addTemplateResolver(new SparqlIncludedTemplateResolver(res));
+		
 		wikiModel.setUp();
 	    wikiModel.parseTemplates(wikiText);
 	    
 	    return res;
 	}
+	
+	/**
+	 * Detects the templates defined as parts of the '#ifexpr' function
+	 *
+	 */
+	private static class IfIncludedTemplateFinder extends AbstractTemplateFunction implements PageContextAwareParserFunction {
+		
+		private List<URI> res;
+		private URI id;
+		private String functionName;
+		
+		/**
+		 * IfExprTemplateFinder has a list of templates URIs where all detected templates will be added
+		 *  and the current resource
+		 * @param res list of templates URIs
+		 * @param id the current resource
+		 */
+		public IfIncludedTemplateFinder(List<URI> res, URI id, String functionName) {
+			super();
+			this.res = res;
+			this.id = id;
+			this.functionName = functionName;
+		}
+
+		@Override
+		public void setPageContext(PageContext pc) {
+			//is not used here
+		}
+
+		@Override
+		public String getFunctionName() {
+			return functionName;
+		}
+
+		/**
+		 * Detects the templates defined as parts of the '#ifexpr' function.
+		 * use {@link Wikimedia#parseIncludedTemplates(String, URI)} to add 
+		 * the detected templates to the list of all templates
+		 */
+		@Override
+		public String parseFunction(List<String> parts, IWikiModel model,
+				char[] src, int beginIndex, int endIndex, boolean isSubst)
+				throws IOException {
+
+			if (parts.size()==0)
+				return null;
+			
+			//concatenate all parts into a string and parse it to find the templates
+			StringBuilder sb = new StringBuilder();
+			for(String part : parts)
+			{
+				sb.append(part);
+			}
+			res.addAll(parseIncludedTemplates(sb.toString(), id));
+			
+			return "";
+		}
+		
+	}
+	
+    
+    /**
+     * Resolves templates defined as a parameter of the '#sparql' function
+     *
+     */
+    private static class SparqlIncludedTemplateResolver implements TemplateResolver{
+	
+		private List<URI> res;
+		
+		public SparqlIncludedTemplateResolver(List<URI> res) {
+			super();
+			this.res = res;
+		}
+
+	    /**
+	     * Resolve templates defined as a parameter 'template' of the '#sparql' function
+	     *
+	     */
+		@Override
+		public String resolveTemplate(String namespace,
+				String templateName,
+				Map<String, String> templateParameters, URI page,
+				FComponent parent) {
+			
+			if(templateName.startsWith("#sparql"))
+			{
+				templateName = templateParameters.get("template");
+				if(templateName != null)
+				{
+					URI templateURI = FluidWikiModel.resolveTemplateURI(templateName, namespace);
+					if(templateURI!=null)
+						res.add(templateURI);
+				}
+			}
+			return null;
+		}	
+    }
+    
+    /**
+     * Resolves standard templates found directly in the wiki text.
+     * Does not handle the cases where the templates are defined within custom functions 
+     * configurations.
+     *
+     */
+    private static class DefaultIncludedTemplateResolver implements TemplateResolver{
+    	
+		private List<URI> res;
+
+		public DefaultIncludedTemplateResolver(List<URI> res) {
+			super();
+			this.res = res;
+		}
+
+		@Override
+		public String resolveTemplate(String namespace,
+				String templateName,
+				Map<String, String> templateParameters, URI page,
+				FComponent parent) {
+			
+			if(templateName.startsWith("#"))
+				return null;
+			if(IWBMagicWords.isMagicWord(templateName))
+				return null;
+			URI templateURI = FluidWikiModel.resolveTemplateURI(templateName, namespace);
+			if(templateURI!=null)
+				res.add(templateURI);
+			return null;
+		}
+    }
     
     /**
      * Extracts the semantic relations from the wiki and
@@ -369,7 +487,7 @@ public class Wikimedia
      * @param val The variable value
      * @return Returns the finished String
      */
-    private static String replaceTemplateVariables(String content, Value val)
+    private static String replaceTemplateVariables(String content, Value val, Repository repository)
     {   
         String ret = content.replaceAll("\\$this\\$", StringEscapeUtils.escapeHtml(val.stringValue()));
         
@@ -404,7 +522,7 @@ public class Wikimedia
         TupleQueryResult res = null;
         try 
         {
-        	dm = ReadWriteDataManagerImpl.openDataManager(Global.repository);                
+        	dm = ReadWriteDataManagerImpl.openDataManager(repository);                
         	res = dm.sparqlSelect(query, true, val, false);
             
             while (res.hasNext()) {

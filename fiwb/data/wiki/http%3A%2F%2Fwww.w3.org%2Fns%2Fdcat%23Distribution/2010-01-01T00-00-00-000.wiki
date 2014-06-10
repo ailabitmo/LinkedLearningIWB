@@ -1,7 +1,0 @@
-= All Distributions in Database =
-{{#widget: TableResult |
-query = '
-SELECT ?Distribution WHERE { 
-  ?Distribution rdf:type ?? .  
-}'
-}}

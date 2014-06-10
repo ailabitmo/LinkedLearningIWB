@@ -18,6 +18,8 @@
 
 package com.fluidops.iwb.api;
 
+import info.aduna.iteration.Iterations;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.concurrent.atomic.AtomicLong;
@@ -222,7 +224,7 @@ public class Context implements Comparable<Object>
             	URI inputParameter = null;
             	
             	// collect values: best-effort, load whatever is available in the DB
-                for(Statement s : stmts.asList())
+                for(Statement s : Iterations.asList(stmts))
                 {
                 	
                     if (s.getPredicate().equals(RDFS.LABEL))
@@ -256,7 +258,7 @@ public class Context implements Comparable<Object>
                     else if (s.getPredicate().equals(Vocabulary.SYSTEM_CONTEXT.INPUTPARAMETER))
                         inputParameter = ValueFactoryImpl.getInstance().createURI(s.getObject().stringValue());                        
                 }
-                stmts.close();
+                
 
                 return new Context(type, contextURI, state, source, group, inputParameter, isEditable, timestamp, label);
             }

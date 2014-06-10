@@ -113,6 +113,22 @@ public class SPARQLResultTable
 	}
 	
 	/**
+	 * Returns the first binding of the left most cell, i.e. the first project element.
+	 * This method verifies that there is only a single row. If there is more than 
+	 * 1 row, a {@link IllegalArgumentException} is thrown.
+	 * 
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public Value firstBindingAssumeSingleRow() throws IllegalArgumentException {
+		if (size()==0)
+			return null;
+		if (rows.size()>1)
+			throw new IllegalArgumentException("More than 1 row in result table: " + column(bindingNames.get(0)));
+		return firstBinding();
+	}
+	
+	/**
 	 * @return the data of this table in a two dimensional array
 	 */
 	public List<List<Value>> data() {

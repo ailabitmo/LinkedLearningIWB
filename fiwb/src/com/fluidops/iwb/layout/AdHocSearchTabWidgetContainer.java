@@ -39,6 +39,7 @@ import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.operator.Operator;
 import com.fluidops.iwb.api.operator.OperatorFactory;
 import com.fluidops.iwb.page.PageContext;
+import com.fluidops.iwb.page.SearchPageContext;
 import com.fluidops.iwb.ui.configuration.ReconfigureWidgetConfigurationForm;
 import com.fluidops.iwb.util.UIUtil;
 import com.fluidops.iwb.widget.AbstractWidget;
@@ -78,8 +79,11 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 	
 	@Override
 	public void postRegistration( final PageContext pc )
-	{   
+	{
 		this.pc = pc;
+		
+		if(!(pc instanceof SearchPageContext))
+			throw new IllegalArgumentException("Not a search result page: page context is not an instance of SearchPageContext");
 		
 		if(tabWidgets.get(SearchResultWidget.class)!=null)
 			addTab(SearchResultWidget.class, "result", "Table View", "nav_table");
@@ -126,7 +130,7 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 		if(!toolbarOptions.isEmpty()) {
 			// Show toolbar
 			LazyWidgetContainerComponentHolder componentHolder;
-			componentHolder = new LazyWidgetContainerComponentHolder(tabWidgets.get(clazz), tabWidgets.get(this.getWidgetClassToCopy(clazz)), toolbarOptions);
+			componentHolder = new LazyWidgetContainerComponentHolder((SearchPageContext)pc, tabWidgets.get(clazz), tabWidgets.get(this.getWidgetClassToCopy(clazz)), toolbarOptions);
 			tabPane.addLazyView(
 					label, 
 					componentHolder,
@@ -155,8 +159,13 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 	private boolean canCopyQuery(Class<? extends Widget<?>> widgetClassToShow) {
 		if(widgetClassToShow.equals(PivotWidget.class) || widgetClassToShow.equals(GMapWidget.class))
 			return false;
-		if(widgetClassToShow.equals(SearchResultWidget.class))
-			return tabWidgets.containsKey(TableResultWidget.class);
+		if(widgetClassToShow.equals(SearchResultWidget.class)) {
+			String queryType = ((SearchPageContext)pc).queryType;
+			if(StringUtil.isNullOrEmpty(queryType))
+				return false;
+			
+			return queryType.equals("SELECT") || queryType.equals("CONSTRUCT");
+		}
 		return true;
 	}
 	
@@ -199,15 +208,17 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 		private FContainer cachedWidgetContainer;
 		private Widget<?> widgetToCopy = null;
 		private Set<ToolbarOption> toolbarOptions;
+		private final SearchPageContext pc;
 			
 		// private FPopupWindow popup;
 			
 		private static final String[] NO_CSS_URLS = new String[0];
 
-		public LazyWidgetContainerComponentHolder(Widget<?> widget, Widget<?> widgetToCopy, Set<ToolbarOption> toolbarOptions) {
+		public LazyWidgetContainerComponentHolder(SearchPageContext pc, Widget<?> widget, Widget<?> widgetToCopy, Set<ToolbarOption> toolbarOptions) {
 			this.widget = widget;
 			this.widgetToCopy = widgetToCopy;
 			this.toolbarOptions = toolbarOptions;
+			this.pc = pc;
 		}
 		
 		@Override
@@ -231,9 +242,22 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 		private FContainer embedWidgetInContainer(final Widget<?> widgetToShow, final Widget<?> widgetToCopy) {
 
 			String widgetComponentId = Rand.getIncrementalFluidUUID();
-				
+			
+			// embeddingContainer includes the widget component itself and the menu toolbar.
 			final FContainer embeddingContainer = new FContainer(Rand.getIncrementalFluidUUID());
-				
+			FContainer menuContainer = new FContainer(Rand.getIncrementalFluidUUID());
+			embeddingContainer.add(menuContainer);
+
+			// widgetWrapperContainer includes the actual widget component.
+			// Used to avoid making conflicting style changes on the widget component itself.
+			FContainer widgetWrapperContainer = new FContainer(Rand.getIncrementalFluidUUID());
+			embeddingContainer.add(widgetWrapperContainer);
+			
+			// embeddingSuperContainer provides an extra wrapper over
+			// the embeddingContainer and serves as the actual top-level tab container.
+			// This is required because the tab container must contain only a
+			// single child component:
+			// otherwise switching between tabs fails.
 			FContainer embeddingSuperContainer = new FContainer(Rand.getIncrementalFluidUUID());
 				
 			embeddingSuperContainer.add(embeddingContainer);
@@ -247,28 +271,26 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 				buttonEdit = createReconfigureButton(
 						(AbstractWidget<?>)widgetToShow,
 						widgetComponentId, 
-						embeddingContainer);
+						widgetWrapperContainer);
 			
 			if(toolbarOptions.contains(ToolbarOption.CAN_COPY_WIDGET))	
 				buttonSaveChart = createSaveWidgetConfigButton(
 						(AbstractWidget<?>)widgetToCopy,
 						widgetComponentId, 
-						embeddingContainer);
+						widgetWrapperContainer);
 			
 			if(toolbarOptions.contains(ToolbarOption.CAN_COPY_QUERY))
 				buttonSaveQuery = createSaveQueryButton(
 						(AbstractWidget<?>)widgetToCopy, 
 						widgetComponentId, 
-						embeddingContainer);
+						widgetWrapperContainer);
 			
 			if(toolbarOptions.contains(ToolbarOption.CAN_COPY_QUERY))
 				buttonEditQuery = createEditQueryButton(
 						(AbstractWidget<?>)widgetToCopy, 
 						widgetComponentId, 
-						embeddingContainer);
+						widgetWrapperContainer);
 				
-			FContainer menuContainer = new FContainer(Rand.getIncrementalFluidUUID());
-			
 			if(buttonSaveChart!=null)
 				menuContainer.add(buttonSaveChart, "buttonlink floatRight");
 			if(buttonSaveQuery!=null)
@@ -278,13 +300,10 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 			if(buttonEditQuery!=null)
 				menuContainer.add(buttonEditQuery, "buttonlink floatRight");
 
-			embeddingContainer.add(menuContainer);
-				
+			widgetWrapperContainer.addStyle("clear", "both");
+			widgetWrapperContainer.addStyle("padding-top", "5px");
 			FComponent widgetComponent = widgetToShow.getComponentUAE(widgetComponentId);
-			widgetComponent.addStyle("clear", "both");
-			widgetComponent.addStyle("padding-top", "5px");
-
-			embeddingContainer.add(widgetComponent);
+			widgetWrapperContainer.add(widgetComponent);
 			
 			return embeddingSuperContainer;
 		}
@@ -310,8 +329,35 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 		
 			return popup;
 		}
+		
+		private String getQuery(AbstractWidget<?> widget) {
+			
+			String query = "";
+			
+			if(widget == null) {
+				if(pc.queryType.equals("SELECT") || pc.queryType.equals("CONSTRUCT"))
+					return pc.query;
+			} else {
+				Operator operator = widget.getMapping();
+				
+				Operator queryNode = null;
+					
+				if(operator.isStructure()) {
+					queryNode = operator.getStructureItem("query");
+				} 
+				
+				if(queryNode!=null) {
+					query = queryNode.serialize();
+					query = query.substring(1, query.length()-1);
+				}
+			
+			}
+			
+			return query;
+			
+		}
 		 
-		 private static FLinkButton createReconfigureButton(
+		private static FLinkButton createReconfigureButton(
 				 final AbstractWidget<?> widget,
 				 final String widgetComponentId,
 				 final FContainer embeddingContainer) {		
@@ -326,7 +372,7 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 			};
 		 }
 		 
-		 private static FLinkButton createSaveWidgetConfigButton(
+		private static FLinkButton createSaveWidgetConfigButton(
 				 final AbstractWidget<?> widget,
 				 final String widgetComponentId,
 				 final FContainer embeddingContainer) {
@@ -355,7 +401,7 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 			};
 		 }
 		 
-		 private static FLinkButton createSaveQueryButton(
+		 private FLinkButton createSaveQueryButton(
 				 final AbstractWidget<?> widget,
 				 final String widgetComponentId,
 				 final FContainer embeddingContainer) {
@@ -366,19 +412,7 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 					@Override
 					public void onClick() {
 						
-						Operator operator = widget.getMapping();
-						
-						Operator queryNode = null;
-						String query = "";
-							
-						if(operator.isStructure()) {
-							queryNode = operator.getStructureItem("query");
-						} 
-						
-						if(queryNode!=null) {
-							query = queryNode.serialize();
-							query = query.substring(1, query.length()-1);
-						}
+						String query = getQuery(widget);
 						
 						if(StringUtil.isNotNullNorEmpty(query)) {
 							FPopupWindow popup = getCopyToClipboardPopup(this, "Query", query);
@@ -391,7 +425,7 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 				};
 		 }
 		 
-		 private static FLinkButton createEditQueryButton(
+		 private FLinkButton createEditQueryButton(
 				 final AbstractWidget<?> widget,
 				 final String widgetComponentId,
 				 final FContainer embeddingContainer) {
@@ -402,19 +436,7 @@ public class AdHocSearchTabWidgetContainer extends TabWidgetContainer
 					@Override
 					public void onClick() {
 						
-						Operator operator = widget.getMapping();
-						
-						Operator queryNode = null;
-						String query = "";
-							
-						if(operator.isStructure()) {
-							queryNode = operator.getStructureItem("query");
-						} 
-						
-						if(queryNode!=null) {
-							query = queryNode.serialize();
-							query = query.substring(1, query.length()-1);
-						}
+						String query = getQuery(widget);
 						
 						if(StringUtil.isNotNullNorEmpty(query)) {
 

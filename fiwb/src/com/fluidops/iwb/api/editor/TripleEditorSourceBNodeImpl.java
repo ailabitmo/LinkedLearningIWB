@@ -47,14 +47,14 @@ public class TripleEditorSourceBNodeImpl extends TripleEditorSourceLoadAtOnceBas
 		
 		List<TripleEditorStatement> res = new ArrayList<TripleEditorStatement>();
 		
-		for (Statement st : dm.getStatementsAsList(subject, null, null, false)) 
+		for (Statement st : dm().getStatementsAsList(subject, null, null, false)) 
 		{
 			res.add(new TripleEditorStatement(st, new TripleEditorPropertyInfo(st.getPredicate(),
 					Sets.newHashSet(TripleEditorConstants.getDefaultClusteredResourceOutgoing()), true)));
 		}
 		
 		if (includeInverse) {
-			for (Statement st : dm.getStatementsAsList(null, null, subject, false)) 
+			for (Statement st : dm().getStatementsAsList(null, null, subject, false)) 
 			{
 				res.add(new TripleEditorStatement(st, new TripleEditorPropertyInfo(st.getPredicate(), 
 						Sets.newHashSet(TripleEditorConstants.getDefaultClusteredResourceIncoming()), false)));

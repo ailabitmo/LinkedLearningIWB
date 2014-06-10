@@ -44,9 +44,11 @@ public class TextareaConfigurationFormElement extends AbstractConfigurationFormE
 	@Override
 	protected FTextArea createComponent(FormElementConfig formElementConfig) {
 		targetType=formElementConfig.targetType;
-		FTextArea ta = new FTextArea(Rand.getIncrementalFluidUUID());
-		ta.setValue(OperatorFactory.operatorToText(
-				formElementConfig.presetValue, formElementConfig.targetType));
+		FTextArea ta = new FTextArea(Rand.getIncrementalFluidUUID(), formElementConfig.getDefaultContent());
+		if (formElementConfig.hasPresetValues()) {
+			ta.setValue(OperatorFactory.operatorToText(
+					formElementConfig.presetValue, formElementConfig.targetType));
+		}
 		return ta;
 	}
 

@@ -1,6 +1,0 @@
-= Collaborative Knowledge Management =
-In this section you will learn about;
-
-*[[Help:Views | the {{PRODUCT}} user interface]]
-*[[Help:Wiki | using the semantic wiki]]
-*[[Help:TripleEditor | authoring semantic data]]

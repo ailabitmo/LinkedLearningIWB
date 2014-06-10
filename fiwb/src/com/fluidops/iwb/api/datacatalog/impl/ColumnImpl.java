@@ -50,6 +50,7 @@ public class ColumnImpl implements Column
 	
 	ColumnDataType columnDataType;
 	protected int ordinalPosition;
+	protected boolean nullable;
 	
 	public ColumnImpl(Graph graph, URI columnUri)
 	throws InvalidSchemaSpecificationException
@@ -91,6 +92,12 @@ public class ColumnImpl implements Column
 			Literal fullNameLit = GraphUtil.getOptionalObjectLiteral(graph, columnDataUri, RSO.PROP_COLUMN_FULL_NAME);
 			if (fullNameLit!=null)
 				fullName = fullNameLit.stringValue();
+			
+			Literal nullLit = GraphUtil.getOptionalObjectLiteral(graph, columnDataUri, RSO.PROP_COLUMN_NULL_CONSTRAINT);
+			if (nullLit!=null)
+				nullable = true;
+			else 
+				nullable = false;
 			
 			URI datatypeUri = GraphUtil.getOptionalObjectURI(graph, columnDataUri, RSO.PROP_DATATYPE);
 			if (datatypeUri!=null)
@@ -164,4 +171,16 @@ public class ColumnImpl implements Column
 		
 		return Arrays.asList((Column[])res);
 	}
+	
+	@Override
+	public String toString()
+	{
+		return (fullName!=null && ordinalPosition!=0)?(fullName+"("+ordinalPosition+")"):"no columnFullName or no ordinalPosition";
+	}
+	
+	@Override
+	public boolean isNullable(){
+		return nullable;
+	}
+	
 }

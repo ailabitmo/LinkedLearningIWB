@@ -57,9 +57,12 @@ public class SparqlEditorConfigurationFormElement extends
 	{
 		targetType = formElementConfig.targetType;
 
-		SparqlEditorDialog cont = new SparqlEditorDialog(Rand.getIncrementalFluidUUID(),
-				OperatorFactory.operatorToText(formElementConfig.presetValue,
-						formElementConfig.targetType));
+		String content = formElementConfig.getDefaultContent();
+		if (formElementConfig.hasPresetValues()) {
+			content = OperatorFactory.operatorToText(formElementConfig.presetValue,
+					formElementConfig.targetType);
+		}
+		SparqlEditorDialog cont = new SparqlEditorDialog(Rand.getIncrementalFluidUUID(), content);
 
 		return cont;
 	}
@@ -101,7 +104,10 @@ public class SparqlEditorConfigurationFormElement extends
 			add(ta);
 
 			add(op_btn, "floatLeft");
-			add(new FHTML(Rand.getIncrementalFluidUUID(), "<span style='font-size: 0.8em; color: #6C6C6C; padding-left: 5px;'>Use the advanced SPARQL interface</span>"));
+			
+			//use float left to align them correctly (makes the button clickable in IE8)
+			FHTML fhtml = new FHTML(Rand.getIncrementalFluidUUID(), "<span style='font-size: 0.8em; color: #6C6C6C; padding-left: 5px;'>Use the advanced SPARQL interface</span>");
+			add(fhtml, "floatLeft");
 		}
 
 		@Override

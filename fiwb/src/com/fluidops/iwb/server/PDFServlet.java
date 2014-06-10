@@ -25,7 +25,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
@@ -96,4 +95,9 @@ public class PDFServlet extends IWBHttpServlet
     			"user", EndpointImpl.api().getUserManager().getUserName(null));
     	return ret;
     }
+    
+	@Override
+	protected String getPageTitle() {
+		return "PDF Servlet";
+	}  
 }

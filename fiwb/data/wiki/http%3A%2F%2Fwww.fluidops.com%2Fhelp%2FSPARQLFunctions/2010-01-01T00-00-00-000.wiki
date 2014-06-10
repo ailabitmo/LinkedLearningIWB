@@ -1,7 +1,0 @@
-=== SPARQL Functions Overview ===
-
-The [[Admin:SPARQLFunctions| SPARQL functions page]] lists all registered SPARQL functions.
-
-<br/>
-
-<img src="../images/help/sparqlfunctions.png" width="1000px" />

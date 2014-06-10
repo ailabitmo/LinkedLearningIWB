@@ -49,7 +49,7 @@ public class Config extends DelegateConfig
 	protected static boolean PIVOT_GOOGLE_IMAGES_DEFAULT = false;
 	protected static String SERVLET_SECURITY_KEY_DEFAULT = "IWBServletProection";
 	protected static boolean DATABASE_BOOTSTRAPPING_DEFAULT = false;
-	protected static String LOGINTOUSER_MAPPING_DEFAULT = "";
+	protected static String REPOSITORY_TYPE_DEFAULT = "native";
 	
 	public Config() {
 	}
@@ -88,21 +88,6 @@ public class Config extends DelegateConfig
     }
     
 	/**
-	 * Specifies, whether the RDFS vocabulary rdfs:label and rdfs:comment should be searchable. 
-	 * If set to false these two properties will be omitted from keyword index creation.
-	 */
-	@ConfigDoc( name="makeRdfsSearchable", 
-	        desc="Specifies, whether the RDFS vocabulary rdfs:label and rdfs:comment should be searchable. Default: true",
-	        category=Category.NONE, 
-	        iwbCategory=IWBCategory.NONE,
-	        type = Type.BOOLEAN )
-	public boolean makeRdfsSearchable()
-	{
-		return delegate().getBoolean( "makeRdfsSearchable", true);
-	}
-
-	
-	/**
 	 * The repository type, see {@link RepositoryFactory} for documentation
 	 * @return
 	 */
@@ -112,8 +97,8 @@ public class Config extends DelegateConfig
 	        iwbCategory=IWBCategory.DATABASE,
 	        type = Type.STRING )
     public String getRepositoryType()
-    { 
-        return delegate().get( "repositoryType", "native");
+    {
+		return delegate().get( "repositoryType", REPOSITORY_TYPE_DEFAULT);
     }
 
 
@@ -219,46 +204,6 @@ public class Config extends DelegateConfig
         return delegate().getBoolean("autocompletion", false);
     }
     
-    /**
-     * should autocompletion be ranked 
-     */
-    @ConfigDoc( name="rankedCompletion", 
-            desc="Specifies if auto-completion should be ranked or not. Default: true",
-            category=Category.NONE, 
-            iwbCategory=IWBCategory.NONE,
-            type = Type.BOOLEAN )
-    public boolean getRankedCompletion()
-    { 
-        return delegate().getBoolean( "rankedCompletion", true);
-    }
-    
-    /**
-     * how many suggestions on keyword-Level should be presented
-     * @return
-     */
-    @ConfigDoc( name="numberKeywordSuggestions", 
-            desc="Specifies how many suggestions for search keywords the autocompletion should present. Default: 15",
-            category=Category.NONE,      
-            iwbCategory=IWBCategory.NONE,
-            type = Type.INTEGER)
-	public int getNumberKeywordSuggestions( )
-	{
-		return delegate().getInt("numberKeywordSuggestions", 15);
-	}
-   
-   /**
-    * parameter for ranking of keyword-suggestions, ranking off as default
-    * @return
-    */
-    @ConfigDoc( name="minDocFreq", 
-            desc="Speficies how frequent the suggested keywords should be, i.e. in how many documents they should occur at least. Default: 5",
-            category=Category.NONE, 
-            iwbCategory=IWBCategory.NONE,
-            type = Type.INTEGER)
-	public int getMinDocFreq()
-	{
-	    return delegate().getInt( "minDocFreq", 5);
-	}
   
     /**
      * Pivot Parameters
@@ -416,15 +361,6 @@ public class Config extends DelegateConfig
     	return delegate().get("urlMapping", "/resource/");
     }
     
-    @ConfigDoc( name="customEcmMapping", 
-            desc="Custom mapping triggered after eCM provider run",
-            category=Category.NONE,
-            iwbCategory=IWBCategory.NONE,
-            type = Type.STRING)
-    public String getCustomEcmMapping()
-    {
-    	return delegate().get("customEcmMapping", null);
-    }
     
     @ConfigDoc( name="pivotActive", 
             desc="Pivot active, only available in Enterprise Edition",
@@ -686,6 +622,20 @@ public class Config extends DelegateConfig
     }
 	
     /**
+     * The Google API Key for web applications to use Google services
+     * @return Google API Key 
+     */
+	@ConfigDoc( name="googleApiKey", 
+            desc="The google API Key needed to use Google services like Google Maps",
+            category=Category.NONE,
+            iwbCategory=IWBCategory.NONE,
+            type = Type.STRING)
+    public String getGoogleApiKey()
+    {
+        return  delegate().get("googleApiKey", "");
+    }
+	
+    /**
      * Returns the set of indices to be built as a comma separated specifier
      * string as accepted by Sesame.
      * 
@@ -755,7 +705,7 @@ public class Config extends DelegateConfig
             desc="Configures the query skeleton used for keyword search over structured data",
             category=Category.INT,
             iwbCategory=IWBCategory.CORE,
-            type = Type.STRING)
+            type = Type.MULTILINE_TEXT)
 	public String getKeywordQuerySkeleton() 
 	{
 		return delegate().get("keywordQuerySkeleton", KeywordSearchAPI.defaultQuerySkeleton);
@@ -775,7 +725,7 @@ public class Config extends DelegateConfig
             desc="Configures the query skeleton used for keyword search over wiki pages",
             category=Category.INT,
             iwbCategory=IWBCategory.CORE,
-            type = Type.STRING)
+            type = Type.MULTILINE_TEXT ) 
 	public String getWikiQuerySkeleton() 
 	{
 		return delegate().get("wikiQuerySkeleton", KeywordSearchAPI.defaultWikiQuerySkeleton);
@@ -793,6 +743,16 @@ public class Config extends DelegateConfig
             type = Type.STRINGARRAY)
 	public String[] getDefaultQueryTargets() {
 		return delegate().get(DEFAULT_QUERY_TARGETS, TargetType.RDF + "," +TargetType.WIKI).split("\\s*,\\s*");
+	}
+	
+	@ConfigDoc( name="searchResultsLimit",
+			desc = "Specifies the upper limit on the number of search results displayed in the results table. Default: 1000",
+			category = Category.INT,
+			iwbCategory=IWBCategory.CORE,
+			type = Type.INTEGER
+			)
+	public int getSearchResultsLimit() {
+		return delegate().getInt("searchResultsLimit", 1000);
 	}
 	
 	
@@ -827,46 +787,6 @@ public class Config extends DelegateConfig
 	{
 		return delegate().getBoolean("clusterSearchResult", true);
 	}
-	
-	@ConfigDoc( name="luxidEnabled", 
-            desc="Enable/disable extraction of semantic data from documents using the Luxid webservice",
-            category=Category.NONE,
-            iwbCategory=IWBCategory.CMS,
-            type = Type.BOOLEAN)
-    public boolean getLuxidEnabled()
-    {
-    	return delegate().getBoolean("luxidEnabled", false);
-    }
-    
-	@ConfigDoc( name="luxidServerURL", 
-            desc="URL of the Luxid webservice, e.g. http://host//LuxidWS/services/Annotation",
-            category=Category.NONE,
-            iwbCategory=IWBCategory.CMS,
-            type = Type.STRING)
-    public String getLuxidServerURL()
-    {
-    	return delegate().get("luxidServerURL", "");
-    }
-    
-	@ConfigDoc( name="luxidUserName", 
-			desc="Username for the Luxid webservice",
-			category=Category.NONE,
-			iwbCategory=IWBCategory.CMS,
-			type = Type.STRING)
-    public String getLuxidUserName()
-    {
-    	return delegate().get("luxidUserName", "");
-    }
-	
-	@ConfigDoc( name="luxidPassword", 
-			desc="Password for the Luxid webservice",
-			category=Category.NONE,
-			iwbCategory=IWBCategory.CMS,
-			type = Type.STRING)
-    public String getLuxidPassword()
-    {
-    	return delegate().get("luxidPassword", "");
-    }
 	
 	@ConfigDoc( name="openUpMode", 
             desc="Enable/disable extraction of semantic data from documents using OpenUp webservice (disabled, demo (limited demo service), enabled). Default: disabled",
@@ -921,21 +841,6 @@ public class Config extends DelegateConfig
        return delegate().get("annotationCustomizerClassName", "");
 	}
         
-	 /**
-	  * API key for LastFM API access, required if LastFM Cache is accessed.
-	  * 
-	  * @return
-	  */
-	@ConfigDoc( name="lastFMKey", 
-            desc="API key for LastFM API access, required if LastFM Cache is accessed, e.g. from LastFMWidget",
-            category=Category.NONE,
-            iwbCategory=IWBCategory.NONE,
-            type = Type.STRING)
-	 public String getLastFMKey() 
-	 {
-		 return delegate().get("lastFMKey");
-	 }
-	
 	@ConfigDoc( name="preferredLanguage",
 			desc="Preferred language of displayed values: for multi-lingual datasets labels with this tag will be selected. Changing this value requires cache invalidation or restart. Default: en",
 			category=Category.INT,
@@ -944,6 +849,20 @@ public class Config extends DelegateConfig
 			)
 	public String getPreferredLanguage() {
 		return delegate().get("preferredLanguage", "en");
+	}
+	
+	/**
+	 * Returns the window title prefix, if set.
+	 * 
+	 * @return Title prefix, if any.
+	 */
+	@ConfigDoc(name = "titlePrefix",
+			desc = "If set, the title of all pages will be prefixed accordingly in the browser window's title bar (e.g., '[myPrefix] Home' instead of just 'Home').",
+			category = Category.CORE,
+			iwbCategory = IWBCategory.CORE,
+			type = Type.STRING)
+	public String getTitlePrefix() {
+		return get("titlePrefix");
 	}
 	 
 	 /**
@@ -962,14 +881,6 @@ public class Config extends DelegateConfig
 		 return delegate().getBoolean("semanticWikiLinksEnabled", false);
 	 }
 	 
-	 /**
-	  * SPARQL query for matching the login string to a user URI.
-	  */
-	 public String getLoginToUserMapping()
-	 {
-		 return delegate().get("loginToUserMapping",LOGINTOUSER_MAPPING_DEFAULT);
-	 } 
-	 
 	 // setters for default values
 	 @SuppressWarnings(
 			 value = { "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" }, 
@@ -977,6 +888,14 @@ public class Config extends DelegateConfig
 	 public void setWikiPageLayoutDefault(String wikiPageLayout)
 	 {
 		 WIKI_PAGE_LAYOUT_DEFAULT = wikiPageLayout;
+	 }
+	 
+	 @SuppressWarnings(
+			 value = { "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" }, 
+			 justification = "The default is only set once during startup")
+	 public void setRepositoryTypeDefault(String repositoryType)
+	 {
+		 REPOSITORY_TYPE_DEFAULT = repositoryType;
 	 }
 	 
 	 @SuppressWarnings(
@@ -1003,11 +922,4 @@ public class Config extends DelegateConfig
          DATABASE_BOOTSTRAPPING_DEFAULT = databaseBootstrapping;
      }
 	 
-	 @SuppressWarnings(
-			 value = { "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" }, 
-			 justification = "The default is only set once during startup")
-	 public void setLoginToUserMappingDefault(String login2UserMapping)
-	 {
-		 LOGINTOUSER_MAPPING_DEFAULT = login2UserMapping;
-	 }
 }

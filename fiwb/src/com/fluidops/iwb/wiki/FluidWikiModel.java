@@ -143,6 +143,7 @@ public class FluidWikiModel extends WikiModel
 		//allow html img tags
 		Configuration.DEFAULT_CONFIGURATION.addTokenTag("img", new ImgTag());
 		HTMLBlockTag.addAllowedAttribute(Widget.WIDGET_ATTRIBUTE);
+		HTMLBlockTag.addAllowedAttribute("mode");
 		TagNode.addAllowedAttribute("style");
 		TagNode.addAllowedAttribute("target");
 		// TagNode.addAllowedAttribute("cht");

@@ -316,7 +316,8 @@ p {
     display:none;
 
 }
-.viewContentClazz .flAutoComplete .flSuggestionDropDown ul
+.viewContentClazz .flAutoComplete .flSuggestionDropDown ul,
+.ConfigurationForm .flAutoComplete .flSuggestionDropDown ul
 {
     margin: 0 0 0 0px;
 
@@ -1760,6 +1761,29 @@ div.tablehead2 + table.flTable2 {
     margin-top:-25px;
 }
 
+/***********************
+ *
+ * Tooltip styling for
+ * FTable
+ *
+ **********************/
+.tooltipTitle:after
+{
+    background-color: #bbbbbb;
+    border-radius: 6px;
+   	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+    color: #eeeeee;
+    font-family: Verdana;
+    font-size: 11px;
+    font-weight: bolder;
+    margin-left: 4px;
+	padding-left: 3px;
+    padding-right: 3px;
+    position: relative;
+    content: "?"
+}
+
 .flTable2 th .label SPAN{
     padding-left: 15px;
     display:block;
@@ -1848,13 +1872,8 @@ flTree.flTable2 {
 
 .flTabWikiPage {
 	margin-left:-25px;
-	margin-top: -24px;
 	position:absolute;
 	width:102px;
-}
-
-.testContainerClass > DIV.outerTabContent > DIV.flTabWikiPage {
-	margin-top: -15px;
 }
 
 *+html .flTabWikiPage {
@@ -2059,6 +2078,11 @@ flTree.flTable2 {
 	margin-top:9px;
 }
 
+.loggedInLabel > a, .loggedInLabel > a:link, .loggedInLabel > a:visited {
+    color: #909090;
+    font-weight: bold;
+}
+
 .leftContainerClass {
 	width: 29%;
 	float:right;
@@ -2081,7 +2105,8 @@ flTree.flTable2 {
 	width:450px;
 }
 
-.testContainerClass>DIV.outerTabContent {
+.testContainerClass
+{
 	width: 70%;
 	float: left;
 }
@@ -2210,13 +2235,12 @@ flTree.flTable2 {
     margin-top: -40px;
 }
 
-.FForm input[type="button"] {
+.FForm input[type="button"], div[widget*="InstanceCreationWidget"] input[type="button"].navbutton {
     background-repeat: no-repeat;
     background-position: left center;
     border: 0 none;
     background-color: transparent;
     width: 80px;
-    float: left;
     cursor: pointer;
     text-align: center;
     padding: 5px;
@@ -2224,7 +2248,11 @@ flTree.flTable2 {
     background-image: url('<%= request.getContextPath()%>/imgs/menu.png');
 }
 
-.FForm input[type="button"]:hover {
+.FForm input[type="button"] {
+	float: left;
+}
+
+.FForm input[type="button"]:hover, div[widget*="InstanceCreationWidget"] input[type="button"].navbutton:hover {
     background-position: right center;
 }
 /*GMap*/
@@ -2344,6 +2372,11 @@ max-height:400px;
 	text-decoration:underline;
 }
 
+.flTree .tree-paging-icon{
+	padding-bottom:1px;
+	cursor:pointer;
+}
+
 .tagEntry:hover {
    font-size: 20px !important;
    color:red !important;
@@ -2426,6 +2459,12 @@ max-height:400px;
     bottom:20px;
     left:20px;
 }
+
+.importExportWidget .exportContextMetaData{
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
 .importExportWidget .loadStat{
     margin: auto;
     text-align: center;
@@ -2565,7 +2604,7 @@ max-height:400px;
 }
 /*********************/
 
-.flDialogHeader
+.flDialogHeader, .flDialog .ui-dialog-titlebar 
 {
     background-color:#81C1DD;
     background: none repeat scroll 0 0 #D8D9DA !important; /* for non-css3 browsers */
@@ -2582,6 +2621,14 @@ max-height:400px;
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#E1E2E2') !important; /* for IE */
     background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#E1E2E2)) !important; /* for webkit browsers */
     background: -moz-linear-gradient(top,  #FFFFFF, #E1E2E2) !important; /* for firefox 3.6+ */
+}
+
+.flDialog.ui-dialog{
+    background: none repeat scroll 0 0 #F6F6F6 !important; /* for non-css3 browsers */
+   
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#F6F6F6') !important; /* for IE */
+    background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#F6F6F6)) !important; /* for webkit browsers */
+    background: -moz-linear-gradient(top,  #FFFFFF, #F6F6F6) !important; /* for firefox 3.6+ */
 }
 
 .pathFinder ul {
@@ -2971,7 +3018,7 @@ hr{
 ----------------------------------*/
 
 /* Overlays */
-.ui-widget-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.ui-widget-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
 
 
 /*
@@ -3318,22 +3365,45 @@ hr{
 	 width:70px;
 }
 
-.ConfigurationForm .flDialogContent input[type="button"]{
+.ConfigurationForm input[type="button"], .flDialog button.ui-button.ui-state-default{
+	background-image:none;
 	background: url('<%= request.getContextPath()%>/imgs/bg_button.png') repeat scroll 0 0 transparent;
     border: 1px solid #999999;
     cursor: pointer;
     height: 22px;
     color:#3B3B3D;
 }
-
-.ConfigurationForm .flDialogContent .sparqlInterfaceButton input{
+.flDialog button.ui-button.ui-state-default .ui-button-text{
+	line-height:0.7em;
+}
+.ConfigurationForm .sparqlInterfaceButton input{
     background-image:url('<%= request.getContextPath()%>/images/sparql-blue.png') !important;
     width:40px;
     height:15px;
     border:none;
 }
+
+.ConfigurationForm .fileEditButton input{
+    background-image:url('<%= request.getContextPath()%>/ajax/icons/edit.png') !important;
+    width:16px;
+    height:16px;
+    border:none;
+}
+
+.ConfigurationForm .fileEditButton{
+	margin-top:3px;
+    width:16px;
+    clear:left;
+    float:left;
+}
+
+.ConfigurationForm .r2rmlButton{
+	margin-top:3px;
+    clear:left;
+    float:left;
+}
    
-.ConfigurationForm .flDialogContent .sparqlInterfaceButton input:hover{
+.ConfigurationForm .sparqlInterfaceButton input:hover{
     background-image:url('<%= request.getContextPath()%>/images/sparql-orange.png') !important;
  }
 .ConfigurationForm{
@@ -3409,17 +3479,19 @@ hr{
     box-shadow: 5px 5px 5px #949596;
 
 }
-.ConfigurationForm .flDialogContent{
+.ConfigurationForm .flDialogContent {
 	overflow:visible;
 	width:auto;
 }
-.ConfigurationForm .flDialog{
+.ConfigurationForm .flDialog,.flDialog.ui-dialog{
     left:30%;
 	margin:auto;
-	width:auto !important;
 	border: 1px solid #9B9C9C;
 }
-.ConfigurationForm .flDialogHeader{
+.ConfigurationForm .flDialog{
+	width:auto !important;
+}
+.ConfigurationForm .flDialogHeader, .flDialog .ui-dialog-titlebar {
 	border-bottom: none;
 	color:#3B3B3D;
 	font-size:1.1em;
@@ -4010,4 +4082,235 @@ div.widgetEmbeddingError {
 
 div[widget*="CodeExecutionWidget"].rowAction {
 	margin: 0 2px 0 2px;
+}
+
+/******************************************
+*
+*   New Instance Widget
+*
+*******************************************/
+
+div[widget*="InstanceCreationWidget"] > div.instanceCreationForm {
+	overflow:hidden;
+	white-space: nowrap;
+}
+
+div[widget*="InstanceCreationWidget"][mode="block"].hasEmbeddedTripleEditor div.nameInputBlock,
+div[widget*="InstanceCreationWidget"][mode="popup"].hasEmbeddedTripleEditor div.nameInputBlock {
+	padding: 15px;
+}
+
+div[widget*="InstanceCreationWidget"][mode="block"].hasEmbeddedTripleEditor div.nameInputBlock > table, 
+div[widget*="InstanceCreationWidget"][mode="popup"].hasEmbeddedTripleEditor div.nameInputBlock > table {
+	width: 100%; 
+	table-layout: fixed;
+}
+
+div[widget*="InstanceCreationWidget"][mode="block"].hasEmbeddedTripleEditor div.nameInputBlock > table > tbody > tr > td:first-of-type,
+div[widget*="InstanceCreationWidget"][mode="popup"].hasEmbeddedTripleEditor div.nameInputBlock > table > tbody > tr > td:first-of-type {
+	width: 30%; 
+	table-layout: fixed;
+	overflow: hidden;
+}
+
+div[widget*="InstanceCreationWidget"][mode="block"] > div.instanceCreationForm {
+	background-color:#F8F8F8;
+	padding-top:20px;
+	border:1px solid #CCCCCC;
+	-moz-border-radius:10px !important; /* Firefox */
+	-webkit-border-radius:10px; /* Safari, Chrome */
+	-khtml-border-radius:10px; /* Konqueror */
+	border-radius:10px; /* CSS3 */
+	-moz-box-shadow: 3px 3px 5px #e0dfe3;/* Firefox */
+	-webkit-box-shadow: 3px 3px 5px #e0dfe3;/* Safari, Chrome */
+	box-shadow: 3px 3px 5px #e0dfe3;/* CSS3 */
+}
+
+div[widget*="InstanceCreationWidget"] div.additionalProperties div.extended, 
+div[widget*="InstanceCreationWidget"] div.additionalProperties div.collapsed {
+    padding-left:15px;
+    margin-left:15px;
+}
+
+div[widget*="InstanceCreationWidget"] div.additionalProperties div.extended {
+    background:transparent url('<%= request.getContextPath()%>/ajax/icons/down-triangle.png') no-repeat scroll left center;
+}
+
+div[widget*="InstanceCreationWidget"] div.additionalProperties div.collapsed {
+    background:transparent url('<%= request.getContextPath()%>/ajax/icons/right-triangle.png') no-repeat scroll left center;
+}
+
+/**
+ * Reset triple editor borders that are applied to the Section.st
+ */
+div[widget*="InstanceCreationWidget"] div.tripleEditor {
+	border: 0;	
+}
+
+div[widget*="InstanceCreationWidget"][mode="block"] {
+	width: 450px;
+}
+
+div[widget*="InstanceCreationWidget"][mode="block"].hasEmbeddedTripleEditor {
+	width: 640px;
+}
+
+div[widget*="InstanceCreationWidget"][mode="inline"].hasEmbeddedTripleEditor {
+	width: 610px;
+}
+
+div[widget*="InstanceCreationWidget"][mode="inline"].hasEmbeddedTripleEditor div.additionalProperties {
+	clear: both;
+}
+
+div[widget*="InstanceCreationWidget"][mode="popup"] div.newInstancePopup div.flDialog {
+	width: 400px !important;
+}
+
+div[widget*="InstanceCreationWidget"][mode="popup"].hasEmbeddedTripleEditor div.newInstancePopup div.flDialog {
+	width: 650px !important;
+}
+
+div[widget*="InstanceCreationWidget"] div.instanceCreationForm div.navigationButtonContainer {
+	text-align: center;
+}
+
+/******************************************/
+
+.pageRedirectMessage{
+	color:darkgrey;
+}
+
+div[widget*="ConfigEditWidget"] input[style] {
+	size: none;
+}
+
+div[widget*="ConfigEditWidget"] td input {
+	width: 250px;
+}
+
+div[widget*="ConfigEditWidget"] textarea {
+	width: 250px;
+}
+
+div[widget*="ConfigEditWidget"] div.ConfigTab 
+{
+	padding-bottom:5px;
+}
+
+div[widget*="ConfigEditWidget"] li.searchFilter 
+{
+	float:right !important;
+	padding-right:0;
+}
+
+div[widget*="ConfigEditWidget"] div.emptyTab div
+{
+	padding: 10px;
+}
+
+div[widget*="ConfigEditWidget"] div.configFilter {
+	position: absolute;
+	right: 0;
+	z-index: 100;
+}
+
+div[widget*="ConfigEditWidget"] div.configFilter input {
+	width: 160px;
+}
+
+div[widget*="ConfigEditWidget"] div.ConfigTab {
+	/* Fallback for IE8 */
+	max-width: 75%;
+	max-width: calc(100% - 180px);
+}
+
+/******************************************
+ *
+ * Special, IWB-specific styling for the
+ * filter input field. Here we use the fully
+ * qualified name of the widget to prevent
+ * this styling from clashing with the ECM
+ * specific one (which does not use negative
+ * margin-top to place tabs).
+ *
+ *****************************************/
+
+div[widget="com.fluidops.iwb.widget.ConfigEditWidget"] {
+	position: relative;	
+}
+
+div[widget="com.fluidops.iwb.widget.ConfigEditWidget"] div.configFilter {
+	margin-top: -20px;
+}
+
+/******************************************
+ *
+ * ActionableResultWidget
+ *
+ *****************************************/
+
+div[widget="com.fluidops.iwb.widget.ActionableResultWidget"] div.rowActionContainer {
+
+}
+
+div[widget="com.fluidops.iwb.widget.ActionableResultWidget"] div.rowAction {
+	float: right;
+	margin-right: 5px;
+}
+
+/******************************************
+*
+*   Code Highlighter
+*
+*******************************************/
+
+.textEditor .highlighter{
+	border: 1px solid #CCCCCC;
+	margin-top:10px;
+	padding:0;
+	margin-bottom:10px;
+	position:relative;
+}
+
+.textEditor .editorProgress{
+	 position:absolute;
+ 	 top:49%;
+     left:49%;
+ 	 z-index: 999;
+ }
+ 
+ /*******************************************/
+ 
+ 
+  
+/******************************************
+*
+*   Data Integration Wizard
+*
+*******************************************/
+
+.DataIntegrationWizard.outerwizard .wizardList {
+	width: 100% !important;
+	float: none !important;
+}
+
+.DataIntegrationWizard.outerwizard .site {
+	width: 100% !important;
+	border: none;
+	padding-top: 0px;
+}
+
+.DataIntegrationWizard.outerwizard li.listitem,  .DataIntegrationWizard.outerwizard li.listitemactive{
+	float: left;
+	padding-right: 10px;
+	font-weight: bold;
+}
+
+.DataIntegrationWizard.outerwizard fieldset {
+	border: none;
+}
+
+.DataIntegrationWizard.outerwizard .listitemactive .listbutton {
+	border: none;
 }

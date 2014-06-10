@@ -29,13 +29,25 @@ import com.fluidops.iwb.api.datacatalog.Index.IndexType;
  */
 public interface PrimaryKey 
 {
+	/**
+	 * @return the pk's name
+	 */
 	public String getName();
 	
+	/**
+	 * @return tableName.pkName
+	 */
 	public String shortName();
 	
+	/**
+	 * @return schemaName.tableName.pkName
+	 */
 	public String fullName();
 	
 	public IndexType getIndexType();
 	
+	/**
+	 * @return all columns referenced by the PK
+	 */
 	public List<Column> getColumns();
 }

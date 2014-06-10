@@ -28,10 +28,14 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -54,8 +58,11 @@ public class DBBulkServiceImpl implements DBBulkService
     private static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
     private static final Logger logger = Logger.getLogger(DBBulkServiceImpl.class);
     private final Supplier<Repository> repository;
-
-    private static final Pattern VERSION_IRI_PATTERN = Pattern.compile(".*(\\d+)");
+    
+    /**
+     * Expect exact 8 digits after the last slash of the version IRI
+     */
+    private static final Pattern VERSION_IRI_PATTERN = Pattern.compile(".*/(\\d{8})$");
 
 
     public DBBulkServiceImpl(final Repository repository)
@@ -74,129 +81,77 @@ public class DBBulkServiceImpl implements DBBulkService
 		this.repository = repository;
 	}
 
-	@Override
+    @Override
     public void updateOntology(final File ontologyFile)
     {
-        execute(repository.get(), new ReadWriteDataManagerVoidCallback()
-        {
-            @Override
-            public void doWithDataManager(ReadWriteDataManager dataManager)
-            {
-            	assert dataManager.getRepository() != null;
+    	execute(repository.get(), new ReadWriteDataManagerVoidCallback()
+    	{
+    		@Override
+    		public void doWithDataManager(ReadWriteDataManager dataManager)
+    		{
+    			
+    			/*
+    			 * Version INFO is an incremental integer scheme.
+    			 * Version IRI is an IRI in the form:
+    			 * 
+    			 *   [anyURI]/[yyyymmdd]
+    			 * 
+    			 * The last segment of the IRI is an integer that
+    			 * encodes a date. It is transformed into an integer and 
+    			 * is compared with other version information.
+    			 * 
+    			 * (It is unlikely that Version INFO has gone beyond 
+    			 * 20.0120.000 iterations. Thus, Version IRI versioning information
+    			 * should always outweigh the Version INFO scheme.)
+    			 * 
+    			 * Please note: The ontology is loaded at least twice into a memory repo.
+    			 * This may slow down the system start up. If needed alter accordingly.
+    			 */
+    			
+    			assert dataManager.getRepository() != null;
 
-            	/*
-            	 * Check the versioning mechanisms using, in order:
-            	 * 1) Version IRI
-            	 * 2) Version INFO
-            	 */
-            	URI [] versionPricateURIs = new URI[] { Vocabulary.OWL.VERSION_IRI, Vocabulary.OWL.VERSION_INFO };
-            	Literal dbVersion = versionInDb(dataManager, filenameToOntologyUri(ontologyFile), versionPricateURIs);
+    			URI ontologyURI = determineOntologyURI(ontologyFile);
+    			// Precedence: 1. Version IRI scheme, 2. Version INFO scheme
+    			URI [] versionPredicateURIs = new URI[] { Vocabulary.OWL.VERSION_IRI, Vocabulary.OWL.VERSION_INFO };
 
-            	boolean updateOntology = false;
-            	if (dbVersion == null) {
-            		/*
-            		 * The DB does not contain versioning info.
-            		 * Let's accept whatever is being thrown at it.
-            		 */
-            		updateOntology = true;
-            	} else {
-            		/*
-            		 * We have versioning info in the DB; we will update only if
-            		 * the version of the ontology on file is "newer".
-            		 */
-            		Literal fileVersion = versionInFile(ontologyFile, versionPricateURIs);
+    			Value fileVersion = versionInFile(ontologyFile, ontologyURI, versionPredicateURIs);
+    			Value dbVersion = versionInDb(dataManager, ontologyURI, versionPredicateURIs);
 
-            		if (fileVersion == null) {
-            			/*
-            			 * The file contains no version information.
-            			 * We cannot risk to corrupt the database.
-            			 */
-            			updateOntology = false;
-    	                logger.error("Ignoring ontology '" + ontologyFile + " because it lacks versioning information and the database instead has it");
-            		} else {
-            			/*
-            			 * Here be Dragons! We are potentially mixing two different
-            			 * versioning schemes, namely Version IRI and Version INFO.
-            			 * 
-            			 * Version INFO is a progressive Integer scheme.
-            			 * Version IRI is, well, an IRI in the form:
-            			 * 
-            			 *   &fluidops;ontologies/ecloud/[yyyymmdd]
-            			 * 
-            			 * That is, the last segment of the IRI is an integer that
-            			 * encodes a date. To keep the comparison consistent,
-            			 * we are transforming the IRI into the integer that
-            			 * encodes the date, and compare it with the other integers.
-            			 * 
-            			 * (It is anyways unlikely that an incremental versioning
-            			 * scheme like Version INFO has gone beyond 20.0120.000 iterations,
-            			 * so when mixing the newer Version IRI with the others, the
-            			 * former should take precedence.)
-            			 */
-            			
-            			try {
-            				/*
-            				 * First, try to compare them as numbers; this
-            				 * is the case when both use the VERSION_INFO scheme.
-            				 */
-            				updateOntology = dbVersion.intValue() < fileVersion.intValue();
-            			} catch (NumberFormatException e) {
-            				/*
-            				 * Try comparison assuming both use Version IRI
-            				 */
-            				int dbVersionNumber = extractIntegerVersionNumber(dbVersion),
-            					fileVersionNumber = extractIntegerVersionNumber(fileVersion);
-            				
-                			if (fileVersionNumber > dbVersionNumber) {
-                				/*
-                				 * Update only if the file version is strictly higher
-                				 * than the DB one.
-                				 */
-                				updateOntology = true;
-                			}
-            			}
-            			
-            			if (!updateOntology) {
-            				logger.debug("Ignoring ontology '" + ontologyFile + " because its version is not newer than the DB's");
-            			}
-            		}
-            	}
+    			if (dbVersion == null) {
+    				// No version in DB. Accept everything.
+    				logger.debug("No version information present in the database. Storing ontology from file '" + ontologyFile + ".");
+    				updateOntology(ontologyFile,dataManager);
+    				return;
+    			} 
 
-            	if (updateOntology) {
-	                logger.info("Trying to load/update ontology '" + ontologyFile + "' into DB...");
-	                dataManager.updateDataForSrc(filenameToContextUri(ontologyFile), null, ContextType.SYSTEM,
-	                        ContextLabel.ONTOLOGY_IMPORT, RDFFormat.RDFXML, ontologyFile, null);
-            	}
-            }
+    			if (fileVersion == null) {
+    				// DB version present but no file version, ignore file ontology.
+    				logger.warn("Ignoring ontology in file '" + ontologyFile + " because no version information is present compared to the corresponding ontology in the database.");
+    				return;
+    			} 
 
-			private int extractIntegerVersionNumber(Literal version) {
-				try {
-					/*
-					 * Let's try the happy case (the literal
-					 * is actually a number) first
-					 */
-					return version.intValue();
-				} catch (NumberFormatException e) {
-					/*
-					 * OK, this must be an IRI then.
-					 */
-					String uri = version.stringValue();
-					/*
-					 * Find the sequence of digits at the end
-					 * of the string and return it parsed to
-					 * an int.
-					 */
-					Matcher m = VERSION_IRI_PATTERN.matcher(uri);
+    			// Extract version information and compare the results
+    			int fileVersionNumber = extractIntegerVersionNumber(fileVersion, ontologyURI);
+    			int dbVersionNumber = extractIntegerVersionNumber(dbVersion, ontologyURI);
+    			
+    			if(fileVersionNumber == -1 && dbVersionNumber == -1){
+    				// Ignore version information 
+    				logger.debug("Found unsupported versioning paradigm. Storing ontology " + ontologyFile + ".");
+    				updateOntology(ontologyFile,dataManager);
+    				return;
+    			}
+    			
+    			if(fileVersionNumber <= dbVersionNumber){
+    				logger.debug("Ignoring ontology '" + ontologyFile + " because its version is not newer than the DB's");
+    				return;
+    			}
+    			
+    			logger.debug("Storing ontology " + ontologyFile + " because its version is newer than the DB's");
+    			updateOntology(ontologyFile,dataManager);
+    		}
 
-					if (!m.matches()) {
-						throw new IllegalArgumentException("The version literal is neither a number, nor an IRI that ends with a [yyyymmdd] pattern");
-					}
-
-					return Integer.parseInt(m.group(1));
-				}
-			}
-        });
-        // shouldnt we update the keyword index as well?
+    	});
+    	// shouldnt we update the keyword index as well?
     }
 
     @Override
@@ -233,46 +188,86 @@ public class DBBulkServiceImpl implements DBBulkService
         }
     }
     
-    private Literal versionInFile(File ontologyFile, URI ... versionPredicateURIs)
+    private void updateOntology(File ontologyFile, ReadWriteDataManager dataManager){
+        logger.info("Trying to load/update ontology '" + ontologyFile + "' into DB...");
+        dataManager.updateDataForSrc(filenameToContextUri(ontologyFile), null, ContextType.SYSTEM,
+                ContextLabel.ONTOLOGY_IMPORT, RDFFormat.RDFXML, ontologyFile, null);
+    }
+    
+	private int extractIntegerVersionNumber(Value version, URI ontologyUri) {
+		if(Literal.class.isInstance(version)){
+			try{
+				return Literal.class.cast(version).intValue();
+			}catch(NumberFormatException nfe){
+				logger.warn("Version of ontology '" + ontologyUri.stringValue() + "' is a literal value but cannot be parsed to Integer: " + version.stringValue());
+				logger.debug("Details: " + nfe.getMessage(), nfe);
+				// Assumption: Version information of winning ontology version is always positive.
+				// Returning -1 results in a loss of the corresponding ontology.
+				return -1;
+			}
+		}
+		String uri = version.stringValue();
+		Matcher m = VERSION_IRI_PATTERN.matcher(uri);
+		if (!m.matches()) {
+			logger.warn("The version literal of ontology '" + ontologyUri.stringValue() + "' is neither a number, nor an IRI that ends with a [yyyymmdd] pattern.");
+			// Assumption: Version information of winning ontology version is always positive.
+			// Returning -1 results in a loss of the corresponding ontology.
+			return -1;
+		}
+		return Integer.parseInt(m.group(1));
+	}
+    
+    private Statement getSingleStatement(File ontologyFile, Resource subject, URI predicate, Value object){
+		Repository fileRepo = null;
+		RepositoryConnection conn = null;
+		RepositoryResult<Statement> results = null;
+    	try {
+    		fileRepo = newMemoryRepository();
+			conn = fileRepo.getConnection();
+			conn.add(ontologyFile, null, RDFFormat.RDFXML);
+			
+			results = conn.getStatements(subject, predicate, object, false);
+			return results.hasNext()?results.next():null;
+
+    	}catch(Exception e){
+    		logger.error("Retrieving single result from "+ontologyFile+" with subject "+
+    					  subject+", predicate "+predicate+" and object "+object+" caused an exception.",e);
+    		throw new RuntimeException(e);
+    	}finally{
+    		closeQuietly(results);
+    		ReadWriteDataManagerImpl.closeQuietly(conn);
+    		shutdownQuietly(fileRepo);
+    	}
+    }
+    
+    private <T extends Value> T getSingleSubject(File ontologyFile, Resource subject, URI predicate, Value object, Class<T> type){
+    	Statement singleStatment = getSingleStatement(ontologyFile, subject, predicate, object);
+    	if(singleStatment == null) return null;
+		return type.cast(singleStatment.getSubject());
+    }
+    
+    private <T extends Value> T getSingleObject(File ontologyFile, Resource subject, URI predicate, Value object, Class<T> type){
+    	Statement singleStatment = getSingleStatement(ontologyFile, subject, predicate, object);
+    	if(singleStatment == null) return null;
+		return type.cast(singleStatment.getObject());
+    }
+    
+    private URI determineOntologyURI(File ontologyFile){
+			// Either get ontology URI in file or use file name as URI
+    	    URI fileOntologyURI  = getSingleSubject(ontologyFile, null, RDF.TYPE, OWL.ONTOLOGY, URI.class);
+    	    return fileOntologyURI == null? filenameToOntologyUri(ontologyFile):fileOntologyURI;
+    }
+    
+    private Value versionInFile(File ontologyFile, URI ontologyURI, URI ... versionPredicateURIs)
     {
-        Repository tmpRepository = null;
-        RepositoryConnection tmpConnnection = null;
-        RepositoryResult<Statement> results = null;
-        try
-        {
-            tmpRepository = newMemoryRepository();
-            tmpConnnection = tmpRepository.getConnection();
-            tmpConnnection.add(ontologyFile, null, RDFFormat.RDFXML);
-
-            for (URI versionPredicateURI : versionPredicateURIs) {
-            	try {
-            		results = tmpConnnection.getStatements(
-            				filenameToOntologyUri(ontologyFile), versionPredicateURI, null, false);
-            		if (results.hasNext()) {
-            			/*
-            			 * We have a match!
-            			 */
-            			return (Literal) results.next().getObject();
-            		}
-            	} finally {
-                    closeQuietly(results);
-            	}
-            }
-
-            /*
-             * None of the version predicates has been found
-             */
-            return null;
+    	for (URI versionPredicateURI : versionPredicateURIs) {
+         	Value singleResult = getSingleObject(ontologyFile, ontologyURI, versionPredicateURI, null, Value.class);
+           	if(singleResult==null) continue;
+           	return singleResult;
         }
-        catch (Exception ex)
-        {
-        	throw new RuntimeException(ex);
-        }
-        finally
-        {
-            ReadWriteDataManagerImpl.closeQuietly(tmpConnnection);
-            shutdownQuietly(tmpRepository);
-        }
+      
+       // None of the version predicates have been found 
+       return null;
     }
 
     private void closeQuietly(RepositoryResult<Statement> statements)
@@ -307,25 +302,16 @@ public class DBBulkServiceImpl implements DBBulkService
         }
     }
 
-    private Literal versionInDb(ReadWriteDataManager dataManager, URI ontologyUri, URI ... versionPredicateURIs)
+    private Value versionInDb(ReadWriteDataManager dataManager, URI ontologyUri, URI ... versionPredicateURIs)
     {
-    	Literal version = null;
     	for (URI versionPredicateURI : versionPredicateURIs) {
     		Statement versionStmt = dataManager.searchOne(ontologyUri, versionPredicateURI, null);
-    		if (versionStmt == null) {
-    			/*
-    			 * There is no predicate matching this URI
-    			 */
-    			continue;
-    		}
-
-    		/*
-    		 * Version found
-    		 */
-    		version = (Literal) versionStmt.getObject();
+    		if (versionStmt == null) continue;
+    		return versionStmt.getObject();
     	}
-
-    	return version;
+    	
+    	// None of the version predicates have been found 
+    	return null;
     }
 
     private URI filenameToOntologyUri(File ontologyFile)

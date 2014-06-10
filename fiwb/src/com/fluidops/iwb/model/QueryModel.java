@@ -18,6 +18,8 @@
 
 package com.fluidops.iwb.model;
 
+import info.aduna.iteration.Iterations;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +59,7 @@ public class QueryModel
         try {
         	RepositoryConnection con = repository.getConnection();
         	try {
-				for ( Statement s : con.getStatements(null, null, null, true).asList() )
+				for ( Statement s : Iterations.asList(con.getStatements(null, null, null, true)))
 				{
 				    if ( s.getSubject().stringValue().toLowerCase().contains( q ) )
 				    {

@@ -84,8 +84,8 @@ public class CSVProvider extends AbstractFlexProvider<CSVProvider.Config>
 				required = true)
 		public String schema;
 
-		@ParameterConfigDoc(desc = "separator")
-		public String separator;
+		@ParameterConfigDoc(desc = "separator", defaultValue=";")
+		public String separator = ";";
 
 		@ParameterConfigDoc(
 				desc = "type",
@@ -124,7 +124,6 @@ public class CSVProvider extends AbstractFlexProvider<CSVProvider.Config>
 	    	
 	    	BufferedReader  in = new BufferedReader(new FileReader(new File(config.filename)));
 	    	
-	    	if(config.separator==null) config.separator=";";
 	        Table table = getTable(in, config.separator);
 	        ValueFactory f = new ValueFactoryImpl();
 	

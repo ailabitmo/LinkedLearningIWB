@@ -18,19 +18,29 @@
 
 package com.fluidops.iwb.api.datacatalog;
 
-import org.openrdf.model.URI;
-
 /**
  * @author msc
  */
 public interface DatabaseConnectionInfo 
 {
+	/**
+	 * @return name of the database schema
+	 */
 	public String getSchemaName();
 	
+	/**
+	 * @return JDBC driver class reference for reflection
+	 */
 	public String getDriverClass();
 	
+	/**
+	 * @return JDBC connection string
+	 */
 	public String getConnectionString();
 	
+	/**
+	 * @return username
+	 */
 	public String getUser();
 	
 	public String getPassword();

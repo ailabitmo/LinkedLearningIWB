@@ -18,7 +18,6 @@
 
 package com.fluidops.iwb.api;
 
-import static java.lang.Character.toChars;
 import static java.lang.String.format;
 
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.Literal;
@@ -45,10 +43,10 @@ import org.openrdf.model.vocabulary.XMLSchema;
 
 import com.fluidops.iwb.model.Vocabulary;
 import com.fluidops.iwb.util.Config;
+import com.fluidops.iwb.util.SPARQLGrammar;
 import com.fluidops.util.StringUtil;
 import com.fluidops.util.persist.Properties;
 import com.fluidops.util.persist.TransactionalFile;
-import com.google.common.base.Joiner;
 
 /**
  * 
@@ -82,13 +80,6 @@ public class NamespaceServiceImpl implements NamespaceService
      * Value factory used internally
      */
     private static final ValueFactory valueFactory = new ValueFactoryImpl();
-
-    /**
-     * Regex pattern for a valid SPARQL local name.
-     */
-    private Pattern sparqlLocalNamePattern;
-
-	private Pattern sparqlNamespacePrefixPattern;
     
     /**
      *  the template namespace where templates are stored
@@ -126,7 +117,7 @@ public class NamespaceServiceImpl implements NamespaceService
     	if(correctNamespace!=null && !namespace.equals(correctNamespace))
     		throw new IllegalArgumentException("Incorrect namespace for "+abbreviatedNamespaceName+" : " + namespace + ". " +
     				"The namespace "+correctNamespace+" must not be modified.");
-    	if(!sparqlNamespacePrefixPattern.matcher(abbreviatedNamespaceName).matches())
+    	if(!SPARQLGrammar.sparqlNamespacePrefixPattern.matcher(abbreviatedNamespaceName).matches())
     		throw new IllegalArgumentException(format("Incorrect namespace prefix '%s' according to SPARQL 1.1 PREFIX specification: http://www.w3.org/TR/sparql11-query/#rPN_PREFIX", 
     				abbreviatedNamespaceName));
     	
@@ -162,7 +153,6 @@ public class NamespaceServiceImpl implements NamespaceService
      */
     protected NamespaceServiceImpl(String namespacesFile)
     {
-    	initPatternForSparqlGrammerChecks();
         store = new Properties( new TransactionalFile(namespacesFile) );
 
         predefinedNamespaces = getPredefinedNamespaces();
@@ -202,33 +192,6 @@ public class NamespaceServiceImpl implements NamespaceService
         
         // don't forget to synchronize the sorted store
     }
-
-	private void initPatternForSparqlGrammerChecks() {
-		// initialize regex pattern for SPARQL local names
-        String PN_CHARS_BASE =
-                String.format("[A-Za-z\u00C0-\u00D6\u00D8-\u00F6"
-                        + "\u00F8-\u02FF\u0370-\u037D"
-                        + "\u037F-\u1FFF\u200C-\u200D"
-                        + "\u2070-\u218F\u2C00-\u2FEF"
-                        + "\u3001-\uD7FF\uF900-\uFDCF"
-                        + "\uFDF0-\uFFFD%s-%s]",
-                        // note that unicode code points above ffff cannot be expressed as single character
-                        // (i.e. u-notation) and thus have to expressed using Character.toChars(int codePoint)
-                        new String(toChars(0x10000)), new String(toChars(0xEFFFF)));
-
-        String PN_CHARS_U = union(PN_CHARS_BASE, "[_]");
-        String PN_CHARS = union(PN_CHARS_U, "[\\-0-9\u00B7\u0300-\u036F\u203F-\u2040]");
-
-        sparqlLocalNamePattern =
-                Pattern.compile(format("%s(%s*%s)?", PN_CHARS_U, union(PN_CHARS, "[.]"), PN_CHARS));
-        sparqlNamespacePrefixPattern = 
-        		Pattern.compile(format("%s(%s*%s)?", PN_CHARS_U, union(PN_CHARS, "[.]"), PN_CHARS));
-	}
-
-	private String union(String... characterClasses) {
-		return "[" + Joiner.on("").join(characterClasses) + "]";
-	}
-
 
 	Map<String, String> getPredefinedNamespaces()
     {
@@ -303,7 +266,7 @@ public class NamespaceServiceImpl implements NamespaceService
     protected boolean validateLocalName(String localName)
     {
         Matcher sparqlLocalNameMatcher =
-                sparqlLocalNamePattern.matcher(localName);
+                SPARQLGrammar.sparqlLocalNamePattern.matcher(localName);
 
         return sparqlLocalNameMatcher.matches();
     }
@@ -732,12 +695,12 @@ public class NamespaceServiceImpl implements NamespaceService
             if (delim == -1) // no colon found
             {
                 // create URI in the default namespace
-                return valueFactory.createURI(defaultNamespace(), s);
+            	return createURIInDefaultNS(s);
             }
             else if (delim == 0) // colon in first place: :name
             {
                 // create URI in the default namespace
-                return valueFactory.createURI(defaultNamespace(), s.substring(1));
+            	return createURIInDefaultNS(s.substring(1));
             }
             else
             {
@@ -746,13 +709,14 @@ public class NamespaceServiceImpl implements NamespaceService
                     return valueFactory.createURI(prefix, s
                             .substring(delim + 1));
                 else
-                    logger.error("Prefix '" + s.subSequence(0, delim)
-                            + "' in prefixed URI cannot be resolved.");
+                    logger.debug("Prefix '" + s.subSequence(0, delim)
+                            + "' in prefixed URI '"+s+"' cannot be resolved.");
             }
         }
         catch (Exception e)
         {
-            logger.error(e.getMessage(), e);
+            logger.warn("Failed to parse prefixed URI '"+s+"'. Error: "+e.getMessage());
+            logger.debug("Details: ", e);
         }
 
         return null; // parsing failed

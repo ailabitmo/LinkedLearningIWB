@@ -121,5 +121,10 @@ public class RDFServlet extends IWBHttpServlet
 		
 		out.close();
 	}
+	
+	@Override
+	protected String getPageTitle() {
+		return "RDF Servlet";
+	}  
 
 }

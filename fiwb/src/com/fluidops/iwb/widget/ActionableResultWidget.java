@@ -26,6 +26,7 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 
@@ -36,13 +37,14 @@ import com.fluidops.ajax.models.FTableModel;
 import com.fluidops.iwb.ajax.FValue.ValueConfig;
 import com.fluidops.iwb.annotation.CallableFromWidget;
 import com.fluidops.iwb.api.EndpointImpl;
+import com.fluidops.iwb.api.query.QueryBuilder;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
 import com.fluidops.iwb.service.CodeExecution.CodeExecutionContext;
-import com.fluidops.iwb.service.CodeExecution.WidgetCodeConfig;
 import com.fluidops.iwb.util.QueryResultUtil;
 import com.fluidops.iwb.util.QueryResultUtil.ColumnActionComponentBuilder;
+import com.fluidops.iwb.widget.CodeExecutionWidget.WidgetCodeConfig;
 
 
 /**
@@ -93,31 +95,29 @@ public class ActionableResultWidget extends TableResultWidget
 	}	
 
 	@Override
-	protected FTable createTable(String id, Repository rep, String query,
-			ValueConfig valueCfg, boolean infer) throws RepositoryException,
+	protected FTable createTable(String id, Repository rep, QueryBuilder<TupleQuery> queryBuilder,
+			ValueConfig valueCfg) throws RepositoryException,
 			MalformedQueryException, QueryEvaluationException
 	{
 		// if the user is not allowed to see the CodeExecutionWidget, we render the usual table
 		if (!EndpointImpl.api().getUserManager().hasWidgetAccess(CodeExecutionWidget.class, null))
-			return super.createTable(id, rep, query, valueCfg, infer);
+			return super.createTable(id, rep, queryBuilder, valueCfg);
 		
 		final Config c = (Config) get();
 
+		/*
 		if (c.rowActions!=null && c.selectedRowActions!=null)
 			throw new IllegalArgumentException("Either row actions or columns actions can be specified.");
+		*/
 		
-		FTable table;		
-		if (c.rowActions!=null) {
-			table = createTableRowActions(id, rep, query, valueCfg, infer, c);
-
-			/*
-			 * Make the actions column (the last of the table) not sortable
-			 */
-			table.setSortableColumn(table.getModel().getColumnCount() - 1, false);
-		} else if (c.selectedRowActions!=null)
-			table = createTableSelectedRowActions(id, rep, query, valueCfg, infer, c);
-		else
+		FTable table;
+		if (c.selectedRowActions!=null) {
+			table = createTableSelectedRowActions(id, rep, queryBuilder, valueCfg, c);
+		} else if (c.rowActions!=null) {
+			table = createTableRowActions(id, rep, queryBuilder, valueCfg, c);
+		} else {
 			throw new IllegalArgumentException("Row actions or column actions must be specified.");
+		}
 
 		return table;
 	}
@@ -127,8 +127,8 @@ public class ActionableResultWidget extends TableResultWidget
 	 * a control element for each row action into the last column
 	 * of the table.
 	 */
-	private FTable createTableRowActions(String id, Repository rep, String query,
-			ValueConfig valueCfg, boolean infer, Config c) throws RepositoryException,
+	private FTable createTableRowActions(String id, Repository rep, QueryBuilder<TupleQuery> queryBuilder,
+			ValueConfig valueCfg, Config c) throws RepositoryException,
 			MalformedQueryException, QueryEvaluationException {
 		
 		for (WidgetCodeConfig rowAction : c.rowActions)
@@ -137,8 +137,7 @@ public class ActionableResultWidget extends TableResultWidget
 		FTable table = new FTable(id);
 		CodeExecutionContext ceCtx = new CodeExecutionContext(pc, table);
 		FTableModel tm = QueryResultUtil
-				.sparqlSelectAsTableModelWithSingleRowAction(rep, query, true,
-						infer, pc.value, valueCfg, c.rowActions, ceCtx);
+				.sparqlSelectAsTableModelWithSingleRowAction(rep, queryBuilder, valueCfg, c.rowActions, ceCtx);
 		table.setModel(tm);
 		
 		return table;
@@ -148,18 +147,28 @@ public class ActionableResultWidget extends TableResultWidget
 	 * Creates a {@link FSelectableTable} for the given configuration, adding
 	 * a control element below the table for each selected row action.
 	 */
-	private FTable createTableSelectedRowActions(String id, Repository rep, String query,
-			ValueConfig valueCfg, boolean infer, Config c) throws RepositoryException,
+	private FTable createTableSelectedRowActions(String id, Repository rep, QueryBuilder<TupleQuery> queryBuilder,
+			ValueConfig valueCfg, Config c) throws RepositoryException,
 			MalformedQueryException, QueryEvaluationException {
-		    		
+
 		for (WidgetCodeConfig action : c.selectedRowActions)
 			checkRowAction(action);
-		
+
+		final boolean hasRowActions;
+		if (c.rowActions != null && !c.rowActions.isEmpty()) {
+			hasRowActions = true;
+
+			for (WidgetCodeConfig rowAction : c.rowActions) {
+				checkRowAction(rowAction);
+			}
+		} else {
+			hasRowActions = false;
+		}
+
 		FSelectableTable<BindingSet> table = new FSelectableTable<BindingSet>(id);
 		CodeExecutionContext ceCtx = new CodeExecutionContext(pc, table);
 		FSelectableTableModel<BindingSet> tm = QueryResultUtil
-				.sparqlSelectAsTableModelForColumnActions(rep, query, true,
-						infer, pc.value, valueCfg);
+				.sparqlSelectAsTableModelForColumnActions(rep, queryBuilder, valueCfg, c.rowActions, ceCtx);
 		table.setModel(tm);
 		
 		// create action components
@@ -168,7 +177,14 @@ public class ActionableResultWidget extends TableResultWidget
 				table.addControlComponent(ColumnActionComponentBuilder.buildActionComponent(action, table, ceCtx), "floatLeft");
 			}
 		}
-		
+
+		if (hasRowActions) {
+			/*
+			 * Make the actions column (the last of the table) not sortable
+			 */
+			table.setSortableColumn(table.getModel().getColumnCount() - 1, false);
+		}
+
 		return table;
 	}
 

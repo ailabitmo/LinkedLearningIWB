@@ -22,15 +22,24 @@ import java.io.File;
 import java.lang.reflect.Method;
 
 import org.apache.log4j.Logger;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.repository.sparql.SPARQLConnection;
 import org.openrdf.repository.sparql.SPARQLRepository;
+import org.openrdf.rio.RDFHandler;
+import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.lucene.LuceneSail;
+import org.openrdf.sail.lucene.LuceneSailNIOFS;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.sail.nativerdf.NativeStore;
 
@@ -38,6 +47,7 @@ import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.model.Vocabulary;
 import com.fluidops.util.StringUtil;
 import com.fluidops.util.scripting.DynamicScriptingSupport;
+import com.fluidops.util.user.PwdSafe;
 
 /**
  * Repository Factory to load supported and custom Repositories via {@link #getRepository(String)}.
@@ -66,6 +76,22 @@ import com.fluidops.util.scripting.DynamicScriptingSupport;
 public class RepositoryFactory
 {
 	private static final Logger logger = Logger.getLogger(RepositoryFactory.class.getName());
+	
+	/**
+	 * The config.prop option for the user name. Applied in {@link SparqlRepositoryFactory},
+	 * {@link HttpRepositoryFactory} and {@link RemoteRepositoryFactory} to optionally configure
+	 * basic authentication.
+	 */
+	private static final String CONFIG_REPOSITORY_USER = "repositoryUser";
+	
+	/**
+	 * The config.prop option for the password. Applied in {@link SparqlRepositoryFactory},
+	 * {@link HttpRepositoryFactory} and {@link RemoteRepositoryFactory} to optionally configure
+	 * basic authentication.
+	 * 
+	 * The value may be encrypted using {@link PwdSafe}.
+	 */
+	private static final String CONFIG_REPOSITORY_PASSWORD = "repositoryPassword";
 	
 	/**
 	 * Abstract base class for any RepositoryFactory. Can be extended to load
@@ -248,10 +274,14 @@ public class RepositoryFactory
 	 * @throws Exception
 	 */
 	public static SailRepository getWikiLuceneSailRepository() throws Exception {
+		return getWikiLuceneSailRepository(IWBFileUtil.getWikiLuceneIndexFolder());
+	}
+	
+	public static SailRepository getWikiLuceneSailRepository(File indexFolder) throws Exception {
 		MemoryStore store = new MemoryStore();
-		LuceneSail luceneSail = new LuceneSail();
+		LuceneSail luceneSail = new LuceneSailNIOFS();
 		
-		luceneSail.setParameter(LuceneSail.LUCENE_DIR_KEY, IWBFileUtil.getWikiLuceneIndexFolder().getAbsolutePath());
+		luceneSail.setParameter(LuceneSail.LUCENE_DIR_KEY, indexFolder.getAbsolutePath());
 		// index wiki pages only
 		luceneSail.setParameter(LuceneSail.INDEXEDFIELDS, "index.1="+Vocabulary.SYSTEM.WIKI.stringValue());
 		// use WikipediaAnalyzer
@@ -330,7 +360,9 @@ public class RepositoryFactory
 			store.setForceSync(Config.getConfig().getNativeStoreForceSync());
 			
 			// create a lucenesail to wrap the store
-			LuceneSail luceneSail = new LuceneSail();
+			// Note: make LuceneSail use NIOFSDirectory to avoid JVM crash.
+			// TODO: return back to default when the bug is fixed (in the next Lucene version(?)) 
+			LuceneSail luceneSail = new LuceneSailNIOFS();
 			// store the lucene index on disk
 			luceneSail.setParameter(LuceneSail.LUCENE_DIR_KEY, IWBFileUtil.getLuceneIndexFolder().getAbsolutePath());
 			// wrap store in a lucenesail
@@ -468,8 +500,13 @@ public class RepositoryFactory
 	 * Supported Configuration parameters
 	 *  - {@link Config#getRepositoryServer()}
 	 *  - {@link Config#getRepositoryName()}
-	 *  - {@link Config#getRepositoryUser()}
-	 *  - {@link Config#getRepositoryPassword()}
+	 *
+	 * When used from {@link RepositoryFactory#getRepository(String)} using 
+	 * repositoryType=remoterepository, the following configuration parameters can
+	 * be used to define basic authentication:
+	 * 
+	 * 	- {@value RepositoryFactory#CONFIG_REPOSITORY_USER}: an user name
+	 *  - {@value RepositoryFactory#CONFIG_REPOSITORY_PASSWORD}: an optionally encrypted password (PwdSafe)
 	 *  
 	 * @author as
 	 */
@@ -499,8 +536,8 @@ public class RepositoryFactory
                 throw new RuntimeException("Illegal configuration of remotereposiotory, repository server and name are required");
             }
             
-            String user = Config.getConfig().get("repositoryUser");
-			String pass = Config.getConfig().get("repositoryPassword");
+            String user = Config.getConfig().get(CONFIG_REPOSITORY_USER);
+			String pass = Config.getConfig().getPassword(CONFIG_REPOSITORY_PASSWORD);
             
             RemoteRepositoryManager rm = new RemoteRepositoryManager(repositoryServer);
                  
@@ -529,10 +566,15 @@ public class RepositoryFactory
 	 * Supported Configuration parameters
 	 *  - {@link Config#getRepositoryServer()}
 	 *  - {@link Config#getRepositoryName()}
-	 *  - {@link Config#getRepositoryUser()}
-	 *  - {@link Config#getRepositoryPassword()}
 	 *  
-	 * @author andreas_s
+	 * When used from {@link RepositoryFactory#getRepository(String)} using 
+	 * repositoryType=httprepository, the following configuration parameters can
+	 * be used to define basic authentication:
+	 * 
+	 * 	- {@value RepositoryFactory#CONFIG_REPOSITORY_USER}: an user name
+	 *  - {@value RepositoryFactory#CONFIG_REPOSITORY_PASSWORD}: an optionally encrypted password (PwdSafe)
+	 *  
+	 * @author as
 	 *
 	 */
 	private static class HttpRepositoryFactory extends RepositoryFactoryBase {
@@ -560,8 +602,8 @@ public class RepositoryFactory
 	            throw new RuntimeException("Illegal configuration of httpreposiotory, repository server and name are required");
 	        }
 	        
-	        String user = Config.getConfig().get("repositoryUser");
-			String pass = Config.getConfig().get("repositoryPassword");
+	        String user = Config.getConfig().get(CONFIG_REPOSITORY_USER);
+			String pass = Config.getConfig().getPassword(CONFIG_REPOSITORY_PASSWORD);
 	        
 	        HTTPRepository repo = new HTTPRepository(repositoryServer, repositoryName);
 	             
@@ -582,6 +624,13 @@ public class RepositoryFactory
 	 * When using default constructor, requires {@link Config#getEndpoint()}
 	 * Optionally a user can be specified which is used for basic authentication.
 	 * 
+	 * When used from {@link RepositoryFactory#getRepository(String)} using 
+	 * repositoryType=sparql, the following configuration parameters can
+	 * be used to define basic authentication:
+	 * 
+	 * 	- {@value RepositoryFactory#CONFIG_REPOSITORY_USER}: an user name
+	 *  - {@value RepositoryFactory#CONFIG_REPOSITORY_PASSWORD}: an optionally encrypted password (PwdSafe)
+	 * 
 	 * @author as
 	 */
 	private static class SparqlRepositoryFactory extends RepositoryFactoryBase {
@@ -591,7 +640,7 @@ public class RepositoryFactory
 		private final String pass;
 		
 		public SparqlRepositoryFactory() {
-			this(Config.getConfig().getEndpoint());
+			this(Config.getConfig().getEndpoint(), Config.getConfig().get(CONFIG_REPOSITORY_USER), Config.getConfig().getPassword(CONFIG_REPOSITORY_PASSWORD));
 		}
 		
 		public SparqlRepositoryFactory(String endpoint) {
@@ -733,5 +782,48 @@ public class RepositoryFactory
 
 			return factory.loadRepository();
 		}		
+	}
+	
+	/**
+	 * This {@link SPARQLConnection} ignores context information because the Joseki
+	 * SPARQL endpoint used for Oracle doesn't support named graphs in the FROM
+	 * clause.
+	 * 
+	 * @author christian.huetter
+	 */
+	private static class OracleSPARQLConnection extends SPARQLConnection
+	{
+		public OracleSPARQLConnection(SPARQLRepository repository,
+				String queryEndpointUrl, String updateEndpointUrl)
+		{
+			super(repository);
+		}
+
+		@Override
+		public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+				RDFHandler handler, Resource... ignored)
+			throws RepositoryException, RDFHandlerException
+		{
+			// ignore contexts
+			super.exportStatements(subj, pred, obj, includeInferred, handler);
+		}
+
+		@Override
+		public RepositoryResult<Statement> getStatements(Resource subj, URI pred,
+				Value obj, boolean includeInferred, Resource... ignored)
+				throws RepositoryException
+		{
+			// ignore contexts
+			return super.getStatements(subj, pred, obj, includeInferred);
+		}
+
+		@Override
+		public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+				Resource... ignored)
+			throws RepositoryException
+		{
+			// ignore contexts
+			return super.hasStatement(subj, pred, obj, includeInferred);
+		}
 	}
 }

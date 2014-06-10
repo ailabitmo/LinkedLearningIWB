@@ -48,8 +48,6 @@ public class ValueBasedDataMappingProvider extends DataMappingProvider<ValueBase
 	private static final long serialVersionUID = 1888830588586691656L;
 	
 	protected static final Logger logger = Logger.getLogger(ValueBasedDataMappingProvider.class.getName());
-    
-	private static MatchType MATCH_TYPE_DEFAULT = MatchType.EXACT;
 	
     public static enum MatchType
     {
@@ -82,10 +80,11 @@ public class ValueBasedDataMappingProvider extends DataMappingProvider<ValueBase
 		@ParameterConfigDoc(
 				desc = "Identify keys if the value set of the source query is identical (EXACT), " +
 						"a subset (SUBSET)/superset (SUPERSET), or contains a joint member " +
-						"(JOINT_MEMBER) with the destination query's value set. Default is EXACT.",
+						"(JOINT_MEMBER) with the destination query's value set. ",
 				required = false,
-				type = Type.DROPDOWN)
-		public MatchType matchType;
+				type = Type.DROPDOWN,
+				defaultValue = "EXACT")
+		public MatchType matchType = MatchType.EXACT;
 	    
 	    @ParameterConfigDoc(
 	    		desc="URI representing the link type, default: owl:sameAs",
@@ -109,8 +108,6 @@ public class ValueBasedDataMappingProvider extends DataMappingProvider<ValueBase
 		
 		// read config values
 		MatchType matchType = config.matchType;
-		if (matchType==null)
-			matchType = MATCH_TYPE_DEFAULT;
 		
 		URI linkType = (StringUtil.isNullOrEmpty(config.linkType)) ? OWL.SAMEAS : 
 			EndpointImpl.api().getNamespaceService().guessURIOrCreateInDefaultNS(config.linkType);

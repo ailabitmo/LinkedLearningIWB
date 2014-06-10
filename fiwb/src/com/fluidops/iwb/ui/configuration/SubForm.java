@@ -30,6 +30,13 @@ import com.fluidops.iwb.api.operator.OperatorNode;
  */
 public class SubForm extends ConfigurationFormBase {
 
+	public SubForm(String id) {
+		super(id);
+		this.hideSubmit = true;
+		this.hideShowRequiredFieldsMessage = true;
+		this.appendClazz("subcontainer");
+	}
+	
 	/**
 	 * @param id
 	 * @param defaultConfigClass

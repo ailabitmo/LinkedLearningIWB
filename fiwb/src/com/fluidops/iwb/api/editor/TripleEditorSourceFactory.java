@@ -31,7 +31,7 @@ import com.fluidops.util.StringUtil;
  * @author uli
  */
 public class TripleEditorSourceFactory 
-{	
+{
 	// defaults
 	private final static Class<?> DEFAULT_TRIPLE_EDITOR_SOURCE_FOR_URI = TripleEditorSourceURIOnDemand.class;
 	private final static Class<?> DEFAULT_TRIPLE_EDITOR_SOURCE_FOR_LITERAL = TripleEditorSourceLiteralImpl.class;
@@ -41,28 +41,37 @@ public class TripleEditorSourceFactory
 	/**
 	 * Returns a triple editor source for a URI
 	 * 
-	 * @param uri the subject
-	 * @param clazz class of the triple source, if null or empty the system default is used
-	 * @param initialValuesDisplayed number of values displayed in preview
-	 * @param includeInverseProperties whether to include inverse properties or not
-	 *
+	 * @param uri
+	 *            the subject
+	 * @param clazz
+	 *            class of the triple source, if null or empty the system
+	 *            default is used
+	 * @param initialValuesDisplayed
+	 *            number of values displayed in preview
+	 * @param includeInverseProperties
+	 *            whether to include inverse properties or not
+	 * @param info
+	 *            Additional requirements information.
+	 * 
 	 * @return the triple editor source
 	 * 
 	 * @throws QueryEvaluationException
 	 */
-	public static TripleEditorSource tripleEditorSourceForURI(URI uri, String clazz, 
-			int initialValuesDisplayed, boolean includeInverseProperties)
+	public static TripleEditorSource tripleEditorSourceForURI(URI uri,
+			String clazz, int initialValuesDisplayed,
+			boolean includeInverseProperties, TripleEditorSourceInformation info)
 	throws QueryEvaluationException
 	{
 		// set clazz default, if class not provided
 		if (StringUtil.isNullOrEmpty(clazz))
 			clazz = DEFAULT_TRIPLE_EDITOR_SOURCE_FOR_URI.getName();
 		
-		TripleEditorSource tes = loadTripleEditorSourceByClazz(clazz);
+		TripleEditorSource tes = loadTripleEditorSourceByClazz(clazz, info);
 		if (!(tes instanceof TripleEditorSourceURI))
 			throw new IllegalArgumentException("Class " + clazz + " must implement interface " + TripleEditorSourceURI.class.getName() + ", but does not.");
 
-		((TripleEditorSourceURI)tes).initialize(uri, initialValuesDisplayed, includeInverseProperties);
+		((TripleEditorSourceURI) tes).initialize(uri, initialValuesDisplayed,
+				includeInverseProperties, info);
 		
 		return tes;
 	}
@@ -77,7 +86,7 @@ public class TripleEditorSourceFactory
 	 * 
 	 * @throws QueryEvaluationException
 	 */
-	public static TripleEditorSource tripleEditorSourceForLiteral(Literal literal, String clazz)
+	public static TripleEditorSource tripleEditorSourceForLiteral(Literal literal, String clazz, TripleEditorSourceInformation info)
 	throws QueryEvaluationException
 	{
 		// set clazz default, if class not provided
@@ -85,7 +94,7 @@ public class TripleEditorSourceFactory
 			clazz = DEFAULT_TRIPLE_EDITOR_SOURCE_FOR_LITERAL.getName();
 		
 		
-		TripleEditorSource tes = loadTripleEditorSourceByClazz(clazz);
+		TripleEditorSource tes = loadTripleEditorSourceByClazz(clazz, info);
 		if (!(tes instanceof TripleEditorSourceLiteral))
 			throw new IllegalArgumentException("Class " + clazz + " must implement interface " + TripleEditorSourceLiteral.class.getName() + ", but does not.");
 
@@ -106,14 +115,14 @@ public class TripleEditorSourceFactory
 	 * @throws QueryEvaluationException
 	 */
 	public static TripleEditorSource tripleEditorSourceForBNode(BNode bNode, 
-			String clazz, boolean includeInverseProperties) 
+			String clazz, boolean includeInverseProperties, TripleEditorSourceInformation info) 
 	throws QueryEvaluationException
 	{
 		// set clazz default, if class not provided
 		if (StringUtil.isNullOrEmpty(clazz))
 			clazz = DEFAULT_TRIPLE_EDITOR_SOURCE_FOR_BNODE.getName();
 		
-		TripleEditorSource tes = loadTripleEditorSourceByClazz(clazz);
+		TripleEditorSource tes = loadTripleEditorSourceByClazz(clazz, info);
 		if (!(tes instanceof TripleEditorSourceBNode))
 			throw new IllegalArgumentException("Class " + clazz + " must implement interface " + TripleEditorSourceBNode.class.getName() + ", but does not.");
 
@@ -130,12 +139,17 @@ public class TripleEditorSourceFactory
 	 * 
 	 * @return the instance
 	 */
-	private static TripleEditorSource loadTripleEditorSourceByClazz(String clazz)
+	private static TripleEditorSource loadTripleEditorSourceByClazz(String clazz, TripleEditorSourceInformation tripleEditorSourceInfo)
 	{
 		try
 		{
 			Class<?> tripleEditorSourceClass = Class.forName(clazz);
-			return (TripleEditorSource)tripleEditorSourceClass.newInstance();
+			TripleEditorSource t = (TripleEditorSource)tripleEditorSourceClass.newInstance();
+			if (TripleEditorSourceBase.class.isAssignableFrom(tripleEditorSourceClass)) {
+				// set the repository from the triple source configuration, if given
+				((TripleEditorSourceBase)t).setRepository(tripleEditorSourceInfo.getRepository());
+			}
+			return t;
 		}
 		catch (ClassNotFoundException e)
 		{

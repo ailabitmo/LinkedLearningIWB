@@ -64,13 +64,4 @@ public interface WidgetSelector extends Remote
             @Par(name="applyToInstances", type="boolean", desc="show widget for all instances of this type", isRequired=false) Boolean applyToInstances
 	) throws RemoteException, Exception;
 	
-	@Doc ( "Update an existing widget configuration" )
-	public void updateWidget(
-			@Par(name="widget", type="widget class", desc="name of the widget class", isRequired=true) Class<? extends Widget<?>> widget,
-			@Par(name="oldInput", type="widget input", desc="old configuration of the widget", isRequired=true) Operator oldInput,
-			@Par(name="input", type="widget input", desc="configuration of the widget", isRequired=true) Operator input,
-			@Par(name="entity", type="entity", desc="URI of the entity", isRequired=true) Value entity,
-		    @Par(name="applyToInstances", type="boolean", desc="show widget for all instances of this type", isRequired=false) Boolean applyToInstances,
-		    @Par(name="preCondition", type="string", desc="verify if the widget is applicable for the resource", isRequired=false) String preCondition
-	) throws RemoteException, Exception;
 }

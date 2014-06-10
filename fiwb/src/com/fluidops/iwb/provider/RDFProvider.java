@@ -18,235 +18,182 @@
 
 package com.fluidops.iwb.provider;
 
-import info.aduna.iteration.Iterations;
-
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipInputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.io.IOUtils;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.repository.util.RDFLoader;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.sail.memory.MemoryStore;
-import org.xeustechnologies.jtar.TarInputStream;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParserRegistry;
+import org.openrdf.rio.helpers.RDFHandlerBase;
 
-import com.fluidops.iwb.Global;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
+import com.fluidops.iwb.datasource.RDFDataSource;
 import com.fluidops.iwb.model.ParameterConfigDoc;
+import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
+import com.fluidops.iwb.ui.configuration.SelectValuesFactory;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
-import fr.inria.rdfa.RDFaParser;
 
-@TypeConfigDoc( "Reads RDF data from a web document in any RDF format to store the data unmodified locally."+ 
-		"The source data may also be compressed in .zip, .gz or .tar.gz format." )
-public class RDFProvider extends AbstractFlexProvider<RDFProvider.Config>
-{
+/**
+ * Provider for RDF data. This provider imports data from a given {@link RDFDataSource}
+ * using the provider framework.
+ * 
+ * Note: for legacy reasons we support the configuration using explicit URL and format.
+ */
+@TypeConfigDoc( "Reads RDF data from an existing RDF source that is accessible via a URL." )
+public class RDFProvider extends AbstractFlexProvider<RDFProvider.Config>  {
+	
 	private static final long serialVersionUID = 7415666290518242634L;
 
-    private static final Logger logger = Logger.getLogger(RDFProvider.class.getName());
-	
-	InputStream unpackStream( URL url, InputStream instream ) throws IOException
-	{
-		if (url.toString().endsWith("tar.gz"))
-		{
-			TarInputStream tar = new TarInputStream( new GZIPInputStream( instream ) );
-			return tar;
-		}
-		else if (url.toString().endsWith(".gz"))
-	        {
-	            return new GZIPInputStream(instream);
-	        }
-		else if (url.toString().endsWith(".zip"))
-			return new ZipInputStream(instream);
-		else
-			return instream;
+	public static class Config extends AbstractFlexProvider.DataSourceProviderConfig implements Serializable {
+		
+		private static final long serialVersionUID = -256843331311012640L;
 
+		@ParameterConfigDoc(desc = "URL of the RDF data source", 
+				required = true)
+		public String url;
+
+		@ParameterConfigDoc(desc = "The RDF format used by the source", 
+				type = Type.DROPDOWN, 
+				selectValuesFactory = RDFFormatSelectValuesFactory.class)
+		public String format;
 	}
 	
 	
 	@Override
-	public void gather(final List<Statement> res) throws Exception
-	{
-	    // TODO: This should be done via SPARQL Provider, has nothing to do with RDF Provider.
-		// if statement can be moved to DataSourcesTable - leave it in for now so
-		// adding lod from the UI works
-		if ( config.url.endsWith( "sparql" ) )
-		{
-			SPARQLEndpointProvider.Config c = new SPARQLEndpointProvider.Config();
-			c.endpoint = config.url;
-			c.query = "construct {?s ?p ?o} where {?s ?p ?o}";
-			SPARQLEndpointProvider p = new SPARQLEndpointProvider();
-			p.config = c;
-			p.gather(res);
-			return;
-		}
-		Repository repository;
+	public void gather(final List<Statement> res) throws Exception {
 		
-		// in streaming mode, we write directly into the repository
-		if(config.streaming)
-		    repository = Global.repository;
-		else {
-		    repository = new SailRepository(new MemoryStore());
-		    repository.initialize();
-		}
-		
-        URL url = new URL(config.url);
-        
-        boolean success = false;
-        logger.info("Loading " + url);
-        URLConnection conn = url.openConnection();
-        conn.setConnectTimeout(1000);
-        String contentType = conn.getContentType();
+		InputStream rdfStream = null;
+		RDFFormat rdfFormat;
+		String baseUri;
+		try {
+			
+			// use either DataSource or legacy initialization
+			if (config.dataSource!=null) {
+				RDFDataSource ds = config.lookupAndRefreshDataSource(RDFDataSource.class);
+				
+				rdfFormat = ds.getRDFFormat();			
+				if (rdfFormat==null)
+					throw new IllegalStateException(String.format("Data source '%s' does not provide a valid RDF Format", ds.getIdentifier()));
+				
+				rdfStream = ds.getRDFStream();
+				baseUri = providerID.stringValue();
+			} else {
+				
+				// legacy support
+				URL url = new URL(config.url);
 
-        // try to determine RDFFormat
+				URLConnection conn = url.openConnection();
+				conn.setConnectTimeout(1000);
+				String contentType = conn.getContentType();
+
+				rdfFormat = getRDFFormat(url, contentType);
+				if (rdfFormat == null)
+					throw new IllegalStateException(String.format("Cannot determine RDF format for URL '%s'. Please specify a format manually.", config.url));
+				
+				rdfStream = conn.getInputStream();
+				baseUri = config.url;
+			}
+			
+			// load the RDF data from the rdf stream
+			ParserConfig parserConfig = new ParserConfig();
+			RDFLoader loader = new RDFLoader(parserConfig, ValueFactoryImpl.getInstance());	
+			loader.load(rdfStream, baseUri, rdfFormat, new RDFHandlerBase() {
+						@Override
+						public void handleStatement(Statement st) throws RDFHandlerException {
+							res.add(st);
+						}
+					});
+			
+		} finally {
+			IOUtils.closeQuietly(rdfStream);
+		}
+	}
+
+	
+	/**
+	 * Try to determine the RDF Format using the following strategies:
+	 * 
+	 * a) explicitly specified in the configuration
+	 * b) using {@link RDFFormat#forMIMEType(String)}
+	 * c) using {@link RDFFormat#forFileName(String)} on the file name
+	 * 
+	 * @param url
+	 * @param contentType
+	 * @return
+	 */
+	protected RDFFormat getRDFFormat(URL url, String contentType) {
+		
+		// try to determine RDFFormat
         RDFFormat rdfFormat = null;
         
         // ideally, the format is already specified in the config
         if(config.format!=null)
-        {
            rdfFormat = ReadDataManagerImpl.parseRdfFormat(config.format);
-        }
         
         // next most reliable is MIME type of content
         if(rdfFormat==null)
-        {
             rdfFormat = RDFFormat.forMIMEType(contentType);
-        }
         
         //As alternative try file name
         if(rdfFormat==null)
-        {
             rdfFormat = RDFFormat.forFileName(url.getFile());
-        }
         
-        //Additional heuristics
-        if(rdfFormat==null) 
-        {
-            if(contentType!=null && contentType.contains("n3"))
-                rdfFormat = RDFFormat.N3;
-            if(url.getFile().contains("n3"))
-                rdfFormat = RDFFormat.N3;
-            if(config.format!=null && config.format.contains("ntriples"))
-                rdfFormat = RDFFormat.NTRIPLES;
-        }
-        
-        if(rdfFormat == null)
-            logger.error("Failed to determine RDF Format for "+url);
-        if(rdfFormat !=null )
-        {
-            RepositoryConnection con = repository.getConnection();
-            try 
-            {
-                con.add(unpackStream(url, conn.getInputStream()), url.toString(), rdfFormat, ValueFactoryImpl.getInstance().createURI(url.toString()));
-                success = true;
-                logger.info("Successfully loaded "+url+" with RDFFormat "+rdfFormat);
-                
-                // in non streaming mode, we need to return the triples as list
-                if(!config.streaming) 
-                    res.addAll(Iterations.asList(con.getStatements(null, null, null, false)));
-            }
-            catch ( Exception e )
-            {
-                logger.error("Failed to load "+url+" with RDFFormat "+rdfFormat);
-                throw new RuntimeException(e);
-            }
-            finally 
-            {
-                con.close();
-            }
-        }
-        
-        if ( !success )
-        {
-            //  try RDFa
-            try
-            {
-                RDFaParser aParser = new RDFaParser()
-                {
-                    @Override
-                    public void handleDataProperty(String subjectURI, String subjectNodeID, String propertyURI, String value, String datatype, String lang) 
-                    { 
-                        ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
-                        res.add( vf.createStatement( vf.createURI( subjectURI ), vf.createURI(propertyURI), vf.createLiteral( value ) ) );
-                    } 
-
-                    public void handleObjectProperty(String subjectURI, String subjectNodeID, String propertyURI, String objectURI, String objectNodeID)
-                    {
-                        ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
-                        res.add( vf.createStatement( vf.createURI( subjectURI ), vf.createURI(propertyURI), vf.createURI(objectURI) ) );
-                    }
-                };
-                aParser.parse(new InputStreamReader( unpackStream(url, url.openStream()) ), config.url);
-
-            }
-            catch ( Exception ignore )
-            {
-                // wrong format
-            	logger.trace("Error occured while collecting RDF data: " + ignore.getMessage(), ignore);
-            }
-        }
-        if ( res.isEmpty() )
-            throw new RuntimeException("No valid RDF data found");
+        return rdfFormat;
 	}
 
 	@Override
-	public void setLocation( String location )
-	{
+	public void setLocation(String location) {
 		config.url = location;
 	}
-	
+
 	@Override
-	public String getLocation()
-	{
+	public String getLocation() {
 		return config.url;
 	}
 
 	@Override
-	public Class<? extends Config> getConfigClass()
-	{
+	public Class<? extends Config> getConfigClass() {
 		return Config.class;
 	}
-	
-	public static class Config implements Serializable
-	{
-        private static final long serialVersionUID = -256843331311012640L;
 
-		@ParameterConfigDoc(
-				desc = "URL of the RDF data source",
-				required = true)
-		public String url;
-
-		@ParameterConfigDoc(desc = "MIME type of the RDF document or the name of a supported RDF type (e.g. RDF/XML, N-Triples, TriG). Defaults to the content type as given by the http-connection to the given url")
-		public String format;
-
-		@ParameterConfigDoc(desc = "Defines whether streaming mode is set to true or false")
-		public boolean streaming;
+	/**
+	 * A {@link SelectValuesFactory} for {@link RDFFormat}s that are registered in
+	 * {@link RDFParserRegistry}. The values are returned by their name.
+	 * 
+	 * @author as
+	 * @see RDFFormat
+	 * @see RDFParserRegistry
+	 */
+	public static class RDFFormatSelectValuesFactory implements SelectValuesFactory {
+		@Override
+		public List<String> getSelectValues() {
+			
+			return Lists.transform(supportedRDFFormats(), new Function<RDFFormat, String>() {
+				@Override
+				public String apply(RDFFormat rdfFormat) {
+					return rdfFormat.getName();
+				}			
+			});
+		}
+		
+		/**
+		 * Return the supported {@link RDFFormat}s given by the {@link RDFParserRegistry}.
+		 * 
+		 * @return
+		 */
+		public static List<RDFFormat> supportedRDFFormats() {
+			return Lists.newArrayList(RDFParserRegistry.getInstance().getKeys());
+		}
 	}
-	
-	public static class ProviderThread extends Thread
-	{
-	    RDFProvider provider;
-	    public ProviderThread(RDFProvider p)
-	    {
-	        provider=p;   
-	    }
-	    
-	    @Override
-	    public void run()
-	    {
-	        provider.list();
-
-	    }
-	}
-	
 }

@@ -18,8 +18,9 @@
 
 package com.fluidops.iwb.api.solution;
 
-import static com.fluidops.iwb.api.solution.InstallationResult.InstallationStatus.*;
-import static java.lang.String.*;
+import static com.fluidops.iwb.api.solution.InstallationResult.InstallationStatus.INSTALLED_SUCCESSFULLY;
+import static com.fluidops.iwb.api.solution.InstallationResult.InstallationStatus.INSTALLED_SUCCESSFULLY_RESTART_REQUIRED;
+import static java.lang.String.format;
 
 import java.io.File;
 import java.io.FileReader;
@@ -29,19 +30,28 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import com.fluidops.base.VersionInfo;
-import com.fluidops.util.FileUtil;
 import com.fluidops.util.PropertyMap;
 import com.fluidops.util.StringUtil;
 
 /**
  * A {@link SolutionService} that installs solutions reference files (*.ref) as
- * solution. The file contains just the path to a "unzipped" solution directory
- * (no leading or trailing whitespaces including newlines are allowed!).
- * Typically this is used in development and contains something like:
+ * solution. The file contains the path to a "unzipped" solution directory
+ * (no leading or trailing whitespaces are allowed). This service considers
+ * the first line as the path, which does not start with "#", i.e. lines staring
+ * with a "#" are ignored.
+ * 
+ * Example:
+ * 
+ * <source>
+ * #Some comment
+ * ../project/mySolution
+ * </source>
+ * 
  * <p>
  * {@code ../fiwbcom/solutions/<solutionname>}.
  */
@@ -76,9 +86,14 @@ public class DirReferenceBasedSolutionService extends AbstractSingleFileBasedSol
     }
     
     protected File resolveReference(File directoryReference) throws IOException {
-    	String directoryPath = FileUtil.getFileContent(directoryReference);
-        directoryPath = directoryPath.replaceAll("(\\r|\\n)", "");		// remove linebreaks
-        return new File(directoryPath);
+    	
+    	List<String> lines = FileUtils.readLines(directoryReference);
+    	for (String line : lines) {
+    		if (line.startsWith("#"))
+    			continue;
+    		return new File(line);
+    	}    	
+    	throw new IOException("Invalid reference file syntax in " + directoryReference);
     }
 
     @Override

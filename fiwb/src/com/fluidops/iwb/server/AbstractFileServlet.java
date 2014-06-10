@@ -137,4 +137,8 @@ public abstract class AbstractFileServlet extends IWBHttpServlet
     
     protected abstract File getDownloadFile(HttpServletRequest req) throws FileNotFoundException;
     
+	@Override
+	protected String getPageTitle() {
+		return "File Servlet";
+	}  
 }

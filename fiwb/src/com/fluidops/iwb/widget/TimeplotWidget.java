@@ -51,7 +51,7 @@ import com.google.common.collect.Lists;
 /**
  * The widget plots numeric values on a timeline.
  * "Simple configuration example: <br />
- * {{ #widget : Timeplot <br />
+ * {{ #widget: Timeplot <br />
  * | query = 'SELECT (SUM(<http://www.w3.org/2001/XMLSchema#integer>(?grant)) AS ?sumGrant) ?start WHERE { <br />
  *      ?role <http://research.data.gov.uk/def/project/grant> ?grant . <br />
  *      ?role <http://research.data.gov.uk/def/project/project> ?project . <br />

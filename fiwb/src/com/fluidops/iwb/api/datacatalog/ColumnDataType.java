@@ -25,9 +25,18 @@ package com.fluidops.iwb.api.datacatalog;
  */
 public interface ColumnDataType 
 {
+	/**
+	 * @return vendor specific name of the datatype 
+	 */
 	public String getName();
 	
-	public String getFullName();
+	/**
+	 * @return code that is used across vendors to identify JDBC types (java.sql.Types) 
+	 */
+	public int getJDBCCode();
 	
-	public String getTypeName();
+	/**
+	 * @return the data type as a spring according to the constant defined in java.sql.Types
+	 */
+	public String getJDBCName();
 }

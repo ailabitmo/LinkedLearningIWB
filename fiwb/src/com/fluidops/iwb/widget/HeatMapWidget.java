@@ -80,11 +80,6 @@ public class HeatMapWidget extends AbstractChartWidget<HeatMapWidget.Config>
 			ReadDataManager globalDm, ReadDataManager queryDM,
 			Vector<Vector<Number>> values, Vector<Value> labels) 
 	{
-		FComponent widgetEmbeddingError = config.checkObligatoryFields(id,
-				config, pc.value, CHART_HEIGHT_DEFAULT);
-
-		if (widgetEmbeddingError != null)
-			return widgetEmbeddingError;
 
 		ChartDataModel pm = ChartWidgetUtil.createChartModel(FChartType.MAP,
 				config.height, config.width, config.title);
@@ -134,7 +129,7 @@ public class HeatMapWidget extends AbstractChartWidget<HeatMapWidget.Config>
                     
 
 		// calculate labels
-        widgetEmbeddingError = config.setOutputLabels(id, outputs, pm);
+        WidgetEmbeddingError widgetEmbeddingError = config.setOutputLabels(id, outputs, pm);
 	      if(widgetEmbeddingError!=null)
 	            return widgetEmbeddingError;
 
@@ -187,5 +182,14 @@ public class HeatMapWidget extends AbstractChartWidget<HeatMapWidget.Config>
 	{
     	String cp = EndpointImpl.api().getRequestMapper().getContextPath();
         return Lists.newArrayList(cp + "/amchart/swfobject.js");
+	}
+    
+	/**
+	 * @see com.fluidops.iwb.widget.AbstractChartWidget#getHeightDefault()
+	 */
+	@Override
+	protected String getDefaultHeight()
+	{
+		return CHART_HEIGHT_DEFAULT;
 	}
 }

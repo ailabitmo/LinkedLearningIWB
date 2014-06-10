@@ -46,6 +46,8 @@ import com.fluidops.ajax.models.FTableModel;
 import com.fluidops.iwb.ajax.FValue;
 import com.fluidops.iwb.ajax.FValueWithMatchHighlight;
 import com.fluidops.iwb.api.ImageResolver;
+import com.fluidops.iwb.api.ReadDataManagerImpl;
+import com.fluidops.iwb.keywordsearch.KeywordSearchProvider;
 import com.fluidops.iwb.model.AbstractMutableTupleQueryResult;
 import com.fluidops.iwb.page.SearchPageContext;
 import com.fluidops.iwb.server.HybridSearchServlet.BooleanQueryResult;
@@ -66,8 +68,6 @@ import com.fluidops.util.StringUtil;
  */
 public class SearchResultWidget extends AbstractWidget<WidgetVoidConfig> {
 
-	private static final int LIMIT = 1000; // Maximum number of tuples being shown.
-	
 	private static final Logger logger = Logger.getLogger(SearchResultWidget.class);
 	
 	private SearchPageContext spc;
@@ -250,7 +250,7 @@ public class SearchResultWidget extends AbstractWidget<WidgetVoidConfig> {
 
 		FTableModel tm = new FTableModel();
 
-		AbstractMutableTupleQueryResult res = original.getReducedResultSet(LIMIT);
+		AbstractMutableTupleQueryResult res = original.getReducedResultSet(Config.getConfig().getSearchResultsLimit());
 		
 		// nothing found?
 		if (!res.hasNext()) {
@@ -281,14 +281,7 @@ public class SearchResultWidget extends AbstractWidget<WidgetVoidConfig> {
 				
 				// show resources as links
 				if (val instanceof Resource) {
-					row.add(new FValue(Rand.getIncrementalFluidUUID(), val)
-					{
-					    @Override
-					    public String toString()
-					    {
-					    	return val.stringValue();
-					    }
-					});
+					row.add(new FValue(Rand.getIncrementalFluidUUID(), val, null, null, null, ReadDataManagerImpl.getDataManager(spc.repository), true));
 				}
 				// and literals as labels
 				else {
@@ -330,7 +323,7 @@ public class SearchResultWidget extends AbstractWidget<WidgetVoidConfig> {
 		tm.addColumn("Object");
 
 		// add a row for each search result
-		for (int rowCounter = 0; res.hasNext() && (rowCounter < LIMIT); rowCounter++)
+		for (int rowCounter = 0; res.hasNext() && (rowCounter < Config.getConfig().getSearchResultsLimit()); rowCounter++)
 		{
 			Statement st = res.next();
 
@@ -415,17 +408,17 @@ public class SearchResultWidget extends AbstractWidget<WidgetVoidConfig> {
 		// initialize data structure
 		Clustering clustering = new Clustering();
 
-		AbstractMutableTupleQueryResult res = original.getReducedResultSet(LIMIT);
+		AbstractMutableTupleQueryResult res = original.getReducedResultSet(Config.getConfig().getSearchResultsLimit());
 		
 		// iterate over search result to create clusters
 		while (res.hasNext()) {
 
 			BindingSet bindingSet = res.next();
 
-			Value sub = bindingSet.getValue("Subject");
-			Value type = bindingSet.getValue("Type");
-			Value pred = bindingSet.getValue("Property");
-			Value obj = bindingSet.getValue("Value");
+			Value sub = bindingSet.getValue( KeywordSearchProvider.SUBJECT );
+			Value type = bindingSet.getValue( KeywordSearchProvider.TYPE );
+			Value pred = bindingSet.getValue( KeywordSearchProvider.PROPERTY );
+			Value obj = bindingSet.getValue( KeywordSearchProvider.VALUE );
 
 			if (sub != null)
 			{

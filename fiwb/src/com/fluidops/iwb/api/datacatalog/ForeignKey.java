@@ -27,9 +27,18 @@ import java.util.List;
  */
 public interface ForeignKey 
 {
+	/**
+	 * @return local name of the foreign key
+	 */
 	public String getName();
 	
+	/**
+	 * @return schemaName.tableName.fk_name
+	 */
 	public String getFullName();
 	
+	/**
+	 * @return one ForeignKey may have several pk-fk-pairs of column references 
+	 */
 	public List<ForeignKeyColumnReference> getColumnReferences();
 }

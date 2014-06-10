@@ -18,6 +18,8 @@
 
 package com.fluidops.iwb.provider;
 
+import info.aduna.iteration.Iterations;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -74,7 +76,7 @@ public class RDFLookupProvider extends AbstractFlexProvider<EmptyConfig> impleme
     }
 
     @Override
-    public Class getConfigClass()
+    public Class<EmptyConfig> getConfigClass()
     {
         return EmptyConfig.class;
     }
@@ -155,7 +157,7 @@ public class RDFLookupProvider extends AbstractFlexProvider<EmptyConfig> impleme
                 try 
                 {
                     con.add(conn.getInputStream(), url.toString(), rdfFormat, ValueFactoryImpl.getInstance().createURI(url.toString()));
-                    res.addAll(con.getStatements(null, null, null, false).asList());
+                    res.addAll(Iterations.asList(con.getStatements(null, null, null, false)));
                     logger.info("Successfully loaded "+url+" with RDFFormat "+rdfFormat);
                 }
                 catch ( Exception e )
@@ -172,7 +174,7 @@ public class RDFLookupProvider extends AbstractFlexProvider<EmptyConfig> impleme
 
                 String content = GenUtil.readUrl(conn.getInputStream());
                 JSONObject o = new org.json.JSONObject(new JSONTokener(content));
-                Iterator iter = o.keys();
+                Iterator<?> iter = o.keys();
                 while (iter.hasNext())
                 {
                     //TODO
@@ -241,7 +243,7 @@ public class RDFLookupProvider extends AbstractFlexProvider<EmptyConfig> impleme
 
                     con.add(url, null, rdfFormat, valueFactory.createURI(url
                             .toString()));
-                    res.addAll(con.getStatements(null, null, null, false).asList());
+                    res.addAll(Iterations.asList(con.getStatements(null, null, null, false)));
                     con.close();
                 }
             }

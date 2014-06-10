@@ -291,6 +291,7 @@ public class CommunicationServiceImpl implements CommunicationService, Serializa
      * @param recurse whether or not to recursively update @recursiveUpdate-annotated methods/properties
      * @throws Exception
      */
+    @Override
     public void addOrUpdateDBObject(Object newObj, String source, Long timestamp, boolean recurse)
     throws Exception
     {

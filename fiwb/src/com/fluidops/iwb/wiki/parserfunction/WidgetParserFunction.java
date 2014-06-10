@@ -25,18 +25,21 @@ import info.bliki.wiki.template.AbstractTemplateFunction;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
+import org.openrdf.repository.Repository;
 
 import com.fluidops.ajax.components.FComponent;
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.operator.Operator;
 import com.fluidops.iwb.page.PageContext;
-import com.fluidops.iwb.ui.AnnotateLinkComponent;
+import com.fluidops.iwb.repository.PlatformRepositoryManager;
 import com.fluidops.iwb.widget.Widget;
 import com.fluidops.iwb.widget.WidgetEmbeddingError;
 import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.wiki.FluidWikiModel;
+import com.fluidops.util.StringUtil;
 
 /**
  * A parser function which creates a widget component and renders the html anchor at
@@ -52,7 +55,7 @@ public class WidgetParserFunction extends AbstractTemplateFunction implements Pa
 	
 	private final FComponent parent;
 	
-	private PageContext pc;	
+	protected PageContext pc;	
 	
 	
 	/**
@@ -92,7 +95,7 @@ public class WidgetParserFunction extends AbstractTemplateFunction implements Pa
 			String widgetClassName = EndpointImpl.api().getWidgetService().getWidgetClass( widgetName );
 			
             if (widgetClassName==null)
-            	return WidgetEmbeddingError.getErrorLabel("w"+AnnotateLinkComponent.getNextId(), ErrorType.GENERIC, 
+            	return WidgetEmbeddingError.getErrorLabel("w"+getNextId(), ErrorType.GENERIC, 
             			"Error: Illegal widget or widget improperly registered in the configuration: " + widgetName);
 
 			Class<?> widgetClass = Class.forName( widgetClassName );
@@ -100,7 +103,20 @@ public class WidgetParserFunction extends AbstractTemplateFunction implements Pa
 			
 			// build page context from parent's page context
 			PageContext childPageContext = PageContext.createChildPageContext(pc);
-            
+			String repositoryID = templateParameters.get("repository");
+			if ( StringUtil.isNotNullNorEmpty(repositoryID) ) {
+				repositoryID=Operator.parse(repositoryID,pc.value).evaluate(String.class,pc.value);
+				Repository repository =  PlatformRepositoryManager.getInstance().getRepository(repositoryID);
+				if (repository != null) {
+					childPageContext.repository = repository;
+				} else {
+					String errorMessage = "Widget refers to a repository with the ID: "
+							+ repositoryID
+							+ ", which does not exist or can not be initialized";
+					logger.debug(errorMessage);
+					return WidgetEmbeddingError.getErrorLabel("w" + getNextId(), ErrorType.EXCEPTION,errorMessage);
+				}
+			}
 			widget.setPageContext(childPageContext);
 			
 			//************ WORKAROUND ***************\\
@@ -121,7 +137,7 @@ public class WidgetParserFunction extends AbstractTemplateFunction implements Pa
 			    widget.setMapping( Operator.parseStruct(templateParameters, pc.value) );
 			}
 			
-			String id = "w"+AnnotateLinkComponent.getNextId();
+			String id = "w"+getNextId();
 			FComponent comp = widget.getComponentUAE( id );
 			
 			// make sure ID is indeed used as widget ID
@@ -139,7 +155,7 @@ public class WidgetParserFunction extends AbstractTemplateFunction implements Pa
 			logger.error("Error during widget parsing: " + e.getMessage());
 			logger.debug("Details:", e);			
 			return WidgetEmbeddingError.getErrorLabel(
-					"w"+AnnotateLinkComponent.getNextId(),
+					"w"+getNextId(),
 					ErrorType.EXCEPTION, e.toString());
 		}
 	}
@@ -152,5 +168,15 @@ public class WidgetParserFunction extends AbstractTemplateFunction implements Pa
 	@Override
 	public String getFunctionName() {
 		return "#widget";
-	}	
+	}
+
+	private static final AtomicLong alcId = new AtomicLong(1);
+	
+	/**
+	 * Return "unique" IDs (monotonic fn).
+	 * @return
+	 */
+	private static long getNextId()	{
+		return alcId.getAndIncrement();
+	}
 }

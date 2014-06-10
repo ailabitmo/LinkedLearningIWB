@@ -24,6 +24,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.repository.Repository;
 
+import com.fluidops.util.Singleton;
+
 /**
  * Cache for resource labels, to avoid repeated database access when
  * computing the labels associated to a certain resource. Singleton.
@@ -32,7 +34,12 @@ import org.openrdf.repository.Repository;
  */
 public class LabelCache extends RepositoryCache<URI,String>
 {
-    private static LabelCache instance = null;
+    private static Singleton<LabelCache> instance = new Singleton<LabelCache>() {
+		@Override
+		protected LabelCache createInstance() throws Exception {
+			return new LabelCache();
+		}    	
+    };
     
     /**
      * Return the one and only instance
@@ -41,9 +48,7 @@ public class LabelCache extends RepositoryCache<URI,String>
      */
     static public LabelCache getInstance()
     {
-        if (instance==null)
-            instance = new LabelCache();
-        return instance;
+        return instance.instance();
     }
     
     /**

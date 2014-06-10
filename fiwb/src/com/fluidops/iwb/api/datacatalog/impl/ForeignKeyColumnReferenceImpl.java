@@ -37,82 +37,91 @@ import com.fluidops.iwb.model.Vocabulary.RSO;
  * Implementation of a {@link ForeignKeyColumnReference} that constructs itself from an
  * RDF representation aligned with fluidOps Relational Schema Ontology.
  * 
- * @author msc, mm
+ * @author msc, mm, johannes.trame
  */
 public class ForeignKeyColumnReferenceImpl implements ForeignKeyColumnReference
 {
 	private static final Logger logger = 
-    		Logger.getLogger(ForeignKeyColumnReferenceImpl.class.getName());
-	
+			Logger.getLogger(ForeignKeyColumnReferenceImpl.class.getName());
+
 	protected Column primaryKeyColumn=null;
 	protected Column foreignKeyColumn=null;
 
 	public ForeignKeyColumnReferenceImpl(Graph graph,URI fKeyUri, URI fKeyColumnReferenceUri)
-	throws InvalidSchemaSpecificationException
-	{
+			throws InvalidSchemaSpecificationException
+			{
 		try {
 			// fetch tableColumn in table and set foreignKeyColumn
 			URI fKeyColumnReferenceColumnInfo;
 			fKeyColumnReferenceColumnInfo = GraphUtil.getOptionalObjectURI(graph,fKeyColumnReferenceUri,RSO.PROP_CONSTITUENT);
 			URI table=GraphUtil.getOptionalSubjectURI(graph, RSO.PROP_TABLE_CONSTRAINT, fKeyUri);
-				
+
 			Iterator<Value> tableColumns=GraphUtil.getObjectIterator(graph, table,RSO.PROP_TABLE_COLUMN);
-		
+
 			while(tableColumns.hasNext() && foreignKeyColumn==null) {
 				URI v=(URI) tableColumns.next();
 				URI tableColumnInfo=GraphUtil.getOptionalObjectURI(graph,v,RSO.PROP_CONSTITUENT);
-			
+
 				if(tableColumnInfo.stringValue().equals(fKeyColumnReferenceColumnInfo.stringValue()))
 					foreignKeyColumn=new ColumnImpl(graph,v);
 			}
-			
+
 			if(this.foreignKeyColumn==null)
 				throw new InvalidSchemaSpecificationException("Inconsistent foreign key " + fKeyUri);
-		
-			// fetch column position in target table
-			Literal position=GraphUtil.getOptionalObjectLiteral(graph,fKeyColumnReferenceUri,RSO.PROP_POSITION);
-		
-			// fetch target table
+
+			// fetch column from target table
 			URI targetKey=GraphUtil.getOptionalObjectURI(graph,fKeyUri,RSO.PROP_REFERENCES_KEY);
-			
+
+			//fetch constraint column
+			URI targetColumn=GraphUtil.getOptionalObjectURI(graph,targetKey,RSO.PROP_CONSTRAINT_COLUMN);
+
+			// fetch column position in target table
+			Literal position=GraphUtil.getOptionalObjectLiteral(graph,targetColumn,RSO.PROP_POSITION);
+
 			Resource targetTableAsResource=GraphUtil.getOptionalSubject(graph,RSO.PROP_TABLE_CONSTRAINT,targetKey);
 			URI targetTable=null;
-			
+
 			if(targetTableAsResource instanceof URI)
 				targetTable=(URI) targetTableAsResource;
 			else
 				throw new InvalidSchemaSpecificationException("Inconsistent foreign key " + fKeyUri+" : referenced key "+ targetKey+" does not have a table associated.");
-			
+
 			// fetch correct column
 			tableColumns=GraphUtil.getObjectIterator(graph, targetTable,RSO.PROP_TABLE_COLUMN);
-			
+
 			while(tableColumns.hasNext() && this.primaryKeyColumn==null) {
 				URI v=(URI) tableColumns.next();
 				Literal tableColumnPosition=GraphUtil.getOptionalObjectLiteral(graph,v,RSO.PROP_POSITION);
-			
+
 				if(position.stringValue().equals(tableColumnPosition.stringValue()))
 					this.primaryKeyColumn=new ColumnImpl(graph,v);
 			}
-			
+
 			if(this.primaryKeyColumn==null)
 				throw new InvalidSchemaSpecificationException("Inconsistent key referenced by foreign key " + fKeyUri+": primary key column could not be retrieved");
-			
+
 		} catch (GraphUtilException e) {
 			logger.warn(e.getMessage());
 			throw new RuntimeException(e);
 		}
-		
-	}
+
+			}
 
 	@Override
 	public Column getPrimaryKeyColumn()
 	{
 		return primaryKeyColumn;
 	}
-	
+
 	@Override
 	public Column getForeignKeyColumn()
 	{
 		return foreignKeyColumn;
+	}
+
+	@Override
+	public String toString()
+	{
+		return (primaryKeyColumn!=null && foreignKeyColumn!=null)?(foreignKeyColumn.toString()+" refers to "+ primaryKeyColumn.toString()):"invalid PK or FK column";
 	}
 }

@@ -31,6 +31,7 @@ import com.fluidops.ajax.models.ChartDataModel;
 import com.fluidops.ajax.models.ChartDataModel.FChartType;
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.ReadDataManager;
+import com.fluidops.iwb.api.RequestMapper;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
@@ -40,6 +41,7 @@ import com.fluidops.iwb.widget.WidgetEmbeddingError.ErrorType;
 import com.fluidops.iwb.widget.config.WidgetChartConfig;
 import com.fluidops.util.StringUtil;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 /**
  * Show the results of a query in form of a pie chart associated with an object. 
@@ -92,6 +94,11 @@ public class PieChartWidget extends AbstractChartWidget<PieChartWidget.Config>
 				desc = "Animation effect. Possible values are '>', 'elastic' and 'bounce'. Default: bounce",
 				type = Type.DROPDOWN)
 		public StartEffect startEffect;
+		
+		@ParameterConfigDoc(
+				desc = "Defines whether the click on a slice should open the page of the corresponding category "
+						+ "(the value in the input variable) or just pull out the slice. Default: false")
+		public Boolean enableLinks = false;
 	}
 
 	
@@ -115,10 +122,6 @@ public class PieChartWidget extends AbstractChartWidget<PieChartWidget.Config>
 	protected FComponent getChart(String id, PieChartWidget.Config config,
 			ReadDataManager globalDm, ReadDataManager queryDM,
 			Vector<Vector<Number>> values, Vector<Value> labels) {
-        FComponent widgetEmbeddingError = config.checkObligatoryFields(id, config, pc.value, CHART_HEIGHT_DEFAULT);
-        
-        if(widgetEmbeddingError!=null)
-            return widgetEmbeddingError;
         
         // unify values/set generic defaults
         if (config.title == null)
@@ -132,10 +135,23 @@ public class PieChartWidget extends AbstractChartWidget<PieChartWidget.Config>
 				globalDm, values, labels, config.colors);
 
         List<String> outputs = config.output;
-		// finally, we initialize the chart data model with the calculated values
-		pm.addDataSeries(chartDataSeries.labelsArray, chartDataSeries.valuesArray, new Color[] { Color.BLUE });
+        
+        //add links to slices of the pie chart
+		List<String> links = Lists.newArrayList();
 		
-        widgetEmbeddingError = config.setOutputLabels(id, outputs, pm);
+		RequestMapper rm = EndpointImpl.api().getRequestMapper();
+		
+		for ( int i = 0 ; i < labels.size() ; i++ )
+		{
+			if(config.enableLinks)
+			{
+				links.add(rm.getRequestStringFromValue(labels.elementAt(i)));
+			}
+		}
+		// finally, we initialize the chart data model with the calculated values
+		pm.addDataSeries(chartDataSeries.labelsArray, chartDataSeries.valuesArray, new Color[] { Color.BLUE }, links);
+		
+		WidgetEmbeddingError widgetEmbeddingError = config.setOutputLabels(id, outputs, pm);
 	      if(widgetEmbeddingError!=null)
 	            return widgetEmbeddingError;
 	      
@@ -194,5 +210,13 @@ public class PieChartWidget extends AbstractChartWidget<PieChartWidget.Config>
 		return chart;
 	}
 
+	/**
+	 * @see com.fluidops.iwb.widget.AbstractChartWidget#getHeightDefault()
+	 */
+	@Override
+	protected String getDefaultHeight()
+	{
+		return CHART_HEIGHT_DEFAULT;
+	}
 }
 

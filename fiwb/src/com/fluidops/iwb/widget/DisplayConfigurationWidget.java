@@ -22,6 +22,7 @@ import info.bliki.wiki.model.WikiModel;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +31,6 @@ import java.util.Set;
 import com.fluidops.ajax.components.FComponent;
 import com.fluidops.ajax.components.FHTML;
 import com.fluidops.iwb.model.ParameterConfigDoc;
-import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
 import com.fluidops.iwb.provider.AbstractFlexProvider;
 import com.fluidops.iwb.util.UIUtil;
@@ -44,7 +44,7 @@ import com.google.common.collect.Sets;
  * annotation from a given class "clazz".  Sub config classes are recursively dealt with.
  * 
  * Example Configuration..
- * {{ #widget : com.fluidops.iwb.widget.DisplayDescriptionWidget
+ * {{ #widget: com.fluidops.iwb.widget.DisplayDescriptionWidget
  * | clazz = $this.clazz$
  * | type = CONFIGURATION	
  *}}
@@ -124,7 +124,12 @@ public class DisplayConfigurationWidget extends AbstractWidget<DisplayConfigurat
 		for(int i=0;i<fields.length;i++){
 			ParameterConfigDoc annotation = getParameterConfigDoc(fields[i]);
 			if(annotation != null){
-				Class<?> configurationType = annotation.type().equals(Type.CONFIG) ? fields[i].getType() : annotation.listType();
+				Class<?> configurationType = fields[i].getType();
+				if (List.class.isAssignableFrom(fields[i].getType()))
+					configurationType = (Class<?>)((ParameterizedType)fields[i].getGenericType()).getActualTypeArguments()[0];
+				boolean deprecated = fields[i].getAnnotation(Deprecated.class)!=null;
+				if (deprecated)
+					continue;
 				annotations.add(new AnnotatedField(configurationType, fields[i].getName(), UIUtil.configDescription(annotation), (annotation.required() ? "&#10004;" : "&#160;")));	
 			}
 		}

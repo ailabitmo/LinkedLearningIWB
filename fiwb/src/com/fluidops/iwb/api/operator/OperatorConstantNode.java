@@ -33,28 +33,32 @@ import com.google.common.collect.Lists;
 
 
 /**
- * Operator for constant nodes
+ * Operator for constant nodes.<p>
  * 
- * Serialized representations:
+ * Serialized representations:<p>
  * 
+ * <pre>
  * String => 'Hello World'
  * Boolean => true | false
  * Number => 1 | 1.2
  * Enum => VALUE
+ * </pre>
  * 
  * Depending on the target type, serialized representation will
  * be converted automatically. This means that all serialized
- * forms can also be enclosed by ''
+ * forms can also be enclosed by ''<p>
  * 
  * This operator implements special handling for target types
- * {@link URI} and {@link Literal}.
+ * {@link URI} and {@link Literal}.<p>
  * 
+ * <pre>
  * URI => '<http://example.org/>' | 'prefix:localName'
  * Literal => '"abc"', '"true"', '"1"^^xsd:int', ...
+ * </pre>
  * 
  * If the targetType is Object, this operator tries to resolve
  * the serialized representation to the runtime types as
- * specified in {@link #convertToObject(String)}.
+ * specified in {@link #convertToObject(String)}.<p>
  *  
  * If the targetType is an enumeration, the value will be 
  * resolved using the toString() and name() strings 

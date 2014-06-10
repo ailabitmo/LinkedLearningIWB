@@ -18,8 +18,10 @@
 
 package com.fluidops.iwb.ajax;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.openrdf.model.Value;
 
 import com.fluidops.ajax.components.FComponent;
@@ -30,9 +32,10 @@ import com.fluidops.iwb.api.ImageResolver;
 import com.fluidops.iwb.api.ReadDataManager;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.valueresolver.ValueResolver;
-import com.fluidops.iwb.util.HTMLSanitizer;
+import com.fluidops.iwb.repository.PlatformRepositoryManager;
 import com.fluidops.util.Rand;
 import com.fluidops.util.StringUtil;
+import com.google.common.collect.Maps;
 
 /**
  * This component is used for lazy rendering of RDF values. We construct only based on the value,
@@ -141,19 +144,29 @@ public class FValue extends FComponent
 			label = showLabels ? dm.getLabel(value) : value.stringValue();
 			if ( label != null ) 
 			{
-				label = processLabel(HTMLSanitizer.sanitizeLinks(label));
+				label = processLabel(StringEscapeUtils.escapeHtml(label));
 			}
 			else
 				label = "";
 		}
-		
-		return EndpointImpl.api().getRequestMapper().getAHrefEncoded(value, label, null);
+
+		// if the current dm operates on a different repository than the default
+		// repository, the aHrefLink should contain a reference to the other
+		HashMap<String, String> getParams = Maps.newHashMap();
+		if (dm != null && !dm.getRepository().equals(Global.repository)) {
+			PlatformRepositoryManager manager = PlatformRepositoryManager.getInstance();
+			String repositoryID  = manager.getRepositoryID(dm.getRepository());
+			if (repositoryID != null) {
+				getParams.put("repository", repositoryID);
+			}
+		}
+		return EndpointImpl.api().getRequestMapper().getAHrefEncoded(value, label, null, getParams);
 	}
 
 	@Override
 	public String toString( )
 	{
-		return getValue();
+		return returnValues().toString();
 	}
 
 	@Override

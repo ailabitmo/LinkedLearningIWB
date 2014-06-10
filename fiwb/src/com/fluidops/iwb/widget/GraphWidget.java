@@ -101,6 +101,8 @@ public class GraphWidget extends AbstractWidget<GraphWidget.Config>
 				defaultValue = "true")
         public Boolean thumbnails = true;
        
+		@ParameterConfigDoc(desc = "Maximum length for node labels. Set to -1 for unlimited length.", defaultValue = "-1")
+		public Integer maxLabelLength = -1;
     }
 	
 	@Override
@@ -117,6 +119,10 @@ public class GraphWidget extends AbstractWidget<GraphWidget.Config>
 		if (conf.graphType == null)
 			 return WidgetEmbeddingError.getErrorLabel(id,
 		             ErrorType.MISSING_INPUT_VARIABLE, "Graph type is not defined");
+		if (conf.maxLabelLength < 5 && conf.maxLabelLength != -1)
+			return WidgetEmbeddingError.getErrorLabel(id,
+					ErrorType.INVALID_WIDGET_CONFIGURATION,
+					"Minimum supported label length restriction is 5.");
 		
 		
 		// copy the configuration to not modify the widgets configuration with defaults
@@ -285,6 +291,47 @@ public class GraphWidget extends AbstractWidget<GraphWidget.Config>
 		
 	}
 
+	/**
+	 * Shortens a string in the middle (i.e., keeping prefix and postfix) if it
+	 * exceeds a specified maximum length. For example, at maxLength 15,
+	 * "This is a nice, long label" would become "This i... label" while
+	 * "Short label" would remain as "Short label".
+	 * 
+	 * @param label
+	 *            String Input string to shorten.
+	 * @param maxLength
+	 *            Maximum lengths (in characters).
+	 * @return Shortened string.
+	 */
+	static String shortenedString(String label, int maxLength) {
+		if (label.length() > maxLength && maxLength != -1) {
+			int fixLength = (maxLength - 3) / 2;
+			label = label.substring(0, fixLength) + "..."
+					+ label.substring(label.length() - fixLength);
+		}
+		return label;
+	}
+	
+	/**
+	 * Returns a HTML link tag for node labels with a potentially shortened
+	 * label, depending on configuration.
+	 * 
+	 * @param href
+	 *            Link target.
+	 * @param label
+	 *            Full (non-escaped) label of link.
+	 * @return HTML code for link tag.
+	 */
+	private String shortenedLabelLink(String href, String label) {
+		String link = "<a class='nodeLabels' href='" + href + "' title='"
+				+ StringEscapeUtils.escapeHtml(label) + "'>";
+
+		label = shortenedString(label, get().maxLabelLength);
+		
+		link += StringEscapeUtils.escapeHtml(label) + "</a>";
+		return link;
+	}
+	
 	private JSONObject createNode(Value value, Repository rep) {
 		
         ReadWriteDataManager dm = null;
@@ -296,12 +343,10 @@ public class GraphWidget extends AbstractWidget<GraphWidget.Config>
     		dm = ReadWriteDataManagerImpl.openDataManager(rep);
 	        obj.put("id", graphId+value.stringValue());  
 	        
-			String objLabel = dm.getLabel(value);
-			if (objLabel.length() > 100)
-				objLabel = objLabel.substring(0, 55)+"..";
-			String link = "<a class='nodeLabels' href='"+ rm.getRequestStringFromValue(value) +"'>" 
-				+ StringEscapeUtils.escapeHtml(objLabel) + "</a>";
+			String link = shortenedLabelLink(
+					rm.getRequestStringFromValue(value), dm.getLabel(value));
 	        obj.put("name", link);
+	        
 	        JSONObject data = addData(selectNodeType(value), getThumbnail(value, rep, dm));
 	        obj.put("data", data);   
 
@@ -504,8 +549,8 @@ public class GraphWidget extends AbstractWidget<GraphWidget.Config>
 		try {
 			dm = ReadWriteDataManagerImpl.openDataManager(rep);
 			json.put("id", graphId+value.stringValue());
-			String label = dm.getLabelHTMLEncoded(value);
-			String link = "<a class='nodeLabels' href='"+ rm.getRequestStringFromValue(value) +"'>" + label + "</a>";
+			String link = shortenedLabelLink(
+					rm.getRequestStringFromValue(value), dm.getLabel(value));
 			json.put("name", link);
 			json.put("data", new JSONObject());
 
@@ -538,11 +583,9 @@ public class GraphWidget extends AbstractWidget<GraphWidget.Config>
                 
 				JSONObject child = new JSONObject();
 				child.put("id", graphId+st.getObject().stringValue());
-				String objLabel = dm.getLabel(st.getObject());
-				if (objLabel.length() > 100)
-					objLabel = objLabel.substring(0, 55)+"..";
-				String link2 = "<a class='nodeLabels' href='"+rm.getRequestStringFromValue(st.getObject())+"'>" 
-					+ StringEscapeUtils.escapeHtml(objLabel)+ "</a>";
+				String link2 = shortenedLabelLink(
+						rm.getRequestStringFromValue(st.getObject()),
+						dm.getLabel(st.getObject()));
 				child.put("name", link2);
 
 				JSONArray children2 = new JSONArray();
@@ -577,10 +620,9 @@ public class GraphWidget extends AbstractWidget<GraphWidget.Config>
 
 				JSONObject child = new JSONObject();
 				child.put("id", graphId+st.getSubject().stringValue());
-				String objLabel = dm.getLabel(st.getSubject());
-				if (objLabel.length() > 100)
-					objLabel = objLabel.substring(0, 55)+"..";
-				String link2 = "<a class='nodeLabels' href='"+rm.getRequestStringFromValue(st.getSubject())+"'>" + StringEscapeUtils.escapeHtml(objLabel)+ "</a>";				   
+				String link2 = shortenedLabelLink(
+						rm.getRequestStringFromValue(st.getSubject()),
+						dm.getLabel(st.getSubject()));				   
 				child.put("name", link2);
 				JSONArray children2 = new JSONArray();
 				

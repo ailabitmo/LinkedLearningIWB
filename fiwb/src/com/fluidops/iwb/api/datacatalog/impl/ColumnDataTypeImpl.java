@@ -18,6 +18,11 @@
 
 package com.fluidops.iwb.api.datacatalog.impl;
 
+import java.lang.reflect.Field;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -41,9 +46,8 @@ public class ColumnDataTypeImpl implements ColumnDataType
     		Logger.getLogger(ColumnDataTypeImpl.class.getName());
 
 	protected String name;
-	protected String fullName;
-	
-	protected String typeName;
+	protected int jdbcCode;
+	protected static final Map<Integer, String> types = getJDBCTypes();
 	
 	public ColumnDataTypeImpl(Graph graph, URI columnDataTypeUri)
 	throws InvalidSchemaSpecificationException
@@ -54,19 +58,18 @@ public class ColumnDataTypeImpl implements ColumnDataType
 			if (nameLit!=null)
 				name = nameLit.stringValue();
 	
-			Literal fullNameLit = GraphUtil.getOptionalObjectLiteral(graph, columnDataTypeUri, RSO.PROP_COLUMN_DATATYPE_FULL_NAME);
-			if (fullNameLit!=null)
-				fullName = fullNameLit.stringValue();
-			
-			Literal typeNameLit = GraphUtil.getOptionalObjectLiteral(graph, columnDataTypeUri, RSO.PROP_COLUMN_DATATYPE_TYPE_NAME);
-			if (typeNameLit!=null)
-				typeName = typeNameLit.stringValue();
+			Literal jdbcCodeLit = GraphUtil.getOptionalObjectLiteral(graph, columnDataTypeUri, RSO.PROP_COLUMN_DATATYPE_JDBC_CODE);
+			if (jdbcCodeLit!=null)
+				jdbcCode = jdbcCodeLit.intValue();
 		}
 		catch (GraphUtilException e)
 		{
 			logger.warn(e.getMessage());
 			throw new RuntimeException(e);
 		}
+		
+		
+		
 	}
 	
 	@Override
@@ -74,18 +77,30 @@ public class ColumnDataTypeImpl implements ColumnDataType
 	{
 		return name;
 	}
-	
+
 	@Override
-	public String getFullName()
-	{
-		return fullName;
+	public int getJDBCCode() {
+		return jdbcCode;
+	}
+
+	@Override
+	public String getJDBCName() {
+			return types.get(jdbcCode);
 	}
 	
-	@Override
-	public String getTypeName()
-	{
-		return typeName;
+	private static Map<Integer, String> getJDBCTypes(){
+		Map<Integer, String> jdbctypes = new HashMap<Integer, String>();
+
+		for (Field field : Types.class.getFields()){
+			try {
+				jdbctypes.put((Integer)field.get(null), field.getName());
+			} catch (IllegalArgumentException e) {
+				logger.warn(e.getMessage());;
+			} catch (IllegalAccessException e) {
+				logger.warn(e.getMessage());
+			}
+		}
+		return jdbctypes;
 	}
-	
 	
 }

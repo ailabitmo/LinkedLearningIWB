@@ -32,15 +32,30 @@ import com.fluidops.iwb.widget.TableResultWidget;
  * @see VariableConfig
  *
  */
-public class ColumnConfig extends VariableConfig
+public class ColumnConfig extends VariableConfig implements ValueResolverConfig
 {
 	@ParameterConfigDoc(
 			desc = "The width of the column in percent (e.g '30').")
 	public Double columnWidth;
+	
+	@ParameterConfigDoc(desc = "Tooltip for the column header")
+	public String tooltip;
 	
 	@ParameterConfigDoc(
 			desc = "The value resolver to display values in a specific way.",
 			type = Type.DROPDOWN,
 			selectValuesFactory = ValueResolverSelectValuesFactory.class)
 	public String valueResolver;
+
+	@Override
+	public String getVariableName()
+	{
+		return variableName;
+	}
+
+	@Override
+	public String getValueResolver()
+	{
+		return valueResolver;
+	}
 }

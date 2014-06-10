@@ -323,4 +323,10 @@ public interface UserManager extends Remote
 	 * @return
 	 */
     public boolean tokenBasedAccessEnabled(String str, String securityToken);
+    
+    /**
+     * Invalidates internal state: e.g. ACL cache
+     * (optional implementation)
+     */
+    public void invalidate();
 }

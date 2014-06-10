@@ -21,7 +21,10 @@ package com.fluidops.iwb.api.valueresolver;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -31,6 +34,8 @@ import org.openrdf.model.Value;
 
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl;
+import com.fluidops.iwb.widget.config.ValueResolverConfig;
+import com.fluidops.util.StringUtil;
 
 /**
  * Convenience functions for value resolvers.
@@ -121,5 +126,58 @@ public class ValueResolverUtil {
 			df = new SimpleDateFormat("MMMMM dd, yyyy, HH:mm:ss");
 		return df.format(d);
 	    
+	}
+	
+	/**
+	 * Return the value resolvers as defined by the user input.
+	 * The string valueResolver is a legacy parameter, but still supported.
+	 * The variable resolver will be preferably taken from the valueConfiguration.
+	 * @param valueResolver
+	 * @param valueConfiguration
+	 * @return
+	 */
+	public static Map<String,String> getValueResolvers(String valueResolver, List<? extends ValueResolverConfig> valueConfiguration )
+	{
+		
+		Map<String,String> varResolvers = new HashMap<String,String>();
+		
+		if(StringUtil.isNotNullNorEmpty(valueResolver) && !hasValueResolvers(valueConfiguration))
+		{
+			String[] s = valueResolver.split(",");
+			for (int i=0;i<s.length;i++)
+			{
+				String[] s2 = s[i].split("=");
+				if (s2.length==2)
+					varResolvers.put(s2[0],s2[1]);
+				else
+					throw new IllegalArgumentException("ValueResolver parameter specified incorrectly, comma separated mappings are expected.");
+			}
+		}
+
+		if(valueConfiguration != null)
+		{
+			for(ValueResolverConfig vrc : valueConfiguration)
+			{
+				if(StringUtil.isNotNullNorEmpty(vrc.getVariableName()) && vrc.getValueResolver() != null)
+					varResolvers.put(vrc.getVariableName(),vrc.getValueResolver().toString());
+			}
+		}
+		return varResolvers;
+	}
+	
+	/**
+	 * check if value resolvers are defined in valueConfiguration
+	 * @param valueConfiguration
+	 * @return
+	 */
+	public static boolean hasValueResolvers(List<? extends ValueResolverConfig> valueConfiguration)
+	{
+		if(valueConfiguration != null)
+			for(ValueResolverConfig vrc : valueConfiguration)
+			{
+				if(vrc.getValueResolver() != null)
+					return true;
+			}
+		return false;
 	}
 }

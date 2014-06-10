@@ -25,10 +25,10 @@ import java.util.Vector;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 
@@ -42,8 +42,10 @@ import com.fluidops.iwb.Global;
 import com.fluidops.iwb.ajax.FValue.ValueConfig;
 import com.fluidops.iwb.api.EndpointImpl;
 import com.fluidops.iwb.api.ImageResolver;
-import com.fluidops.iwb.api.ReadDataManagerImpl;
 import com.fluidops.iwb.api.ReadDataManagerImpl.SparqlQueryType;
+import com.fluidops.iwb.api.query.FromStringQueryBuilder;
+import com.fluidops.iwb.api.query.QueryBuilder;
+import com.fluidops.iwb.api.valueresolver.ValueResolverUtil;
 import com.fluidops.iwb.model.ParameterConfigDoc;
 import com.fluidops.iwb.model.ParameterConfigDoc.Type;
 import com.fluidops.iwb.model.TypeConfigDoc;
@@ -56,6 +58,7 @@ import com.fluidops.iwb.widget.WidgetEmbeddingError.NotificationType;
 import com.fluidops.iwb.widget.config.ColumnConfig;
 import com.fluidops.iwb.widget.config.WidgetQueryConfig;
 import com.fluidops.util.StringUtil;
+import com.google.common.collect.Lists;
 
 /**
  * Show the results of a query in a table. 
@@ -67,7 +70,7 @@ import com.fluidops.util.StringUtil;
  * 
  *  Example usage:
  * 
- * {{ #widget : TableResult
+ * {{ #widget: TableResult
  * 
     | query = 'select ?z ?lng ?lat 
                where {
@@ -158,13 +161,14 @@ public class TableResultWidget extends AbstractWidget<TableResultWidget.Config>
 	}
 
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public FComponent getComponent(final String id)
 	{
 		final Config config = get();	
 		
 		//don't allow defining value resolvers both in legacy parameter and in column configuration
-		if(StringUtil.isNotNullNorEmpty(config.valueResolver) && hasValueResolvers(config.columnConfiguration))
+		if(StringUtil.isNotNullNorEmpty(config.valueResolver) && ValueResolverUtil.hasValueResolvers(config.columnConfiguration))
 			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.GENERIC, 
 					"The configuration parameter 'valueResolver' is deprecated: " +
 					"Please define value resolvers in the columnConfiguration only."); 
@@ -176,21 +180,26 @@ public class TableResultWidget extends AbstractWidget<TableResultWidget.Config>
 		if (config.query==null)
 			return WidgetEmbeddingError.getErrorLabel(id,ErrorType.NO_QUERY);
 
-		String query = config.query.trim();
+		// builder for the query
+		FromStringQueryBuilder<TupleQuery> queryBuilder;
 
 		// only select queries are supported, however PREFIX maybe in the beginning
 		try {
-			SparqlQueryType type = ReadDataManagerImpl.getSparqlQueryType(query, true);
+			queryBuilder = (FromStringQueryBuilder<TupleQuery>) QueryBuilder
+					.create(config.query.trim()).resolveValue(pc.value)
+					.infer(config.infer);
+			SparqlQueryType type = queryBuilder.getQueryType();
 			if (!type.equals(SparqlQueryType.SELECT))
 				return WidgetEmbeddingError.getErrorLabel(id,ErrorType.NO_SELECT_QUERY);
+			
 		} catch (MalformedQueryException e) {
-			// ignore: is treated appropriately below
+			return WidgetEmbeddingError.getErrorLabel(id, ErrorType.SYNTAX_ERROR, e.getMessage()); 
 		}
 
 		try  {               
 
 			// set up variable resolver
-			Map<String,String> varResolvers = getValueResolvers(config.valueResolver, config.columnConfiguration);
+			Map<String,String> varResolvers = ValueResolverUtil.getValueResolvers(config.valueResolver, config.columnConfiguration);
 
 			// set up image resolver, if required
 			ImageResolver ir = null;
@@ -204,7 +213,7 @@ public class TableResultWidget extends AbstractWidget<TableResultWidget.Config>
 
 			// compute the table model, i.e. evaluate the query
 			ValueConfig valueCfg = new ValueConfig(ir, varResolvers, config.labels); 
-			FTable ftable = createTable(id, rep, query, valueCfg, config.infer);
+			FTable ftable = createTable(id, rep, queryBuilder, valueCfg);
 
 			//display a single line result as text and not as a table
 			if(config.singleResult) {
@@ -281,43 +290,23 @@ public class TableResultWidget extends AbstractWidget<TableResultWidget.Config>
 	}
 
 
-
-	/**
-	 * check if value resolvers are defined in columnConfiguration
-	 * @param columnConfiguration
-	 * @return
-	 */
-	private boolean hasValueResolvers(List<ColumnConfig> columnConfiguration)
-	{
-		if(columnConfiguration != null)
-			for(ColumnConfig cc : columnConfiguration)
-			{
-				if(cc.valueResolver != null)
-					return true;
-			}
-		return false;
-	}
-
-
-
 	/**
 	 * Create the table using the given parameters. Subclasses can override this
 	 * 
 	 * @param id
 	 * @param rep
-	 * @param query
+	 * @param queryBuilder
 	 * @param valueCfg
 	 * @return
 	 * @throws RepositoryException
 	 * @throws MalformedQueryException
 	 * @throws QueryEvaluationException
 	 */
-	protected FTable createTable(String id, Repository rep, String query,
-			ValueConfig valueCfg, boolean infer) throws RepositoryException,
+	protected FTable createTable(String id, Repository rep, QueryBuilder<TupleQuery> queryBuilder,
+			ValueConfig valueCfg) throws RepositoryException,
 			MalformedQueryException, QueryEvaluationException
 	{
-		FTableModel tm = QueryResultUtil.sparqlSelectAsTableModel(rep, query,
-				true, infer, pc.value, valueCfg);
+		FTableModel tm = QueryResultUtil.sparqlSelectAsTableModel(rep, queryBuilder, valueCfg);
 		
 		return new FTable(id, tm);
 	}
@@ -334,33 +323,43 @@ public class TableResultWidget extends AbstractWidget<TableResultWidget.Config>
 		FTableModel tm = (FTableModel) ftable.getTableModel();
 				
 		Vector<String> columnIdentifiers=new Vector<String>();
+		List<String> tooltips = Lists.newArrayList();
 		int width=tm.getColumnCount();
 		
 		// set sort orders and column display values
 		for(int i=0;i<width;i++) {
 			String oldColName=tm.getColumnName(i);
+			String tooltip = tm.getTooltip(i);
 			
 			if (columnMapping.containsKey(oldColName)) {
 				//set column name
-				if (columnMapping.get(oldColName).displayName!=null) 
-					columnIdentifiers.add(columnMapping.get(oldColName).displayName);
+				ColumnConfig colConfig = columnMapping.get(oldColName);
+				
+				if (colConfig.displayName!=null) 
+					columnIdentifiers.add(colConfig.displayName);
 				else 
 					columnIdentifiers.add(oldColName);
 
 				//set column width
-				if (columnMapping.get(oldColName).columnWidth!=null) 
-					ftable.setColumnWidth(i, columnMapping.get(oldColName).columnWidth);
+				if (colConfig.columnWidth!=null) 
+					ftable.setColumnWidth(i, colConfig.columnWidth);
+
+				if(colConfig.tooltip != null)
+					tooltip = colConfig.tooltip;
 			
 				//set sort order
-				if(columnMapping.get(oldColName).datatype!=null) 
-					ftable.setDatatypeComparator(i,TableResultComparator.getComparator(columnMapping.get(oldColName).datatype.getTypeURI()));
-				else 
-					ftable.setDatatypeComparator(i,TableResultComparator.getComparator(ValueFactoryImpl.getInstance().createURI("http://www.fluidops.com")));
-			} else
+				if(colConfig.datatype!=null) 
+					ftable.setDatatypeComparator(i,TableResultComparator.getComparator(colConfig.datatype.getTypeURI()));
+			}
+			else
+			{
 				columnIdentifiers.add(oldColName);
+			}
+			tooltips.add(tooltip);
 		}
 
 		tm.setColumnIdentifiers(columnIdentifiers);
+		tm.setTooltips(tooltips);
 	}
 	
 	@Override
@@ -375,43 +374,6 @@ public class TableResultWidget extends AbstractWidget<TableResultWidget.Config>
 		return title !=null ? title :  "Table Result";
 	}
 
-
-	/**
-	 * Return the value resolvers as defined by the user input.
-	 * The string valueResolver is a legacy parameter, but still supported.
-	 * The variable resolver will be preferably taken from the columnConfiguration.
-	 * @param valueResolver 
-	 * @param columnConfiguration 
-	 */    
-	protected Map<String,String> getValueResolvers(String valueResolver, List<ColumnConfig> columnConfiguration )
-	{
-		
-		Map<String,String> varResolvers = new HashMap<String,String>();
-		
-		if(StringUtil.isNotNullNorEmpty(valueResolver) && !hasValueResolvers(columnConfiguration))
-		{
-			String[] s = valueResolver.split(",");
-			for (int i=0;i<s.length;i++)
-			{
-				String[] s2 = s[i].split("=");
-				if (s2.length==2)
-					varResolvers.put(s2[0],s2[1]);
-			}
-		}
-
-		if(columnConfiguration != null)
-		{
-			for(ColumnConfig cc : columnConfiguration)
-			{
-				if(StringUtil.isNotNullNorEmpty(cc.variableName) && cc.valueResolver != null)
-					varResolvers.put(cc.variableName,cc.valueResolver.toString());
-			}
-		}
-		return varResolvers;
-	}
-	
-	
-	
 	/**
 	 * 
 	 *  Generates a mapping from the variable names to the respective ColumnConfig object.

@@ -37,9 +37,11 @@ public class TextInputConfigurationFormElement extends AbstractConfigurationForm
 	@Override
 	protected FTextInput2 createComponent(FormElementConfig formElementConfig) {
 		targetType=formElementConfig.targetType;
-		FTextInput2 input = new FTextInput2(Rand.getFluidUUID());
-		input.setValueWithoutRefresh(OperatorFactory.operatorToText(
-				formElementConfig.presetValue, formElementConfig.targetType));
+		FTextInput2 input = new FTextInput2(Rand.getFluidUUID(), formElementConfig.getDefaultContent());
+		if (formElementConfig.hasPresetValues()) {
+			input.setValueWithoutRefresh(OperatorFactory.operatorToText(
+					formElementConfig.presetValue, formElementConfig.targetType));
+		}
 		input.setValidator(validator(formElementConfig));
 		return input;
 	}

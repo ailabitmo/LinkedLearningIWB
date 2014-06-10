@@ -57,18 +57,6 @@ public class WidgetSelectorRemote extends RMIBase implements WidgetSelector, RMI
 	{
 		delegate.removeWidget(widget, input, value, applyToInstances);
 	}
-	
-	@Override
-	public void updateWidget(
-			Class<? extends Widget<?>> widget,
-			Operator oldInput,
-			Operator input,
-			Value entity,
-			Boolean applyToInstances,
-			String preCondition)
-			throws RemoteException, Exception {
-		delegate.updateWidget(widget, oldInput, input, entity, applyToInstances, preCondition);
-	}
 
 	public void selectWidgets(PageContext pc) throws RemoteException
 	{

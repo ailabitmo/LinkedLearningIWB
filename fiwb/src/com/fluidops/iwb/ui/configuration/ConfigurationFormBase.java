@@ -21,13 +21,15 @@ package com.fluidops.iwb.ui.configuration;
 import static com.fluidops.ajax.XMLBuilder.at;
 import static com.fluidops.ajax.XMLBuilder.atId;
 import static com.fluidops.ajax.XMLBuilder.el;
-import static com.fluidops.iwb.ui.configuration.ConfigurationFormElementFactory.getFormElementForConfig;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.commons.lang.StringEscapeUtils;
 
 import com.fluidops.ajax.XMLBuilder.Element;
 import com.fluidops.ajax.components.FComponent;
@@ -48,7 +50,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
- * Base implementation for all configuration forms (e.g. widget or provider configuration).
+ * Base implementation for all configuration forms (e.g. widget or provider configuration).<p>
  * 
  * This class provides the functionality to render a form for a given configuration
  * class (e.g. a widget configuration class). It uses in particular the information
@@ -56,11 +58,15 @@ import com.google.common.collect.Maps;
  * fields that are annotated with {@link ParameterConfigDoc}. The information
  * from the annotation is used to decide how the component is rendered, see
  * {@link ConfigurationFormElementFactory#getFormElementForConfig(FormElementConfig)}
- * for details.
+ * for details.<p>
+ * 
+ * This method provides handling for {@link Deprecated} config fields (special rendering)
+ * and for fields annotated with {@link HiddenIfUnset}.
  * 
  * @author as
  * @see ConfigurationFormElement
  * @see ConfigurationFormUtil
+ * @see HiddenIfUnset
  */
 public abstract class ConfigurationFormBase extends FForm implements OperatorConversion {
 
@@ -93,6 +99,9 @@ public abstract class ConfigurationFormBase extends FForm implements OperatorCon
 		if (configClass==null)
 			throw new IllegalStateException("Illegal state: configuration class not specified.");
 		
+		// for forms without form elements (i.e. an empty config class) return an empty struct operator
+		if (cfgElements.size()==0)
+			return OperatorFactory.mapToOperatorNode(Collections.<String,OperatorNode>emptyMap());
 				
 		Map<String, OperatorNode> map = Maps.newHashMap();
 		for (Entry<FormElementConfig, ConfigurationFormElement<? extends FComponent>> e : cfgElements.entrySet()) {
@@ -169,7 +178,19 @@ public abstract class ConfigurationFormBase extends FForm implements OperatorCon
 			cfgElements.put(fCfg, fEl);
 		}
 			
-	}	
+	}
+	
+	/**
+	 * Returns the {@link ConfigurationFormElement} for the given {@link FormElementConfig}. The
+	 * default implementation uses the {@link ConfigurationFormElementFactory#getFormElementForConfig(FormElementConfig)},
+	 * subclasses can use their own implementation (e.g., to add support for special form components).
+	 * 
+	 * @param fCfg
+	 * @return
+	 */
+	protected ConfigurationFormElement<? extends FComponent> getFormElementForConfig(FormElementConfig fCfg) {
+		return ConfigurationFormElementFactory.getFormElementForConfig(fCfg);
+	}
 	
 	/**
 	 * Actual implementations can override this methods to add additional form elements
@@ -183,15 +204,11 @@ public abstract class ConfigurationFormBase extends FForm implements OperatorCon
 	 * Special functionality for configuration form to add form elements
 	 */
 	private void addFormElement(FormElementConfig fCfg, ConfigurationFormElement<? extends FComponent> fEl) {
-		addFormElement(fCfg.label, fEl.getComponent(fCfg), fCfg.required(), fEl.validator(fCfg), false, fCfg.help());		
+		addFormElementInternal(fCfg.label, fCfg.fieldName, fEl.getComponent(fCfg), fCfg.required(), fEl.validator(fCfg), false, fCfg.help(), fCfg.deprecated());		
 	}
 
-	@Override
-	public void addFormElement(String label, final FComponent formElement, boolean isRequired, Validator v, boolean hide, String help) {
-		
-		/*
-		 * override the parent functionality to render the help as a nice icon
-		 */
+	private void addFormElementInternal(String label, String labelTooltip, final FComponent formElement, boolean isRequired, Validator v, 
+			boolean hide, String help, boolean deprecated) {
 		
 		if (formElement instanceof FTextInput2)
 			((FTextInput2) formElement).setValidator(v);
@@ -206,14 +223,25 @@ public abstract class ConfigurationFormBase extends FForm implements OperatorCon
 		cnt.add(formElement);
 		if(!StringUtil.isNullOrEmpty(help))
 		{
+			String image = "/images/navigation/i.gif";
+			if(deprecated)
+				image = "/images/error.png";		
+							
 			FImageButton button = new FHelpButton("img"+Rand.getIncrementalFluidUUID(), 
-					EndpointImpl.api().getRequestMapper().getContextPath()+"/images/navigation/i.gif", help);
+					EndpointImpl.api().getRequestMapper().getContextPath() + image, help);
 			button.appendClazz("helpButton");
 			cnt.add(button);
 		}
 		FormRow row = new FormRow(label, cnt, isRequired, v, false, "");
+		row.setLabelTooltip(labelTooltip);
 		this.add(cnt);
 		this.formRows.add(row);
+		
+	}
+
+	@Override
+	public void addFormElement(String label, final FComponent formElement, boolean isRequired, Validator v, boolean hide, String help) {		
+		addFormElementInternal(label, null, formElement, isRequired, v, hide, help, false);
 	}
 	
 	
@@ -224,6 +252,10 @@ public abstract class ConfigurationFormBase extends FForm implements OperatorCon
 	 * a) a configuration for each {@link Field} that is annotated with {@link ParameterConfigDoc}
 	 * 
 	 * The elements are sorted according to the rules as defined in {@link #getConfigFieldsSorted(Class)}.
+	 * 
+	 * Note that deprecated fields are only rendered if there exists a preset value for it. 
+	 * 
+	 * This method also applies the {@link HiddenIfUnset} annotation concept.
 	 * 
 	 * @param configClass
 	 * @return
@@ -245,8 +277,23 @@ public abstract class ConfigurationFormBase extends FForm implements OperatorCon
 				nestedConfigClass = (Class<?>)((ParameterizedType)f.getGenericType()).getActualTypeArguments()[0];
 			}
 			Operator formElementDefaultValue = getChildOperator(presetValues, fieldName);
+			
 			FormElementConfig fCfg = new FormElementConfig(fieldName, f.getAnnotation(ParameterConfigDoc.class), 
 					nestedConfigClass, formElementDefaultValue);
+			// show deprecated fields only if they have value (bug 10999)			
+			if (f.getAnnotation(Deprecated.class)!=null) {
+				if (!formElementDefaultValue.isNoop())
+					fCfg.setDeprecated(true);
+				else
+					continue;
+			}
+			// allow hidden elements which are only shown if a value is set
+			if (f.getAnnotation(HiddenIfUnset.class)!=null) {
+				if (formElementDefaultValue.isNoop())
+					continue;
+			}
+			// remember the annotations in the configuration (for later use)
+			fCfg.addAnnotations(f.getAnnotations());
 			res.add(fCfg);
 		}
 		return res;	
@@ -305,13 +352,14 @@ public abstract class ConfigurationFormBase extends FForm implements OperatorCon
 		
 		@Override
 		public String render()	{
+			String tooltip = getTooltip()==null ? "" : StringEscapeUtils.escapeHtml(getTooltip());
 			Element div = el("div", atId("div1"+Rand.getIncrementalFluidUUID()));
 			Element a = el("a", at("style", "cursor: pointer;"), at("onClick", beforeClickJs + getOnClick() + afterClickJs));
 			Element img = el("img", atId(getId() + "_img"), at("src", imageUrl), at("border", "0"));
-			Element div2 = el("div", atId("div2"+Rand.getIncrementalFluidUUID()));div2.text(getTooltip());
+			Element div2 = el("div", atId("div2"+Rand.getIncrementalFluidUUID()));div2.text(tooltip);
 
-			if (!StringUtil.isNullOrEmpty(getTooltip()))
-				img.addAttribute(at("alt", getTooltip()));
+			if (!StringUtil.isNullOrEmpty(tooltip))
+				img.addAttribute(at("alt", tooltip));
 
 			a.addChild(img);
 			div.addChild(a);

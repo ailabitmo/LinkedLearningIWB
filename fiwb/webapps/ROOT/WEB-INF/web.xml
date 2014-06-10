@@ -3,13 +3,14 @@
 <!DOCTYPE web-app 
 	PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
 	"http://java.sun.com/dtd/web-app_2_3.dtd"
-[ <!ENTITY  fajaxfragment SYSTEM "../ajax/fajaxfragment.xml" >
-<!ENTITY  webcontextparam SYSTEM "../ajax/webcontextparam.xml" >
+[ <!ENTITY  fajaxfragment SYSTEM "fajaxfragment.xml" >
+<!ENTITY  webcontextparam SYSTEM "webcontextparam.xml" >
 <!ENTITY  fiwb_errorhandler SYSTEM "fiwb_errorhandler.xml" >
 <!ENTITY  fiwb_servlets SYSTEM "fiwb_servlets.xml" >
 <!ENTITY  fiwb_jsp SYSTEM "fiwb_jsp.xml" >
 <!ENTITY  fiwb_filter SYSTEM "fiwb_filter.xml" >
 <!ENTITY  fiwb_loginfilter SYSTEM "fiwb_loginfilter.xml" >
+<!ENTITY  fiwb_aclfilter SYSTEM "fiwb_aclfilter.xml" >
 <!ENTITY  extensions SYSTEM "extensions.xml" >
 ]	
 >
@@ -26,7 +27,7 @@
 	&fajaxfragment;
 
 	&fiwb_loginfilter;
-
+	
 	&fiwb_filter;
 	
 	&extensions;

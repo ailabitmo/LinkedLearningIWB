@@ -23,7 +23,12 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
+import org.openrdf.repository.Repository;
+
+import com.fluidops.iwb.Global;
+import com.fluidops.iwb.repository.PlatformRepositoryManager;
 import com.fluidops.iwb.util.Config;
+import com.fluidops.util.Singleton.UpdatableSingleton;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -49,7 +54,7 @@ public class SearchProviderFactory
 
 			@Override
 			public SearchProvider getSearchProvider() {
-				return WIKI_PROVIDER;
+				return WIKI_PROVIDER.instance();
 			}
 
 		}, 
@@ -58,7 +63,7 @@ public class SearchProviderFactory
 			
 			@Override
 			public SearchProvider getSearchProvider() {
-				return RDF_PROVIDER;
+				return RDF_PROVIDER.instance();
 			}
 			
 		};
@@ -67,10 +72,32 @@ public class SearchProviderFactory
 						
 	}
 	
-	public static final WikiSearchProvider WIKI_PROVIDER = new WikiSearchProvider();
-	public static final DataRepositorySearchProvider RDF_PROVIDER = new DataRepositorySearchProvider();
+	static final UpdatableSingleton<WikiSearchProvider> WIKI_PROVIDER = new UpdatableSingleton<WikiSearchProvider>() {
+		@Override
+		protected WikiSearchProvider createInstance() throws Exception {
+			return new WikiSearchProvider();
+		}		
+	};
+	static final UpdatableSingleton<SparqlSearchProviderImpl> RDF_PROVIDER = new UpdatableSingleton<SparqlSearchProviderImpl>() {
+		@Override
+		protected SparqlSearchProviderImpl createInstance() throws Exception {
+			return new DataRepositoryHybridSearchProvider(Global.repository, TargetType.RDF.toString());
+		}
+	};
+
 	
-	private static final SearchProviderFactory INSTANCE = new SearchProviderFactory();
+	static final UpdatableSingleton<SearchProviderFactory> INSTANCE = new UpdatableSingleton<SearchProviderFactory>() {
+		@Override
+		protected SearchProviderFactory createInstance() throws Exception {
+			return new SearchProviderFactory();
+		}
+		@Override
+		public void reset() {
+			WIKI_PROVIDER.reset();
+			RDF_PROVIDER.reset();
+			super.reset();
+		}		
+	};
 	
 	private Map<String, SearchProvider> searchProvidersMap = null;
 	private Set<String> supportedQueryLanguages = Sets.newHashSet();
@@ -92,11 +119,25 @@ public class SearchProviderFactory
 	}
 	
 	public static SearchProviderFactory getInstance() {
-		return INSTANCE;
+		return INSTANCE.instance();
 	}
 	
 	public static List<String> getDefaultQueryTargets() {
 		return Lists.newArrayList(Config.getConfig().getDefaultQueryTargets());
+	}
+	
+	private SearchProvider getSearchProviderByName(String name) {
+		SearchProvider sp = null;
+		sp = searchProvidersMap.get(name);
+		// if the name for the search provider is not a known one, 
+		// try to look-up the name against the repository manager and return a default SparqlSearchProvider
+		if(sp==null) {
+			Repository repo = PlatformRepositoryManager.getInstance().getRepository(name);
+			if(repo!=null)
+				sp = new SparqlSearchProviderImpl(repo, name);
+		}
+		
+		return sp;
 	}
 	
 	public List<SparqlSearchProvider> getSparqlSearchProviders(List<String> queryTargets) {
@@ -105,7 +146,7 @@ public class SearchProviderFactory
 		
 		SearchProvider sp; 
 		for(String qt : queryTargets) {
-			sp = searchProvidersMap.get(qt);
+			sp = getSearchProviderByName(qt);
 			if(sp instanceof SparqlSearchProvider) {
 				res.add((SparqlSearchProvider)sp);
 			}
@@ -120,7 +161,7 @@ public class SearchProviderFactory
 		
 		SearchProvider sp; 
 		for(String qt : queryTargets) {
-			sp = searchProvidersMap.get(qt);
+			sp = getSearchProviderByName(qt);
 			if(sp instanceof KeywordSearchProvider) {
 				res.add((KeywordSearchProvider)sp);
 			}
@@ -136,7 +177,7 @@ public class SearchProviderFactory
 		SearchProvider sp; 
 		
 		for(String qt : queryTargets) {
-			sp = searchProvidersMap.get(qt);
+			sp = getSearchProviderByName(qt);
 			if(sp!=null && sp.canHandleQueryLanguage(queryLanguage)) {
 				res.add(sp);
 			}

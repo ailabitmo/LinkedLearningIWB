@@ -63,6 +63,9 @@ public class Vocabulary
     	// Placeholder for the context value to be used as the resource of the search results page.
     	// FIXME: A meaningful identifier of the actual query eventually should be eventually used for this purpose.
     	public static final URI SEARCH_VALUE_CONTEXT = VF.createURI(SYSTEM_NAMESPACE, "SearchValueContext");
+    	
+    	// Index property for TripleEditor ordered lists
+    	public static final URI ORDERED_LIST_INDEX = VF.createURI(SYSTEM_NAMESPACE,"index");
     }
 
     // vocabulary for context management
@@ -299,7 +302,6 @@ public class Vocabulary
 		public static final URI PROP_TABLE_CONSTRAINT = VF.createURI(NAMESPACE + "tableConstraint");
 		
 		public static final URI PROP_SCHEMA_NAME = VF.createURI(NAMESPACE + "schemaName");
-		public static final URI PROP_SCHEMA_FULL_NAME = VF.createURI(NAMESPACE + "schemaFullName");
 		
 		public static final URI PROP_COLUMN_NAME = VF.createURI(NAMESPACE + "columnInfoName");
 		public static final URI PROP_COLUMN_SHORT_NAME = VF.createURI(NAMESPACE + "columnInfoShortName");
@@ -314,8 +316,9 @@ public class Vocabulary
 
 		public static final URI PROP_DATATYPE = VF.createURI(NAMESPACE + "columnInfoDatatype");
 		public static final URI PROP_COLUMN_DATATYPE_NAME = VF.createURI(NAMESPACE + "columnDataTypeName");
-		public static final URI PROP_COLUMN_DATATYPE_TYPE_NAME = VF.createURI(NAMESPACE + "columnDataTypeTypeName");
-		public static final URI PROP_COLUMN_DATATYPE_FULL_NAME = VF.createURI(NAMESPACE + "columnDatatypeFullName");
+		public static final URI PROP_COLUMN_DATATYPE_JDBC_CODE= VF.createURI(NAMESPACE + "jdbcCode");
+		
+		public static final URI PROP_COLUMN_NULL_CONSTRAINT = VF.createURI(NAMESPACE + "columnNullConstraint");
 		
 		public static final URI PROP_TABLE_INDEX = VF.createURI(NAMESPACE + "tableIndex");
 		
@@ -337,11 +340,12 @@ public class Vocabulary
 		public static final URI INDIVIDUAL_TABLE_TYPE_VIEW = VF.createURI(NAMESPACE_TABLETYPE + "VIEW");
 		public static final URI INDIVIDUAL_TABLE_TYPE_UNKOWN =  VF.createURI(NAMESPACE_TABLETYPE + "UNKNOWN");
 		
-		public static final URI INDIVIDUAL_INDEX_TYPE_CLUSTERED = VF.createURI(NAMESPACE + "IndexType/CLUSTERED");
-		public static final URI INDIVIDUAL_INDEX_TYPE_HASHED = VF.createURI(NAMESPACE + "IndexType/HASHED");
-		public static final URI INDIVIDUAL_INDEX_TYPE_OTHER = VF.createURI(NAMESPACE + "IndexType/OTHER");
-		public static final URI INDIVIDUAL_INDEX_TYPE_STATISTIC =  VF.createURI(NAMESPACE + "IndexType/STATISTIC");
-		public static final URI INDIVIDUAL_INDEX_TYPE_UNKNOWN =  VF.createURI(NAMESPACE + "IndexType/UNKNOWN");
+		//INDEX Types
+		public static final URI INDIVIDUAL_INDEX_TYPE_PRIMARY = VF.createURI(NAMESPACE + "IndexType/PRIMARY");
+		public static final URI INDIVIDUAL_INDEX_TYPE_UNIQUE = VF.createURI(NAMESPACE + "IndexType/UNIQUE");
+		public static final URI INDIVIDUAL_INDEX_TYPE_PERFORMANCE = VF.createURI(NAMESPACE + "IndexType/PERFORMANCE");
+		public static final URI INDIVIDUAL_INDEX_TYPE_UNKNOWN = VF.createURI(NAMESPACE + "IndexType/UNKOWN");
+		
 		
 		public static final URI TYPE_RELATIONAL_DATA_ENDPOINT = VF.createURI(NAMESPACE_TEST_ENVIRONMENT + "RelationalDataEndpoint");
 		public static final URI PROP_SCHEMA = VF.createURI(NAMESPACE_TEST_ENVIRONMENT + "schema");

@@ -244,7 +244,7 @@ p{
 /*
 *	Positioning and coloring of popup window
 */
-.flDialog
+.flDialog, .flDialog.ui-dialog
 {
 	border: 1px solid #000000;
 	z-index: 900; /* popup over navigation bar (z, but under loading icon (z-index 999) */
@@ -269,11 +269,28 @@ p{
 	-moz-border-radius: 10px;
 	
 	
-    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);;
-    moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);;
-    webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
+    moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
+    webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
 }
 
+.flDialog button.ui-button.ui-state-default span.ui-button-text{
+	font-size:12pt;
+	
+}
+.flDialog.ui-dialog{
+	padding-left:0;
+	padding-right:0;
+}
+.flDialog .ui-dialog-titlebar {
+	border:none;
+}
+.flDialog.ui-dialog .ui-widget-content{
+	background-image:none;
+	background:transparent;
+	border-top:none;
+	font-size:0.9em;
+}
 .flDesktopWindow
 {
 	background: #f8f8f8 none repeat scroll 0%;
@@ -292,7 +309,7 @@ p{
 /*
 * Header of popupwindow
 */
-.flDialogHeader
+.flDialogHeader, .flDialog .ui-dialog-titlebar
 {
 	background-color:#435370;
 	background:-moz-linear-gradient(top, #9EACBF, #4E6382);
@@ -524,6 +541,11 @@ p{
  *  Necessary style classes for FTable2 component (FTable2)
  *   
  ****************************************************************************/
+
+.ui-tooltip-content
+{
+	font-size: 0.9em;
+}
 
 .keywordHighlighting {
     background-color: #ffd700;	
@@ -1366,6 +1388,10 @@ div.floatRight{
     float: right;
 }
 
+div.clearBoth {
+	clear: both;
+}
+	
 .fullWidth {
 	width: 100%;
 }

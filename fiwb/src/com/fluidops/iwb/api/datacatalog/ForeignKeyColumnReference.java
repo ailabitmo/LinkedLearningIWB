@@ -19,6 +19,8 @@
 package com.fluidops.iwb.api.datacatalog;
 
 /**
+ * pairwise representation of foreign key column references (e.g. fk1 in tb5 refers to pk1 in tb1)
+ * 
  * @author msc
  */
 public interface ForeignKeyColumnReference 

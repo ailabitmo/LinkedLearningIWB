@@ -18,7 +18,6 @@
 
 package com.fluidops.iwb.api;
 
-import static com.fluidops.util.FileUtil.getFileContent;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.isEmpty;
 import static java.lang.String.format;
@@ -32,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openrdf.model.URI;
 
@@ -43,7 +43,6 @@ import com.fluidops.iwb.ui.editor.SemWikiUtil;
 import com.fluidops.iwb.util.Config;
 import com.fluidops.iwb.util.DateTimeUtil;
 import com.fluidops.iwb.util.IWBFileUtil;
-import com.fluidops.iwb.util.UrlUtils;
 import com.fluidops.iwb.wiki.WikiBot;
 import com.fluidops.iwb.wiki.WikiStorage;
 import com.fluidops.iwb.wiki.WikiStorage.WikiRevision;
@@ -323,7 +322,7 @@ public class WikiStorageBulkServiceImpl implements WikiStorageBulkService
     {
         try
         {
-			URI subject = EndpointImpl.api().getNamespaceService().guessURI(UrlUtils.urlDecode(wikiFile.getName()));
+			URI subject = EndpointImpl.api().getNamespaceService().guessURI(StringUtil.urlDecode(wikiFile.getName()));
 			Date date = bootstrapTimestampFor(subject);
 			logger.trace("bootstrapping wiki file: " + wikiFile);
               
@@ -335,7 +334,7 @@ public class WikiStorageBulkServiceImpl implements WikiStorageBulkService
         		installLogger.warn("Bootstrap page '" + subject.stringValue() + "' is shadowed by a user page.");
         		
         	// update the content
-            String content = getFileContent(wikiFile);
+            String content = FileUtils.readFileToString(wikiFile);
             ws.storeWikiContent(subject, content, format("Bootstrap %s (%s, v%03d)", artifactVersion, bootstrapName, date.getTime() - WikiStorage.IWB_BOOTSTRAP_EPOCH), date);
             
         	// store the new content of the current version

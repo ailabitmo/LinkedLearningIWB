@@ -43,7 +43,7 @@ import com.fluidops.iwb.api.ReadDataManager;
  *
  * @param <T>
  */
-public abstract class TripleEditorSourceLoadAtOnceBase<T> implements TripleEditorSource {
+public abstract class TripleEditorSourceLoadAtOnceBase<T> extends TripleEditorSourceBase implements TripleEditorSource {
 
 	protected static final Logger logger = Logger.getLogger(TripleEditorSourceLoadAtOnceBase.class);
 	
@@ -52,7 +52,6 @@ public abstract class TripleEditorSourceLoadAtOnceBase<T> implements TripleEdito
 	 */
 	protected T value;
 	
-	protected ReadDataManager dm = EndpointImpl.api().getDataManager();
 	protected ValueFactory vf = ValueFactoryImpl.getInstance();
 	
 	private List<TripleEditorStatement> statements;

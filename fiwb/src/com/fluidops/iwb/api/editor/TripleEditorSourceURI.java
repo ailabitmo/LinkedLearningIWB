@@ -22,16 +22,23 @@ import org.openrdf.model.URI;
 import org.openrdf.query.QueryEvaluationException;
 
 public interface TripleEditorSourceURI
-{	
+{
 	/**
-	 * Initialize a URI triple editor source. Must be called prior to
-	 * accessing any internal data.
+	 * Initialize a URI triple editor source. Must be called prior to accessing
+	 * any internal data.
 	 * 
-	 * @param literal the subject for which to extract information
-	 * @param initialValuesDisplayed number of values displayed in initial view
-	 * @param includeInverseProperties whether to show inverse properties or not
+	 * @param literal
+	 *            the subject for which to extract information
+	 * @param initialValuesDisplayed
+	 *            number of values displayed in initial view
+	 * @param includeInverseProperties
+	 *            whether to show inverse properties or not
+	 * @param info
+	 *            Additional requirements information.
 	 * 
 	 * @throws QueryEvaluationException
 	 */
-	public void initialize(URI uri, int initialValuesDisplayed, boolean includeInverseProperties) throws QueryEvaluationException;
+	public void initialize(URI uri, int initialValuesDisplayed,
+			boolean includeInverseProperties, TripleEditorSourceInformation info)
+			throws QueryEvaluationException;
 }

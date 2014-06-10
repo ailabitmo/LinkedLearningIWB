@@ -18,6 +18,7 @@
 
 package com.fluidops.iwb.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -139,5 +140,18 @@ public class DateTimeUtil {
 	public static Literal toDateTimeLiteral(Date date) {
 		return ValueFactoryImpl.getInstance().createLiteral(
 				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(date), XMLSchema.DATETIME);
+	}
+	
+	/**
+	 * Parses the given value to a {@link Date} by applying the specified
+	 * pattern. 
+	 * 
+	 * @param value
+	 * @param pattern
+	 * @return
+	 * @throws ParseException
+	 */
+	public static Date parseDate(String value, String pattern) throws ParseException {
+		return new SimpleDateFormat(pattern).parse(value);
 	}
 }

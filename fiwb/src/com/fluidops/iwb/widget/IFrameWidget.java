@@ -33,7 +33,7 @@ import com.fluidops.util.StringUtil;
  * 
  * Example configuration:
  * 
- * {{ #widget : IFrame
+ * {{ #widget: IFrame
  * | sourceURL = 'http://www.fluidops.com'
  * | border = '1'
  * | scrolling = 'yes'

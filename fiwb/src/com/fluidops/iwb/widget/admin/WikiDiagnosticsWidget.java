@@ -72,7 +72,7 @@ import com.google.common.collect.Sets;
  * occurring in bootstrapped (i.e., non-user modified) Wiki pages containing
  * "Chart" in their URI:
  * <source>
-   {{ #widget : com.fluidops.iwb.widget.admin.WikiDiagnosticsWidget
+   {{ #widget: com.fluidops.iwb.widget.admin.WikiDiagnosticsWidget
    | regexpFilter = '.*Chart.*'
    | pageTypeFilter = 'BOOTSTRAP'
    | logLevel = 'WARN'
@@ -433,12 +433,12 @@ public class WikiDiagnosticsWidget extends AbstractWidget<WikiDiagnosticsWidget.
 	            {
 	            	// for legacy reasons we need to keep this. The actual widget parsing is 
 	            	// now a parser function, however, a parser function cannot deal with
-	            	// {{#widget : ...}} properly, i.e. the space before :
+	            	// {{#widget: ...}} properly, i.e. the space before :
 	            	// in this case we print a warning
 	            	if ( templateName.startsWith("#widget"))
 	            	{
 	            		String widgetName = templateName.substring(templateName.lastIndexOf(":")+1).trim();
-	            		result.addWidgetParseResult(widgetName, "Invalid specification of #widget found: use {{#widget: widgetName}} instead of {{#widget : widgetName}}", LogLevel.WARN);
+	            		result.addWidgetParseResult(widgetName, "Invalid specification of #widget found: use {{#widget: widgetName}} instead of {{#widget: widgetName}}", LogLevel.WARN);
 	            		widgetParser.createWidgetComponent(widgetName, templateParameters);
 	            	}
 	            	

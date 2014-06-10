@@ -18,13 +18,20 @@
 
 package com.fluidops.iwb.wiki;
 
+import static info.bliki.wiki.template.AbstractTemplateFunction.parseTrim;
+
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 
 import com.fluidops.ajax.components.FComponent;
+import com.fluidops.iwb.api.EndpointImpl;
+import com.fluidops.iwb.api.NamespaceService;
+import com.fluidops.iwb.page.PageContext;
 import com.fluidops.iwb.wiki.FluidWikiModel.TemplateResolver;
 import com.fluidops.iwb.wiki.parserfunction.ParserFunctionUtil;
 
@@ -63,6 +70,18 @@ public class FluidTemplateResolver implements TemplateResolver {
         // This is used as a marker template - return the text / Uli
         if ( templateName.startsWith("lang-") )
         	return templateParameters.get("1");
+        
+        // register page template parameters to PageContext as user query parameters
+        PageContext pc = PageContext.getThreadPageContext();
+        if (pc!=null) {
+        	NamespaceService ns = EndpointImpl.api().getNamespaceService();
+        	for (Entry<String,String> tplParam : templateParameters.entrySet()) {
+        		Value v = ns.parseValue( parseTrim(tplParam.getValue(), wikiModel) );
+    			if (v==null)
+    				continue;
+    			pc.setQueryParameter(tplParam.getKey(), v);
+        	}			
+        }
         
         try {
 	        String templ = wikiModel.getIncludedTemplate(templateName, namespace, pageVersion);

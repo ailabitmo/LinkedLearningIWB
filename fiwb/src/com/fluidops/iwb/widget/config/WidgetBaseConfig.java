@@ -23,16 +23,19 @@ import com.fluidops.iwb.model.ParameterConfigDoc;
 public class WidgetBaseConfig
 {
 	@ParameterConfigDoc(
+			displayName = "Asynchronously",
 			desc = "Load the widget asynchronously", 
 			defaultValue="false")  
 			public Boolean asynch = false;
 	
 	@ParameterConfigDoc(
+			displayName = "Width",
 			desc = "Width of the widget in px",
 			required = false)
     public String width;
 
 	@ParameterConfigDoc(
+			displayName = "Height",
 			desc = "Height of the widget in px",
 			required = false)
     public String height;

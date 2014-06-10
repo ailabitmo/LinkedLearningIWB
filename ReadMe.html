@@ -110,7 +110,7 @@
 		pathname of this directory by &lt;IWB_HOME_DIRECTORY&gt;.</p>
 
 		<ul>
-			<li>Download and install Java SE 32-Bit or 64-Bit JDK version 1.7
+			<li>Download and install Java SE 64-Bit JDK version 1.7
 				(<a
 				href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">http://www.oracle.com/technetwork/java/javase/downloads/index.html</a>).</li>
 			<li>Make sure the java command is added to the command-path of the user root.</li>
@@ -258,6 +258,29 @@
 			
 		<h2><a name="features">New Features</a></h2>
 		<ul>
+			<li>Version 5.2</li>
+			<ul>
+				<li>New instance creation widget with advanced editing capabilities</li>
+				<ul>
+					<li>Deprecates the DataInputWidget and SimpleNewInstance</li>
+					<li>Fully configurable instances (type, URI scheme, etc.)</li>
+					<li>Allows to configure predefined properties on the new instance</li>
+					<li>Different rendering options (popup, inline, etc.)</li>
+				</ul>
+				<li>Support for multiple repositories using the Platform Repository Manager</li>
+				<li>Support for parameterized queries</li>
+				<li>Web interface for RESTful API endpoint</li>
+				<li>Syntax highlighting in file editor (XML, Properties, etc.)</li>
+				<li>Enhancements in the usability, including</li>
+				<ul>
+					<li>System configuration is now searchable</li>					
+					<li>Configuration forms show proper display names</li>
+					<li>Support for auto suggestions in workflow widgets</li>
+					<li>Included wiki page templates of parser functions are now shown in wiki editor</li>
+				</ul>
+				<li>Improvements to diagnostics functionality (query diagnostics, repository tool, wiki diagnostics)</li>
+				<li>Support for standalone browser mode on mobile devices</li>
+			</ul>
 			<li>Version 5.1</li>
 			<ul>
 				<li>Enhancements to the fluidOps Platform SDK (Solution Development Kit), in particular documentation (e.g. how to build solutions, SDK components)</li>
@@ -342,8 +365,10 @@
 		
 		<h2><a name="issues">Known Issues</a></h2>
 		<ul>
-			<li>Version 5.1</li>
+			<li>Version 5.2</li>
 			<ul>
+				<li>Bug 12394: Legacy widget notation with a space in front of colon ("#widget :") does not correctly render for restricted users</li>
+				<li>Bug 11732: Timeline Widget does not work in IE8</li>
 				<li>Bug 11521: Advanced SPARQL editor does not work in IE8, fallback to simple version</li>
 				<li>Bug 9252: Links in Pivot View do not work in Safari under Windows</li>
 				<li>Bug 5307: Widgets with query evaluation not working if query contains || in Filter, workaround using {{Pipe}} including UI support</li>

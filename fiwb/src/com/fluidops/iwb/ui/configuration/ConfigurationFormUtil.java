@@ -38,7 +38,8 @@ public class ConfigurationFormUtil {
 
 	
 	/**
-	 * Returns the configuration fields of the given config class sorted. 
+	 * Returns the configuration fields as of {@link #getConfigFields(Class, List)}, i.e.
+	 * basically all fields that are annotated with {@link ParameterConfigDoc}. 
 	 * Sorting is performed according to the following order
 	 * 
 	 * 1) required parameters
@@ -74,7 +75,9 @@ public class ConfigurationFormUtil {
 		
 			
 	/**
-	 * Return all 
+	 * Find all {@link Field}s of the given config class that are annotated with
+	 * {@link ParameterConfigDoc} and add them to the provided list.
+	 * 
 	 * @param configClass
 	 * @param allFields
 	 * @return

@@ -82,7 +82,7 @@ public class LinkedInWidget extends AbstractWidget<LinkedInWidget.Config>
                 public String render(){
 
                 	//load the linked in javascript to create an iframe
-            		addClientUpdate( new FClientUpdate( Prio.VERYBEGINNING, "yepnope({load: ['http://platform.linkedin.com/in.js']});" ) );
+            		addClientUpdate( new FClientUpdate( Prio.VERYBEGINNING, "yepnope({load: ['//platform.linkedin.com/in.js']});" ) );
             		return "<div style = \"width:"+width+"px; height:"+height+"px; margin:auto;margin-top:2px;\"><script type=\"IN/"+type+"Profile\" data-id=\""+userProfile+"\" data-format=\"inline\" data-width=\""+width+"\"></script></div>";
                 }
                 

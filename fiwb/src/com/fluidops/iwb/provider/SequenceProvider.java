@@ -54,8 +54,7 @@ public class SequenceProvider extends AbstractFlexProvider<SequenceProvider.Conf
 		@ParameterConfigDoc(
 				desc = "Ordered list of provider identifiers referring to the providers to be triggered in sequence", 
 				required = true,
-				type=Type.LIST,
-    			listType=URI.class)
+				type=Type.LIST)
         public List<URI> providers;
 	}
 

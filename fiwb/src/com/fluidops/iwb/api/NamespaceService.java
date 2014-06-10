@@ -168,7 +168,13 @@ public interface NamespaceService
     public URI parseURI(String s);
     
     /**
-     * Parses a prefixed URI like xsd:int
+     * Parses a prefixed URI like xsd:int.<p>
+     * 
+     * This method considers inputs like :localName or
+     * localName as URIs in the default namespace. URIs
+     * in the default namespaces are resolves using 
+     * {@link #createURIInDefaultNS(String)}.
+     * 
      * 
      * @param s the string to parse
      * @return null if parsing fails, the URI otherwise

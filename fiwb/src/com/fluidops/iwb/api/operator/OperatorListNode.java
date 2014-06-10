@@ -32,31 +32,37 @@ import com.google.common.base.Joiner;
 
 
 /**
- * Operator representing a list. The operator maintains
- * a list of OperatorNode instances (i.e. its children).
- * All children should be of compatible type. During evaluation
- * a List with generic parameter listType is generated, i.e.
- * the child operators are evaluated using the list's type.
+ * Operator representing a list. <p>
  * 
- * targetType must always be List.class
+ * The operator maintains a list of OperatorNode instances (i.e. its children).
+ * All children should be of compatible type. During evaluation a List with
+ * generic parameter listType is generated, i.e. the child operators are
+ * evaluated using the list's type. <p>
  * 
- * Example serialization (normalized) for List<String>:
+ * The targetType must always be List.class.
+ * <p>
  * 
- * <code>
+ * Example serialization (normalized) for List&lt;String&gt;:
+ * 
+ * <pre>
  * {{ 'Hello World' | 'String2' | }}
- * </code>
+ * </pre>
  * 
- * Note that for List<Object> the list can contain different
- * runtime types. Compare conversion rules in {@link OperatorConstantNode}
+ * Note that for List&lt;Object&gt; the list can contain different runtime
+ * types. Compare conversion rules in {@link OperatorConstantNode}
  * 
  * @author as
  */
-class OperatorListNode implements OperatorNode, OperatorListType {
+public class OperatorListNode implements OperatorNode, OperatorListType {
 
 	private static final long serialVersionUID = -9205722608664586049L;
 	
 	private List<OperatorNode> children = new ArrayList<OperatorNode>();
 	private Class<?> listGenericType = Object.class;
+	
+	OperatorListNode() {
+		
+	}
 	
 	@SuppressWarnings("unchecked")
 	@Override

@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="DemoSolution">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/sdk/DemoSolution.zip!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

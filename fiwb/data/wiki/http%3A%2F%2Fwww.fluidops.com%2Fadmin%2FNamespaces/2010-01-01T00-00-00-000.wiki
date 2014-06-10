@@ -1,3 +1,0 @@
-= Namespace Configuration <sup>[[Help:NamespaceConfig | <img width="19" src="../images/navigation/help_start.png" />]]</sup> =
-
-{{#widget: com.fluidops.iwb.widget.NamespaceConfigurationWidget}}

@@ -89,6 +89,31 @@ public class PrinterImpl implements Printer
 		args.put("abbreviatedURI", abbreviatedUri);						// TODO maybe remove, not documented nor used in both iwb and ecm, value
 		args.put("term", pageParams.getPageTitle());					// keep for legacy reasons
 		args.put("path", pc.contextPath);								// keep for legacy reasons
+
+		// try to get additional page content for mobile browsers
+		// if not available, just nothing gets added
+		String mobileHeader = null;
+		try
+		{
+			TemplateBuilder tbMobile = new TemplateBuilder( "tplMobile", "com/fluidops/iwb/ui/templates/MobileHeader" );
+			mobileHeader = tbMobile.renderTemplate(args);
+		}
+		catch(Exception ignore)
+		{}
+		
+		String standaloneHeader = null;
+		try
+		{
+			TemplateBuilder tbStandalone = new TemplateBuilder( "tplMobile", "com/fluidops/iwb/ui/templates/StandaloneHeader" );
+			standaloneHeader = tbStandalone.renderTemplate(args);
+		}
+		catch(Exception ignore)
+		{}
+		
+		if(mobileHeader != null && mobileHeader.length() > 0)
+			args.put("mobileHeader", mobileHeader);
+		if(standaloneHeader != null && standaloneHeader.length() > 0)
+			args.put("mobileStandaloneHeader", standaloneHeader);
 		
 		String content = tb.renderTemplate( args );
 		response.setContentType( pc.contentType );

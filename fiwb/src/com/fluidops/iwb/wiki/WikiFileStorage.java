@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -52,6 +53,7 @@ import com.fluidops.iwb.util.IWBFileUtil;
 import com.fluidops.util.GenUtil;
 import com.fluidops.util.Pair;
 import com.fluidops.util.StringUtil;
+import com.fluidops.util.cache.CacheUtil;
 
 /**
  * File-based wiki storage implementation.
@@ -62,6 +64,8 @@ public class WikiFileStorage extends WikiStorage
 {
     private static final Logger logger = Logger.getLogger(WikiFileStorage.class.getName());
     public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH-mm-ss-SSS";
+    
+    private final LatestWikiRevisionCache cache = new LatestWikiRevisionCache();
     
     /**
      * The root folder to use for Wiki content
@@ -91,7 +95,10 @@ public class WikiFileStorage extends WikiStorage
     {
     	if (content==null) 
     		throw new IllegalArgumentException("Cannot store 'null' content for resource " + resource.stringValue());
-    		
+    	
+    	// invalidate all (to properly handle includes)
+    	cache.invalidate();
+    	
         String time = toFileName(revision.date);
     
         File dir = getContainingDir(resource);
@@ -306,12 +313,18 @@ public class WikiFileStorage extends WikiStorage
     @Override
 	public WikiRevision getLatestRevision(URI resource)	{
 		
+    	WikiRevision latestRevision = cache.getLatestRevision(resource);
+    	if (latestRevision!=null)
+    		return latestRevision;
+    	
     	File[] wf = getWikiPageRevisionFiles(resource);
     	if (wf.length==0)
     		return null;
     	try
 		{
-			return getWikiRevision(wf[wf.length-1]);
+			latestRevision = getWikiRevision(wf[wf.length-1]);
+			cache.putLatestRevision(resource, latestRevision);
+			return latestRevision;
 		}
 		catch (Exception e)
 		{
@@ -376,7 +389,11 @@ public class WikiFileStorage extends WikiStorage
     @Override
     public String getWikiContent(URI resource, WikiRevision revision)
     {
-        File dir = getContainingDir(resource);
+    	String cachedContent = cache.getWikiContent(resource, revision);
+    	if (cachedContent!=null)
+    		return cachedContent;
+    	
+    	File dir = getContainingDir(resource);
         if (dir == null)
             return null;
 
@@ -386,7 +403,9 @@ public class WikiFileStorage extends WikiStorage
             return null;
         
         try {
-            return GenUtil.readFileUTF8(f);
+            String wikiContent = GenUtil.readFileUTF8(f);
+            cache.updateRevisionContentIfPresent(resource, revision, wikiContent);
+            return wikiContent;
         } catch (IOException ex) {
             return null;
         }       
@@ -464,6 +483,9 @@ public class WikiFileStorage extends WikiStorage
     {	
     	File f = getContainingDir(resource);
     	
+    	// invalidate all (to properly handle includes)
+    	cache.invalidate();
+    	
     	if (f.isDirectory()) 
 		{
     		for (File fi : f.listFiles()) 
@@ -474,7 +496,7 @@ public class WikiFileStorage extends WikiStorage
     		        GenUtil.delete(fi);
     		}
     		if (f.delete()) // only applies if empty
-    	        WikiDirectoryCache.getInstance().lookup(resource);
+    	        WikiDirectoryCache.getInstance().removeFromCache(resource);
     	}
     	return true;
     }
@@ -483,6 +505,9 @@ public class WikiFileStorage extends WikiStorage
 	protected boolean deleteRevisionFromStorage(URI resource, WikiRevision rev) 
 	{
 		File dir = getContainingDir(resource);
+		
+		// invalidate all (to properly handle includes)
+		cache.invalidate();
 		
 		if (dir.isDirectory()) 
 		{
@@ -506,6 +531,8 @@ public class WikiFileStorage extends WikiStorage
 	public boolean updateRevision(URI resource, WikiRevision rev) 
 	{
 		File dir = getContainingDir(resource);
+		
+		cache.invalidate();
 		
 		if (dir.isDirectory()) 
 		{
@@ -550,6 +577,10 @@ public class WikiFileStorage extends WikiStorage
 	public boolean deleteAllOlder(URI resource, Date date) 
 	{
 		File dir = getContainingDir(resource);
+		
+		// invalidate all (to properly handle includes)
+		cache.invalidate();
+		
 		if (dir.isDirectory()) 
 		{
 			File[] files = dir.listFiles();
@@ -661,4 +692,142 @@ public class WikiFileStorage extends WikiStorage
     		return f.getName().endsWith(".wiki");
     	}
 	};
+	
+	
+	/**
+	 * A cache for the latest {@link WikiRevision} and its raw wiki content
+	 * associated to the respective resource. This cache uses a Guava
+	 * cache provided by {@link CacheUtil}, thus allowing for janitor
+	 * configurations.<p>
+	 * 
+	 * By default the cache is configured to expire entries after 60s.
+	 * 
+	 * @author as
+	 * @see CacheUtil
+	 */
+	protected static class LatestWikiRevisionCache {		
+		
+		/**
+		 * A Guava cache created 
+		 * 
+		 * See also {@link CacheUtil}
+		 */
+		Map<URI, LatestWikiRevisionCacheEntry> cache = CacheUtil.map(LatestWikiRevisionCache.class.getName(), "GuavaMap: maximumSize=1000, expireAfterWrite=60s");
+		
+		/**
+		 * Retrieve the latest {@link WikiRevision} from the cache. If the cache
+		 * does not have the latest revision, this method returns {@code null}
+		 * 
+		 * @param resource
+		 * @return the latest {@link WikiRevision} or {@code null} if it is unknown
+		 */
+		public WikiRevision getLatestRevision(URI resource) {
+			LatestWikiRevisionCacheEntry entry = cache.get(resource);
+			if (entry==null)
+				return null;
+			return entry.getWikiRevision();			
+		}
+		
+		/**
+		 * Returns the raw wiki content for the resource and wiki revision, if
+		 * available, {@code null} otherwise.
+		 * 
+		 * @param resource
+		 * @param wikiRevision
+		 * @return
+		 */
+		public String getWikiContent(URI resource, WikiRevision wikiRevision) {
+			LatestWikiRevisionCacheEntry entry = cache.get(resource);
+			if (entry==null)
+				return null;
+			if (!entry.getWikiRevision().equals(wikiRevision))
+				return null;
+			return entry.getRawWikiContent();
+		}
+		
+		/**
+		 * Put the latest wikiRevision into the cache associated to the resource. 
+		 * 
+		 * @param resource
+		 * @param wikiRevision
+		 */
+		public void putLatestRevision(URI resource, WikiRevision wikiRevision) {
+			LatestWikiRevisionCacheEntry entry = new LatestWikiRevisionCacheEntry(resource, wikiRevision);
+			cache.put(resource, entry);
+		}
+		
+		/**
+		 * Update the raw wiki content for the latest wiki revision of the resource, if 
+		 * there exists an entry for it. Returns true if this was successful.
+		 * 
+		 * @param resource
+		 * @param wikiRevision
+		 * @param wikiContent
+		 * @return
+		 */
+		public boolean updateRevisionContentIfPresent(URI resource, WikiRevision wikiRevision, String wikiContent) {
+			LatestWikiRevisionCacheEntry entry = cache.get(resource); 	
+			if (entry==null)
+				return false;
+			if (!entry.getWikiRevision().equals(wikiRevision))
+				return false;
+			entry.setRawWikiContent(wikiContent);
+			return true;
+		}
+		
+		/**
+		 * Invalidate the cache.
+		 */
+		public void invalidate() {
+			cache.clear();
+		}
+	}
+	
+	/**
+	 * Structure class for wiki revision cache entries stored in the
+	 * {@link LatestWikiRevisionCache}.
+	 * 
+	 * @author as
+	 *
+	 */
+	protected static class LatestWikiRevisionCacheEntry {
+		
+		private final URI resource;
+		private final WikiRevision wikiRevision;
+		private String rawWikiContent;
+		
+		public LatestWikiRevisionCacheEntry(URI resource, WikiRevision wikiRevision) {
+			this.resource = resource;
+			this.wikiRevision = wikiRevision;
+		}
+
+		/**
+		 * @return the rawWikiContent
+		 */
+		public String getRawWikiContent() {
+			return rawWikiContent;
+		}
+
+		/**
+		 * @param rawWikiContent the rawWikiContent to set
+		 */
+		public void setRawWikiContent(String rawWikiContent) {
+			this.rawWikiContent = rawWikiContent;
+		}
+
+		/**
+		 * @return the resource
+		 */
+		public URI getResource() {
+			return resource;
+		}
+
+		/**
+		 * @return the wikiRevision
+		 */
+		public WikiRevision getWikiRevision() {
+			return wikiRevision;
+		}		
+		
+	}
 }

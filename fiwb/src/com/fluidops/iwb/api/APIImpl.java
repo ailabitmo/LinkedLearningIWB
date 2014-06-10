@@ -829,6 +829,7 @@ public class APIImpl extends DynamicServiceImpl implements API, InternalAPI
 		return new MonitoringServiceImpl();
 	}
     
+	@Override
     public MonitoringService getMonitoringService() throws RemoteException
     {
     	return monitoringService.instance(); 
@@ -934,6 +935,8 @@ public class APIImpl extends DynamicServiceImpl implements API, InternalAPI
                     getConfigFolder().getParentFile(), "config/acl", INSTALLED_SUCCESSFULLY_RESTART_REQUIRED))
             .add(new CopyFolderStructureHandler(
                     getConfigFolder().getParentFile(), "config/annotations", INSTALLED_SUCCESSFULLY_RESTART_REQUIRED))
+            .add(new CopyFolderStructureHandler(
+            		getConfigFolder().getParentFile(), "config/repositories", INSTALLED_SUCCESSFULLY_RESTART_REQUIRED))
             .add(new JettyHandler(getApplicationFolder())) 
             .add(new WidgetHandler(getWidgetSelector()))
             .add(new WidgetClassHandler(getWidgetService()))

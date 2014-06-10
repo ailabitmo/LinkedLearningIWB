@@ -39,19 +39,43 @@ public interface Table
 		UNKNOWN
 	}
 
+	/**
+	 * @return plain table name
+	 */
 	public String getName();
 	
+	/**
+	 * @return schemaName.tableName
+	 */
 	public String getFullName();
 	
+	/**
+	 * @return table type e.g. ALIAS, GLOBAL_TEMPORARY, LOCAL_TEMPORARY, SYNONYM, TABLE, VIEW, UNKNOWN
+	 */
 	public TableType getTableType();
 	
+	/**
+	 * @return the schema to which the table belongs to
+	 */
 	public Schema getSchema();
 	
+	/**
+	 * @return table's columns
+	 */
 	public List<Column> getColumns();
 	
+	/**
+	 * @return the primary Key
+	 */
 	public PrimaryKey getPrimaryKey();
 	
+	/**
+	 * @return all foreign keys
+	 */
 	public List<ForeignKey> getForeignKeys();
 	
+	/**
+	 * @return all indices
+	 */
 	public List<Index> getIndices();
 }
